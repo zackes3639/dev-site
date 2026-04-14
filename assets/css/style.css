@@ -158,6 +158,10 @@ img {
   gap: 32px;
 }
 
+.hero > * {
+  min-width: 0;
+}
+
 .hero-home-clean {
   min-height: calc(100vh - 120px);
 }
@@ -184,13 +188,12 @@ img {
   align-items: flex-start;
   gap: 6px;
   margin-bottom: 18px;
-  font-size: clamp(1.8rem, 3vw, 2.6rem);
-  max-width: 760px;
+  font-size: clamp(1.2rem, 2vw, 1.8rem);
 }
 
 .hero-headline span {
   display: block;
-  white-space: normal;
+  white-space: nowrap;
 }
 
 .page-hero-content.narrow {
@@ -551,7 +554,11 @@ img {
 
 @media (max-width: 900px) {
   .hero-headline {
-    font-size: clamp(1.6rem, 5vw, 2.4rem);
+    font-size: clamp(1.4rem, 5vw, 2rem);
+  }
+
+  .hero-headline span {
+    white-space: normal;
   }
 
   .hotbar {
@@ -607,7 +614,7 @@ img {
 
 @media (max-width: 600px) {
   .hero-headline {
-    font-size: clamp(1.6rem, 7vw, 2.3rem);
+    font-size: clamp(1.3rem, 6vw, 1.8rem);
     gap: 4px;
   }
 
