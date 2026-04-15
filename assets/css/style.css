@@ -55,6 +55,9 @@ img {
   backdrop-filter: blur(10px);
   box-shadow: none;
   border-bottom: 1px solid #e5e7eb;
+  transition: max-width 0.25s ease, margin 0.25s ease, padding 0.25s ease,
+    gap 0.25s ease, border-radius 0.25s ease, box-shadow 0.25s ease,
+    background 0.25s ease, border-color 0.25s ease;
 }
 
 .nav-left,
@@ -92,6 +95,7 @@ img {
   border-radius: 8px;
   box-shadow: none;
   border: 1px solid #e5e7eb;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .hot-btn {
@@ -121,6 +125,37 @@ img {
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.navbar.navbar-compact {
+  max-width: none;
+  width: fit-content;
+  margin: 10px auto 0 var(--gutter);
+  grid-template-columns: auto;
+  gap: 0;
+  padding: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+}
+
+.navbar.navbar-compact .hotbar,
+.navbar.navbar-compact .nav-contact {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-6px);
+  width: 0;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border-width: 0;
+  overflow: hidden;
+}
+
+.navbar.navbar-compact .logo {
+  width: 44px;
+  height: 44px;
 }
 
 .nav-cta {
@@ -627,6 +662,12 @@ img {
     gap: 16px;
     padding-top: 12px;
     padding-bottom: 12px;
+  }
+
+  .navbar.navbar-compact {
+    margin-left: 16px;
+    margin-right: auto;
+    justify-items: start;
   }
 
   .nav-left,
