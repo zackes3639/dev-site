@@ -4,53 +4,65 @@ console.log("Zack's builder site loaded");
   const navbar = document.querySelector(".navbar");
   const hotbar = document.querySelector(".hotbar");
   const navContact = document.querySelector(".nav-contact");
+  const pageBody = document.body;
 
   if (!navbar) return;
 
-  const compactThreshold = 56;
-  const hideThreshold = 112;
-  const directionThreshold = 6;
-  let lastScrollY = window.scrollY;
+  const compactEnterThreshold = 220;
+  const compactExitThreshold = 24;
+  const transitionDurationMs = 1080;
+  let isCompact = window.scrollY > compactEnterThreshold;
+  let transitionTimer;
+
+  function triggerTransitionState() {
+    pageBody.classList.add("navbar-transitioning");
+    window.clearTimeout(transitionTimer);
+    transitionTimer = window.setTimeout(() => {
+      pageBody.classList.remove("navbar-transitioning");
+    }, transitionDurationMs);
+  }
 
   function setCompactNavbar(isCompact) {
-    navbar.classList.toggle("navbar-compact", isCompact);
+    if (navbar.classList.contains("navbar-compact") === isCompact) {
+      return;
+    }
 
-    [hotbar, navContact].forEach((element) => {
+    navbar.classList.toggle("navbar-compact", isCompact);
+    pageBody.classList.toggle("navbar-compact-active", isCompact);
+    triggerTransitionState();
+
+    [hotbar].forEach((element) => {
       if (!element) return;
 
       if (isCompact) {
-        element.setAttribute("aria-hidden", "true");
+        element.removeAttribute("aria-hidden");
       } else {
         element.removeAttribute("aria-hidden");
       }
     });
-  }
 
-  function setNavbarHidden(isHidden) {
-    navbar.classList.toggle("navbar-hidden", isHidden);
+    if (navContact) {
+      if (isCompact) {
+        navContact.setAttribute("aria-hidden", "true");
+      } else {
+        navContact.removeAttribute("aria-hidden");
+      }
+    }
   }
 
   function syncNavbarState() {
-    const currentScrollY = window.scrollY;
-    const scrollDelta = currentScrollY - lastScrollY;
-    const isNearTop = currentScrollY <= compactThreshold;
+    const scrollY = window.scrollY;
 
-    if (isNearTop) {
-      setCompactNavbar(false);
-      setNavbarHidden(false);
-      lastScrollY = currentScrollY;
+    if (!isCompact && scrollY > compactEnterThreshold) {
+      isCompact = true;
+      setCompactNavbar(true);
       return;
     }
 
-    setCompactNavbar(true);
-
-    if (scrollDelta > directionThreshold && currentScrollY > hideThreshold) {
-      setNavbarHidden(true);
-    } else if (scrollDelta < -directionThreshold) {
-      setNavbarHidden(false);
+    if (isCompact && scrollY < compactExitThreshold) {
+      isCompact = false;
+      setCompactNavbar(false);
     }
-
-    lastScrollY = currentScrollY;
   }
 
   if (hotbar) {
@@ -58,6 +70,7 @@ console.log("Zack's builder site loaded");
     hotbar.removeAttribute("aria-hidden");
   }
 
+  setCompactNavbar(isCompact);
   syncNavbarState();
   window.addEventListener("scroll", syncNavbarState, { passive: true });
 })();
