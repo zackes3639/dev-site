@@ -7,7 +7,10 @@ console.log("Zack's builder site loaded");
 
   if (!navbar) return;
 
-  const compactThreshold = 36;
+  const compactThreshold = 56;
+  const hideThreshold = 112;
+  const directionThreshold = 6;
+  let lastScrollY = window.scrollY;
 
   function setCompactNavbar(isCompact) {
     navbar.classList.toggle("navbar-compact", isCompact);
@@ -23,14 +26,37 @@ console.log("Zack's builder site loaded");
     });
   }
 
-  function syncNavbarState() {
-    setCompactNavbar(window.scrollY > compactThreshold);
+  function setNavbarHidden(isHidden) {
+    navbar.classList.toggle("navbar-hidden", isHidden);
   }
 
-  if (!hotbar) return;
+  function syncNavbarState() {
+    const currentScrollY = window.scrollY;
+    const scrollDelta = currentScrollY - lastScrollY;
+    const isNearTop = currentScrollY <= compactThreshold;
 
-  hotbar.classList.remove("hide", "closed");
-  hotbar.removeAttribute("aria-hidden");
+    if (isNearTop) {
+      setCompactNavbar(false);
+      setNavbarHidden(false);
+      lastScrollY = currentScrollY;
+      return;
+    }
+
+    setCompactNavbar(true);
+
+    if (scrollDelta > directionThreshold && currentScrollY > hideThreshold) {
+      setNavbarHidden(true);
+    } else if (scrollDelta < -directionThreshold) {
+      setNavbarHidden(false);
+    }
+
+    lastScrollY = currentScrollY;
+  }
+
+  if (hotbar) {
+    hotbar.classList.remove("hide", "closed");
+    hotbar.removeAttribute("aria-hidden");
+  }
 
   syncNavbarState();
   window.addEventListener("scroll", syncNavbarState, { passive: true });

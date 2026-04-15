@@ -55,9 +55,12 @@ img {
   backdrop-filter: blur(10px);
   box-shadow: none;
   border-bottom: 1px solid #e5e7eb;
-  transition: max-width 0.25s ease, margin 0.25s ease, padding 0.25s ease,
-    gap 0.25s ease, border-radius 0.25s ease, box-shadow 0.25s ease,
-    background 0.25s ease, border-color 0.25s ease;
+  transition: max-width 0.28s ease, margin 0.28s ease, padding 0.28s ease,
+    gap 0.28s ease, border-radius 0.28s ease, box-shadow 0.28s ease,
+    background 0.28s ease, border-color 0.28s ease,
+    transform 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform, opacity;
 }
 
 .nav-left,
@@ -95,7 +98,9 @@ img {
   border-radius: 8px;
   box-shadow: none;
   border: 1px solid #e5e7eb;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  overflow: hidden;
+  transition: opacity 0.3s ease, transform 0.3s ease, padding 0.3s ease,
+    margin 0.3s ease, border-color 0.3s ease, max-width 0.3s ease;
 }
 
 .hot-btn {
@@ -125,28 +130,47 @@ img {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  overflow: hidden;
+  transition: opacity 0.3s ease, transform 0.3s ease, padding 0.3s ease,
+    margin 0.3s ease, border-color 0.3s ease, max-width 0.3s ease;
 }
 
 .navbar.navbar-compact {
   max-width: none;
-  width: fit-content;
-  margin: 10px auto 0 var(--gutter);
-  grid-template-columns: auto;
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  width: max-content;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   gap: 0;
-  padding: 10px;
+  margin: 0;
+  padding: 8px 12px;
   border: 1px solid #e5e7eb;
-  border-radius: 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
   box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+  transform: translateX(-50%);
+}
+
+.navbar.navbar-hidden {
+  transform: translateX(-50%) translateY(-18px) scale(0.985);
+  opacity: 0;
+  pointer-events: none;
 }
 
 .navbar.navbar-compact .hotbar,
 .navbar.navbar-compact .nav-contact {
   opacity: 0;
   pointer-events: none;
-  transform: translateY(-6px);
+  transform: translateY(-4px);
+  position: absolute;
+  inset: auto;
   width: 0;
+  max-width: 0;
   min-width: 0;
+  height: 0;
   padding: 0;
   margin: 0;
   border-width: 0;
@@ -156,6 +180,10 @@ img {
 .navbar.navbar-compact .logo {
   width: 44px;
   height: 44px;
+}
+
+.navbar.navbar-compact .nav-left {
+  justify-content: center;
 }
 
 .nav-cta {
@@ -635,8 +663,21 @@ img {
   }
 
   .hotbar {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
     width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+
+  .hotbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hot-btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
   }
 
   .contact-panel {
@@ -656,18 +697,40 @@ img {
 }
 
 @media (max-width: 700px) {
-  .navbar {
-    grid-template-columns: 1fr;
-    justify-items: center;
-    gap: 16px;
+  .navbar:not(.navbar-compact) {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    justify-items: stretch;
+    gap: 12px;
     padding-top: 12px;
     padding-bottom: 12px;
   }
 
+  .navbar:not(.navbar-compact) .hotbar {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+
+  .navbar:not(.navbar-compact) .hotbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .navbar:not(.navbar-compact) .hot-btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .navbar:not(.navbar-compact) .nav-cta {
+    min-height: 40px;
+    padding: 8px 14px;
+    font-size: 0.9rem;
+  }
+
   .navbar.navbar-compact {
-    margin-left: 16px;
-    margin-right: auto;
-    justify-items: start;
+    top: 10px;
+    left: 50%;
   }
 
   .nav-left,
@@ -718,8 +781,14 @@ img {
     padding: 10px;
   }
 
-  .hot-btn {
-    flex: 1 1 100%;
+  .navbar:not(.navbar-compact) .hotbar {
+    padding: 8px;
+    gap: 4px;
+  }
+
+  .navbar:not(.navbar-compact) .hot-btn {
+    padding: 8px 12px;
+    font-size: 0.9rem;
   }
 
   .contact-panel {
