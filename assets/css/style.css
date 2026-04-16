@@ -260,10 +260,10 @@ body.navbar-transitioning .navbar.navbar-compact {
   justify-content: center;
   min-height: 42px;
   padding: 9px 18px;
-  border: 1px solid #0b1220;
+  border: 1px solid #6c3fd4;
   border-radius: 8px;
-  background: #0b1220;
-  color: #ffffff;
+  background: #ffffff;
+  color: #0b1220;
   font-size: 0.95rem;
   font-weight: 600;
   white-space: nowrap;
@@ -273,7 +273,7 @@ body.navbar-transitioning .navbar.navbar-compact {
 .nav-cta:hover {
   transform: translateY(-1px);
   border-color: #6c3fd4;
-  background: #6c3fd4;
+  background: #f6f2ff;
 }
 
 .nav-links {
@@ -387,9 +387,15 @@ body.navbar-transitioning .navbar.navbar-compact {
 }
 
 .primary {
-  background: #0b1220;
-  color: white;
+  border: 1px solid #6c3fd4;
+  background: #ffffff;
+  color: #0b1220;
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
+}
+
+.primary:hover {
+  background: #f6f2ff;
+  border-color: #6c3fd4;
 }
 
 .secondary {
@@ -653,14 +659,14 @@ body.navbar-transitioning .navbar.navbar-compact {
 }
 
 .primary-action {
-  border-color: #0b1220;
-  background: #0b1220;
-  color: #ffffff;
+  border-color: #6c3fd4;
+  background: #ffffff;
+  color: #0b1220;
 }
 
 .primary-action:hover {
   border-color: #6c3fd4;
-  background: #6c3fd4;
+  background: #f6f2ff;
 }
 
 .footer {
