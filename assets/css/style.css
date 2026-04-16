@@ -704,6 +704,23 @@ body.navbar-transitioning .navbar.navbar-compact {
 
 
 
+.about-name {
+  font-size: clamp(1.8rem, 3.2vw, 2.6rem);
+  color: #0b1220;
+  line-height: 1.1;
+  margin-bottom: 10px;
+}
+
+.about-location {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 20px;
+}
+
 .builds-preview-section {
   padding-top: clamp(24px, 3vw, 40px);
 }
