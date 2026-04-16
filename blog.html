@@ -18,24 +18,34 @@
       <a class="hot-btn" href="index.html">About Me</a>
       <a class="hot-btn" href="work.html">Builds</a>
       <a class="hot-btn hot-btn-active" href="blog.html">Blog</a>
-      <a class="hot-btn hot-btn-cta" href="contact.html">Contact</a>
+      <a class="hot-btn" href="contact.html">Contact</a>
     </div>
 
     <div class="nav-contact"></div>
   </header>
 
   <main>
-    <section class="page-hero">
+    <section class="page-hero page-hero-blog">
       <div class="page-hero-content narrow">
         <p class="eyebrow">The Build Log</p>
         <h1 class="page-title">Building in public.</h1>
         <p class="page-intro">Real decisions. Real mistakes. Real progress.</p>
+        <p class="post-count">2 posts — writing since April 2026</p>
+
+        <div class="newsletter-inline-box">
+          <form class="newsletter-form-inline" onsubmit="return false;">
+            <input type="email" class="newsletter-input" placeholder="Email address" autocomplete="email" />
+            <input type="tel" class="newsletter-input" placeholder="Phone number (for SMS)" autocomplete="tel" />
+            <button type="submit" class="newsletter-btn-compact">Subscribe →</button>
+          </form>
+        </div>
       </div>
     </section>
 
-    <section class="section">
+    <section class="section posts-section">
       <div class="post-list">
         <article class="post-card">
+          <span class="post-category">Founder</span>
           <div class="post-card-top">
             <div>
               <h2 class="post-title">Why I left consulting to build products</h2>
@@ -43,10 +53,11 @@
             </div>
             <a href="blog/why-i-left-consulting.html" class="post-link">Read →</a>
           </div>
-          <span class="post-date">April 10, 2026</span>
+          <span class="post-date">April 10, 2026 · 4 min read</span>
         </article>
 
         <article class="post-card">
+          <span class="post-category">AWS</span>
           <div class="post-card-top">
             <div>
               <h2 class="post-title">Setting up this site on AWS from scratch</h2>
@@ -54,23 +65,8 @@
             </div>
             <a href="blog/setting-up-this-site-on-aws.html" class="post-link">Read →</a>
           </div>
-          <span class="post-date">April 3, 2026</span>
+          <span class="post-date">April 3, 2026 · 5 min read</span>
         </article>
-      </div>
-    </section>
-
-    <section class="section newsletter-section">
-      <div class="newsletter-panel">
-        <p class="eyebrow">The Build Log</p>
-        <h2 class="newsletter-headline">Follow the build in real time.</h2>
-        <p class="newsletter-copy">I write about what I'm actually building — the decisions, the mistakes, and the progress. No fluff.</p>
-        <form class="newsletter-form" onsubmit="return false;">
-          <div class="newsletter-fields">
-            <input type="email" class="newsletter-input" placeholder="Email address" autocomplete="email" />
-            <input type="tel" class="newsletter-input" placeholder="Phone number (for SMS)" autocomplete="tel" />
-          </div>
-          <button type="submit" class="btn primary">Subscribe</button>
-        </form>
       </div>
     </section>
   </main>
