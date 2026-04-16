@@ -906,6 +906,7 @@ body.navbar-transitioning .navbar.navbar-compact {
 }
 
 .post-header-section {
+  padding-top: clamp(20px, 3vw, 36px);
   padding-bottom: 0;
 }
 
@@ -937,7 +938,8 @@ body.navbar-transitioning .navbar.navbar-compact {
 }
 
 .post-body-section {
-  padding-top: clamp(24px, 3vw, 40px);
+  padding-top: clamp(20px, 3vw, 32px);
+  padding-bottom: clamp(20px, 3vw, 32px);
 }
 
 .post-body {
@@ -961,6 +963,12 @@ body.navbar-transitioning .navbar.navbar-compact {
 
 .newsletter-section {
   background: #ffffff;
+  padding-top: clamp(20px, 3vw, 36px);
+  padding-bottom: clamp(28px, 4vw, 48px);
+}
+
+.newsletter-post-box {
+  max-width: 640px;
 }
 
 .newsletter-panel {
