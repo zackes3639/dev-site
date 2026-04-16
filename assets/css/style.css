@@ -704,6 +704,27 @@ body.navbar-transitioning .navbar.navbar-compact {
 
 
 
+.builds-preview-section {
+  padding-top: clamp(24px, 3vw, 40px);
+}
+
+.builds-preview-section .section-header {
+  margin-bottom: 18px;
+}
+
+.contact-section {
+  padding-top: clamp(16px, 2vw, 28px);
+}
+
+.footer-brand {
+  font-weight: 700;
+  color: #0b1220;
+}
+
+.footer-brand:hover {
+  color: #6c3fd4;
+}
+
 .build-icon-block {
   width: 48px;
   height: 48px;
