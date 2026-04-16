@@ -309,7 +309,7 @@ body.navbar-transitioning .navbar.navbar-compact {
 .hero {
   display: grid;
   grid-template-columns: 1.35fr 0.65fr;
-  align-items: start;
+  align-items: center;
   gap: 32px;
 }
 
@@ -326,7 +326,7 @@ body.navbar-transitioning .navbar.navbar-compact {
   color: #6c3fd4;
   text-transform: uppercase;
   letter-spacing: 1.6px;
-  font-size: 0.85rem;
+  font-size: 0.7rem;
   font-weight: 700;
   margin-bottom: 14px;
 }
@@ -339,17 +339,13 @@ body.navbar-transitioning .navbar.navbar-compact {
 }
 
 .hero-headline {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
   margin-bottom: 18px;
-  font-size: var(--h1-fluid);
+  font-size: clamp(1.2rem, 2.5vw, 1.8rem);
+  white-space: nowrap;
 }
 
 .hero-headline span {
-  display: block;
-  white-space: nowrap;
+  display: inline;
 }
 
 .page-hero-content.narrow {
@@ -357,7 +353,7 @@ body.navbar-transitioning .navbar.navbar-compact {
 }
 
 .page-title {
-  font-size: clamp(2rem, 4.4vw, 3.4rem);
+  font-size: clamp(1.2rem, 2.5vw, 1.8rem);
   margin-bottom: 18px;
 }
 
@@ -365,7 +361,7 @@ body.navbar-transitioning .navbar.navbar-compact {
 .page-intro {
   max-width: var(--text-measure);
   color: #334155;
-  font-size: var(--body-fluid);
+  font-size: 0.875rem;
   overflow-wrap: anywhere;
 }
 
@@ -711,7 +707,7 @@ body.navbar-transitioning .navbar.navbar-compact {
 
 .page-title-nowrap {
   white-space: nowrap;
-  font-size: clamp(1rem, 2.6vw, 2.8rem);
+  font-size: clamp(1.2rem, 2.5vw, 1.8rem);
 }
 
 .page-hero-tight {
@@ -719,7 +715,7 @@ body.navbar-transitioning .navbar.navbar-compact {
 }
 
 .builds-section {
-  padding-top: 20px;
+  padding-top: 8px;
   padding-bottom: clamp(24px, 3vw, 36px);
 }
 
@@ -1018,6 +1014,32 @@ body.navbar-transitioning .navbar.navbar-compact {
   padding: 14px 16px;
 }
 
+.newsletter-inline-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px solid #6c3fd4;
+  border-radius: 999px;
+  color: #6c3fd4;
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+
+.newsletter-inline-headline {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0b1220;
+  margin-bottom: 4px;
+}
+
+.newsletter-inline-copy {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  margin-bottom: 10px;
+}
+
 .newsletter-form-inline {
   display: flex;
   flex-direction: row;
@@ -1224,7 +1246,7 @@ a.contact-info-value:hover {
 
 @media (max-width: 900px) {
   .hero-headline {
-    font-size: clamp(0.82rem, 2.6vw, 1.65rem);
+    font-size: clamp(1rem, 2.5vw, 1.8rem);
   }
 
   .hotbar {
@@ -1334,8 +1356,8 @@ a.contact-info-value:hover {
 
 @media (max-width: 600px) {
   .hero-headline {
-    font-size: clamp(1.2rem, 5.3vw, 1.45rem);
-    gap: 4px;
+    font-size: clamp(1rem, 5.3vw, 1.45rem);
+    white-space: normal;
   }
 
   .hotbar {
