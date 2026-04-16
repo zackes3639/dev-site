@@ -939,7 +939,7 @@ body.navbar-transitioning .navbar.navbar-compact {
 
 .post-body-section {
   padding-top: clamp(20px, 3vw, 32px);
-  padding-bottom: clamp(10px, 1.5vw, 16px);
+  padding-bottom: clamp(5px, 0.75vw, 8px);
 }
 
 .post-body {
@@ -963,7 +963,7 @@ body.navbar-transitioning .navbar.navbar-compact {
 
 .newsletter-section {
   background: #ffffff;
-  padding-top: clamp(10px, 1.5vw, 18px);
+  padding-top: clamp(5px, 0.75vw, 9px);
   padding-bottom: clamp(28px, 4vw, 48px);
 }
 
