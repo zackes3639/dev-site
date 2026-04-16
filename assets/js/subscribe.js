@@ -29,6 +29,8 @@ document.querySelectorAll('.newsletter-form, .newsletter-form-inline').forEach(f
         if (!res.ok) throw new Error('Server error: ' + res.status);
         showMessage(form, "You're subscribed. Talk soon.", true);
         form.reset();
+        btn.disabled = false;
+        btn.textContent = originalText;
       })
       .catch(function() {
         showMessage(form, 'Something went wrong. Please try again.', false);
