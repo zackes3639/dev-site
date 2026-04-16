@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blog | Zack Simon</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <header class="navbar">
+    <div class="nav-left">
+      <a class="logo" href="index.html" aria-label="Go to home page">
+        <img src="assets/images/logo.svg" alt="Zack Simon logo" class="logo-image" />
+      </a>
+    </div>
+
+    <div class="hotbar" role="navigation" aria-label="Primary navigation">
+      <a class="hot-btn" href="index.html">About Me</a>
+      <a class="hot-btn" href="work.html">Builds</a>
+      <a class="hot-btn hot-btn-active" href="blog.html">Blog</a>
+      <a class="hot-btn hot-btn-cta" href="contact.html">Contact</a>
+    </div>
+
+    <div class="nav-contact"></div>
+  </header>
+
+  <main>
+    <section class="page-hero">
+      <div class="page-hero-content narrow">
+        <p class="eyebrow">The Build Log</p>
+        <h1 class="page-title">Building in public.</h1>
+        <p class="page-intro">Real decisions. Real mistakes. Real progress.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="post-list">
+        <article class="post-card">
+          <div class="post-card-top">
+            <div>
+              <h2 class="post-title">Why I left consulting to build products</h2>
+              <p class="post-excerpt">After years of advising companies on how to run better systems, I realized I wanted to stop explaining what to build and start building it myself. Here's what pushed me over the edge.</p>
+            </div>
+            <a href="blog/why-i-left-consulting.html" class="post-link">Read →</a>
+          </div>
+          <span class="post-date">April 10, 2026</span>
+        </article>
+
+        <article class="post-card">
+          <div class="post-card-top">
+            <div>
+              <h2 class="post-title">Setting up this site on AWS from scratch</h2>
+              <p class="post-excerpt">A walkthrough of how I took this site from a folder on my laptop to a live deployment on AWS — S3, CloudFront, Route 53, and the mistakes I made along the way.</p>
+            </div>
+            <a href="blog/setting-up-this-site-on-aws.html" class="post-link">Read →</a>
+          </div>
+          <span class="post-date">April 3, 2026</span>
+        </article>
+      </div>
+    </section>
+
+    <section class="section newsletter-section">
+      <div class="newsletter-panel">
+        <p class="eyebrow">The Build Log</p>
+        <h2 class="newsletter-headline">Follow the build in real time.</h2>
+        <p class="newsletter-copy">I write about what I'm actually building — the decisions, the mistakes, and the progress. No fluff.</p>
+        <form class="newsletter-form" onsubmit="return false;">
+          <div class="newsletter-fields">
+            <input type="email" class="newsletter-input" placeholder="Email address" autocomplete="email" />
+            <input type="tel" class="newsletter-input" placeholder="Phone number (for SMS)" autocomplete="tel" />
+          </div>
+          <button type="submit" class="btn primary">Subscribe</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p><a href="https://zacksimon.dev" class="footer-brand">zacksimon.dev</a></p>
+    <div class="footer-links" aria-label="Footer links">
+      <a href="mailto:zacksimon13@gmail.com">Email</a>
+      <a href="https://www.linkedin.com/in/zackary-simon" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="resume.pdf" download>Resume</a>
+      <a href="work.html">Builds</a>
+    </div>
+  </footer>
+
+  <script src="assets/js/script.js"></script>
+</body>
+</html>

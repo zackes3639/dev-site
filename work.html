@@ -15,182 +15,78 @@
     </div>
 
     <div class="hotbar" role="navigation" aria-label="Primary navigation">
-      <a class="hot-btn" href="about.html">About Me</a>
+      <a class="hot-btn" href="index.html">About Me</a>
       <a class="hot-btn hot-btn-active" href="work.html">Builds</a>
-      <a class="hot-btn" href="https://www.linkedin.com/in/zackary-simon" target="_blank" rel="noopener">LinkedIn</a>
+      <a class="hot-btn" href="blog.html">Blog</a>
+      <a class="hot-btn hot-btn-cta" href="contact.html">Contact</a>
     </div>
 
-    <div class="nav-contact">
-      <a class="nav-cta" href="#contact">Contact</a>
-    </div>
+    <div class="nav-contact"></div>
   </header>
 
   <main>
-    <section class="page-hero">
+    <section class="page-hero page-hero-tight">
       <div class="page-hero-content narrow">
         <p class="eyebrow">Builds</p>
-        <h1 class="page-title">Software experiments shaped by cloud, operations, and product thinking.</h1>
-        <p class="page-intro">
-          I’m building in public to turn operator instincts into technical skill, product judgment, and eventually SaaS products that solve real workflow problems.
-        </p>
+        <h1 class="page-title page-title-nowrap">Building products that work — so you don't have to.</h1>
       </div>
     </section>
 
-    <section class="section">
-      <div class="section-header">
-        <p class="section-label">Current Builds</p>
-        <h2>Founder lab experiments in motion</h2>
+    <section class="section builds-section">
+      <p class="section-label" style="margin-bottom: 18px;">Active Builds</p>
+
+      <div class="work-card work-card-featured">
+        <div class="work-card-featured-header">
+          <span class="card-tag">Test Tool #1</span>
+          <span class="build-badge build-badge-live">Live</span>
+        </div>
+        <h3>The Build Log — Public Blog</h3>
+        <p>My first real shipped product. The blog isn't just content — it's infrastructure. Built on a custom pipeline: static HTML on AWS S3, CloudFront for delivery, and a Lambda function that reads markdown source files and generates newsletter digests on demand. Writing here forces me to ship real things, make real decisions, and build the backend systems that support them. It's the foundation everything else connects back to.</p>
+        <a href="blog.html" class="build-link" style="margin-top: 14px; display: inline-block;">Read the Build Log →</a>
       </div>
 
-      <div class="work-grid">
-        <div class="work-card work-card-tall">
-          <span class="card-tag">Public Base</span>
-          <h3>Personal operating site</h3>
-          <p>
-            This site is becoming my public base for projects, product notes, technical experiments, and the story behind what I’m building next.
-          </p>
-        </div>
-
-        <div class="work-card work-card-tall">
+      <div class="work-grid work-grid-two" style="margin-top: 16px;">
+        <div class="work-card">
           <span class="card-tag">Infrastructure</span>
           <h3>Cloud deployment pipeline</h3>
-          <p>
-            I’m mapping the path from local code to shipped software: GitHub, hosting, domains, deployment workflows, and AWS services that support real applications.
-          </p>
+          <p>Mapping the path from local code to shipped software — GitHub, S3, CloudFront, Route 53, and the AWS services that underpin real applications.</p>
+          <div class="build-footer">
+            <span class="build-badge build-badge-inprogress">In Progress</span>
+          </div>
         </div>
 
-        <div class="work-card work-card-tall">
+        <div class="work-card">
           <span class="card-tag">Product</span>
           <h3>SaaS validation lab</h3>
-          <p>
-            I’m exploring product ideas around operational leverage, automation, and workflow clarity so future builds start from real problems instead of vague inspiration.
-          </p>
+          <p>Exploring product ideas around operational leverage and workflow clarity — so future builds start from real problems, not vague inspiration.</p>
+          <div class="build-footer">
+            <span class="build-badge build-badge-inprogress">In Progress</span>
+          </div>
         </div>
       </div>
     </section>
 
-    <section class="section section-dark">
-      <div class="section-header">
-        <p class="section-label">Build Stack</p>
-        <h2>The capabilities I’m turning into shipping muscle</h2>
-      </div>
-
+    <section class="section section-dark builds-section">
+      <p class="section-label" style="margin-bottom: 18px;">Build Stack</p>
       <div class="feature-grid three-col">
         <article class="feature-card">
-          <h3>Interface foundations</h3>
-          <p>
-            HTML, CSS, and JavaScript are the front-end base for designing sharper product surfaces, interaction patterns, and responsive user experiences.
-          </p>
+          <h3>Interface</h3>
+          <p>HTML, CSS, and JavaScript — the front-end base for product surfaces, interaction patterns, and responsive layouts.</p>
         </article>
-
         <article class="feature-card">
           <h3>Shipping workflow</h3>
-          <p>
-            VS Code, Git, GitHub, branches, commits, and deployment habits are becoming the operating system for moving ideas from draft to live.
-          </p>
+          <p>VS Code, Git, GitHub, and deployment habits — the operating system for moving ideas from draft to live.</p>
         </article>
-
         <article class="feature-card">
-          <h3>Cloud product thinking</h3>
-          <p>
-            AWS and deployment architecture are the bridge from static pages to real products with data, services, reliability, and room to scale.
-          </p>
+          <h3>Cloud</h3>
+          <p>AWS — the bridge from static pages to real products with data, services, and room to scale.</p>
         </article>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="section-header">
-        <p class="section-label">Roadmap</p>
-        <h2>How these experiments become a real product direction</h2>
-      </div>
-
-      <div class="timeline">
-        <div class="timeline-item">
-          <span class="timeline-step">01</span>
-          <div>
-            <h3>Refine the founder surface</h3>
-            <p>
-              Make the site feel credible, focused, and alive as a place for product updates, build notes, and public proof of progress.
-            </p>
-          </div>
-        </div>
-
-        <div class="timeline-item">
-          <span class="timeline-step">02</span>
-          <div>
-            <h3>Ship through a real pipeline</h3>
-            <p>
-              Connect the codebase to GitHub and AWS so each iteration can move from local development to a live environment with less friction.
-            </p>
-          </div>
-        </div>
-
-        <div class="timeline-item">
-          <span class="timeline-step">03</span>
-          <div>
-            <h3>Add product behavior</h3>
-            <p>
-              Move beyond static content with forms, APIs, backend services, data flows, and small features that create actual utility.
-            </p>
-          </div>
-        </div>
-
-        <div class="timeline-item">
-          <span class="timeline-step">04</span>
-          <div>
-            <h3>Validate a SaaS wedge</h3>
-            <p>
-              Use the build process to identify a narrow operational problem, test demand, and shape a product people would choose to use.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section section-dark">
-      <div class="section-header">
-        <p class="section-label">Founder Thesis</p>
-        <h2>Useful software starts with operational pain</h2>
-      </div>
-
-      <div class="stats-grid">
-        <div class="stat-card">
-          <span class="stat-value">Reduce Drag</span>
-          <p>The best tools remove coordination, repetition, and ambiguity from work people already need to do.</p>
-        </div>
-        <div class="stat-card">
-          <span class="stat-value">Create Leverage</span>
-          <p>Small teams need software that multiplies output without forcing them into heavier systems.</p>
-        </div>
-        <div class="stat-card">
-          <span class="stat-value">Ship Clearly</span>
-          <p>Product value comes from connecting business context, technical execution, and a specific user problem.</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="section contact-section" id="contact">
-      <div class="contact-panel">
-        <div>
-          <p class="section-label">Let's Connect</p>
-          <h2>Open to cloud, product, and founder conversations.</h2>
-          <p>
-            Reach out if you want to talk SaaS ideas, cloud engineering, product direction, or technical build collaborations.
-          </p>
-        </div>
-
-        <div class="contact-actions" aria-label="Contact links">
-          <a class="contact-action primary-action" href="mailto:zacksimon13@gmail.com">Email Me</a>
-          <a class="contact-action" href="https://www.linkedin.com/in/zackary-simon" target="_blank" rel="noopener">LinkedIn</a>
-          <a class="contact-action" href="resume.pdf" download>Resume PDF</a>
-        </div>
       </div>
     </section>
   </main>
 
   <footer class="footer">
-    <p>Zack Simon.dev</p>
+    <p><a href="https://zacksimon.dev" class="footer-brand">zacksimon.dev</a></p>
     <div class="footer-links" aria-label="Footer links">
       <a href="mailto:zacksimon13@gmail.com">Email</a>
       <a href="https://www.linkedin.com/in/zackary-simon" target="_blank" rel="noopener">LinkedIn</a>
