@@ -37,21 +37,24 @@
       color: #94a3b8;
     }
     .unsub-heading {
-      font-size: 1.4rem;
+      font-size: clamp(1rem, 2.8vw, 1.4rem);
       font-weight: 700;
       color: #0b1220;
       margin: 0 0 10px;
+      white-space: nowrap;
     }
     .unsub-subtext {
-      font-size: 0.9rem;
+      font-size: clamp(0.75rem, 1.8vw, 0.9rem);
       color: #64748b;
       line-height: 1.6;
       margin: 0 0 6px;
+      white-space: nowrap;
     }
     .unsub-email {
-      font-size: 0.85rem;
+      font-size: clamp(0.72rem, 1.6vw, 0.85rem);
       color: #94a3b8;
       margin: 0 0 28px;
+      white-space: nowrap;
     }
     .unsub-back {
       display: inline-block;
@@ -98,8 +101,8 @@
       <div class="unsub-card">
         <div class="unsub-spinner" id="unsub-spinner"></div>
         <div id="unsub-icon" class="unsub-icon" style="display:none;"></div>
-        <h1 class="unsub-heading" id="unsub-heading">Unsubscribing from all communications…</h1>
-        <p class="unsub-subtext" id="unsub-subtext">Removing you from both email and SMS. Please wait a moment.</p>
+        <h1 class="unsub-heading" id="unsub-heading">Unsubscribing…</h1>
+        <p class="unsub-subtext" id="unsub-subtext">Removing you from email and SMS. Please wait.</p>
         <p class="unsub-email" id="unsub-email"></p>
         <a href="index.html" class="unsub-back">← Back to home</a>
       </div>
