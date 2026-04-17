@@ -247,6 +247,24 @@ body {
   color: var(--border);
 }
 
+/* ── Bomb poof ───────────────────────────────────────────────────────────── */
+.bomb-poof {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 20;
+  font-size: clamp(1.4rem, 6vw, 2rem);
+  animation: poofAnim 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes poofAnim {
+  0%   { transform: scale(0.2); opacity: 1; }
+  55%  { transform: scale(1.4); opacity: 1; }
+  100% { transform: scale(2);   opacity: 0; }
+}
+
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 400px) {
   .hud-item { padding: 6px 10px; min-width: 52px; }

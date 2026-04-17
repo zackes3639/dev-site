@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Risk 2048</title>
+  <title>Risk 256</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -11,7 +11,7 @@
 
     <header class="game-header">
       <div class="title-block">
-        <h1 class="game-title">Risk 2048</h1>
+        <h1 class="game-title">Risk 256</h1>
         <p class="game-sub">Reach <strong>256</strong> — avoid the bombs</p>
       </div>
       <div class="hud">
@@ -42,8 +42,8 @@
     <footer class="game-footer">
       <div class="legend">
         <span class="leg leg-num">Numbers merge when equal</span>
-        <span class="leg leg-bomb">💣 destroys tiles ≥ 64</span>
-        <span class="leg leg-immune">✦ newly merged tiles are safe for 1 move</span>
+        <span class="leg leg-bomb">💣 destroys tiles ≥ 64 · smaller tiles survive as 2</span>
+        <span class="leg leg-immune">✦ freshly merged tiles immune for 1 move</span>
       </div>
       <p class="controls-note">Arrow keys &nbsp;·&nbsp; Swipe on mobile</p>
     </footer>
