@@ -1174,6 +1174,7 @@ body.navbar-transitioning .navbar.navbar-compact {
   font-weight: 600;
   color: #0b1220;
   transition: color 0.2s ease;
+  flex: 1;
   min-width: 0;
   overflow-wrap: break-word;
   word-break: break-word;
