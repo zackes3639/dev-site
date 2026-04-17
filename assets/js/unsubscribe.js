@@ -21,6 +21,7 @@ function setStatus(message, isError) {
     icon.style.color = '#16a34a';
     heading.textContent = message;
     subtext.textContent = "No more emails or SMS messages from us.";
+    document.getElementById('unsub-compliance').style.display = 'block';
   }
 }
 
@@ -42,7 +43,7 @@ function setStatus(message, isError) {
   })
     .then(function(res) {
       if (!res.ok) throw new Error('Server error: ' + res.status);
-      setStatus('Unsubscribed from all communications.', false);
+      setStatus('Unsubscribed successfully.', false);
     })
     .catch(function() {
       setStatus('Unsubscribe failed.', true);
