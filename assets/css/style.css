@@ -847,7 +847,7 @@ body.navbar-transitioning .navbar.navbar-compact {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  align-self: center;
+  align-self: flex-start;
   padding: 10px 22px;
   border: none;
   border-radius: 8px;
