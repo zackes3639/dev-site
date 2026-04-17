@@ -3,16 +3,24 @@
 const SIZE        = 4;
 const WIN         = 256;
 const BOMB_CHANCE = 0.10;
+const SLIDE_MS    = 110; // slide animation duration
 
-let grid, score, best, gameOver, won;
+const PAD = 8; // grid padding (matches CSS)
+const GAP = 8; // grid gap (matches CSS)
 
-// ── Cell constructors ─────────────────────────────────────────────────────────
-function num(v)  { return { value: v, immune: false, justMerged: false }; }
-function bomb()  { return { bomb: true }; }
+let grid, score, best, gameOver, won, animating;
+let tileIdCounter = 0;
+let tileEls = new Map(); // id → DOM element
+
+// ── Cells ─────────────────────────────────────────────────────────────────────
+function num(v) { return { id: ++tileIdCounter, value: v, immune: false, justMerged: false }; }
+function bomb() { return { id: ++tileIdCounter, bomb: true }; }
 
 function cp(c) {
   if (!c) return null;
-  return c.bomb ? bomb() : { value: c.value, immune: c.immune, justMerged: c.justMerged };
+  return c.bomb
+    ? { id: c.id, bomb: true }
+    : { id: c.id, value: c.value, immune: c.immune, justMerged: c.justMerged };
 }
 
 function cellsEq(a, b) {
@@ -31,19 +39,42 @@ function gridsEq(a, b) {
   return true;
 }
 
-// ── Init / spawn ──────────────────────────────────────────────────────────────
+// ── Grid metrics ──────────────────────────────────────────────────────────────
+function cellSize() {
+  return (document.getElementById('grid').clientWidth - 2 * PAD - (SIZE - 1) * GAP) / SIZE;
+}
+
+function tilePos(r, c, sz) {
+  return { left: PAD + c * (sz + GAP), top: PAD + r * (sz + GAP) };
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
 function initGame() {
-  grid     = Array.from({ length: SIZE }, () => Array(SIZE).fill(null));
-  score    = 0;
-  gameOver = false;
-  won      = false;
+  grid      = Array.from({ length: SIZE }, () => Array(SIZE).fill(null));
+  score     = 0;
+  gameOver  = false;
+  won       = false;
+  animating = false;
+
+  for (const el of tileEls.values()) el.remove();
+  tileEls.clear();
+
+  // Build static background cells (grid items that size the container)
+  const gridEl = document.getElementById('grid');
+  gridEl.querySelectorAll('.cell-bg').forEach(el => el.remove());
+  for (let i = 0; i < SIZE * SIZE; i++) {
+    const bg = document.createElement('div');
+    bg.className = 'cell-bg';
+    gridEl.appendChild(bg);
+  }
 
   spawn(); spawn();
-  render();
+  render(null);
   updateHUD();
   document.getElementById('overlay').classList.add('hidden');
 }
 
+// ── Spawn ─────────────────────────────────────────────────────────────────────
 function spawn() {
   const empty = [];
   for (let r = 0; r < SIZE; r++)
@@ -52,17 +83,10 @@ function spawn() {
   if (!empty.length) return;
 
   const [r, c] = empty[Math.floor(Math.random() * empty.length)];
-  grid[r][c] = Math.random() < BOMB_CHANCE
-    ? bomb()
-    : num(Math.random() < 0.9 ? 2 : 4);
+  grid[r][c] = Math.random() < BOMB_CHANCE ? bomb() : num(Math.random() < 0.9 ? 2 : 4);
 }
 
-// ── Slide one line left ───────────────────────────────────────────────────────
-// Returns { row: Cell[SIZE], delta: number }
-// Rules:
-//   • Equal number tiles merge (once per tile per move)
-//   • Number tile ≥64 (not immune) + bomb → both destroyed
-//   • Otherwise tiles stack normally; bombs act as walls for small tiles
+// ── Slide ─────────────────────────────────────────────────────────────────────
 function slideLeft(row) {
   const tiles = row.filter(Boolean);
   const out   = [];
@@ -77,20 +101,20 @@ function slideLeft(row) {
     const pB = !!prev.bomb, cB = !!curr.bomb;
 
     if (!pB && !cB && prev.value === curr.value && !prev.justMerged && !curr.justMerged) {
-      // Merge equal number tiles
+      // Merge
       out.pop();
       const merged = num(prev.value * 2);
       merged.justMerged = true;
+      merged._mergedFrom = [prev.id, curr.id]; // tracked for animation
       delta += merged.value;
       out.push(merged);
 
     } else if ((pB && !cB && curr.value >= 64 && !curr.immune) ||
                (!pB && cB && prev.value >= 64 && !prev.immune)) {
-      // Big tile collides with bomb — destroy both
+      // Bomb destroys big tile — both gone
       out.pop();
 
     } else {
-      // Normal stack (bomb acts as wall for small tiles, etc.)
       out.push(cp(curr));
     }
   }
@@ -104,7 +128,6 @@ function slideRight(row) {
   return { row: r.reverse(), delta };
 }
 
-// ── Apply a slide direction to the whole grid ─────────────────────────────────
 function applySlide(g, dir) {
   const horiz = dir === 'left' || dir === 'right';
   const fn    = (dir === 'left' || dir === 'up') ? slideLeft : slideRight;
@@ -122,16 +145,25 @@ function applySlide(g, dir) {
 
 // ── Move ──────────────────────────────────────────────────────────────────────
 function move(dir) {
-  if (gameOver || won) return;
+  if (gameOver || won || animating) return;
 
-  // Promote justMerged → immune for this move, then clear justMerged
+  // Promote justMerged → immune; clear stale merge data
   for (let r = 0; r < SIZE; r++)
     for (let c = 0; c < SIZE; c++) {
       const cell = grid[r][c];
       if (cell && !cell.bomb) {
         cell.immune     = cell.justMerged;
         cell.justMerged = false;
+        delete cell._mergedFrom;
       }
+    }
+
+  // Snapshot {r,c} for every tile before the slide
+  const prevPos = new Map();
+  for (let r = 0; r < SIZE; r++)
+    for (let c = 0; c < SIZE; c++) {
+      const cell = grid[r][c];
+      if (cell) prevPos.set(cell.id, { r, c });
     }
 
   const snap  = copyGrid(grid);
@@ -151,35 +183,37 @@ function move(dir) {
       if (cell && !cell.bomb && cell.value >= WIN) { won = true; break outer; }
     }
 
-  // Lose check (only if not won)
   if (!won && !canMove()) gameOver = true;
 
-  render();
+  animating = true;
+  render(prevPos);
   updateHUD();
 
-  if (won)           showEnd(true);
-  else if (gameOver) showEnd(false);
+  // Release input lock after animations finish
+  setTimeout(() => {
+    animating = false;
+    if (won)           showEnd(true);
+    else if (gameOver) showEnd(false);
+  }, SLIDE_MS + 60);
 }
 
 // ── Lose detection ────────────────────────────────────────────────────────────
 function canMove() {
-  // Empty cell → always can move
   for (let r = 0; r < SIZE; r++)
     for (let c = 0; c < SIZE; c++)
       if (!grid[r][c]) return true;
 
-  // Adjacent pairs that could merge or trigger bomb
   for (let r = 0; r < SIZE; r++) {
     for (let c = 0; c < SIZE; c++) {
       const a = grid[r][c];
       if (!a) continue;
-      for (const [nr, nc] of [[r, c+1], [r+1, c]]) {
+      for (const [nr, nc] of [[r, c + 1], [r + 1, c]]) {
         if (nr >= SIZE || nc >= SIZE) continue;
         const b = grid[nr][nc];
         if (!b) continue;
         if (!a.bomb && !b.bomb && a.value === b.value) return true;
-        if (a.bomb && !b.bomb && b.value >= 64) return true;
-        if (!a.bomb && b.bomb && a.value >= 64) return true;
+        if (a.bomb  && !b.bomb && b.value >= 64) return true;
+        if (!a.bomb && b.bomb  && a.value >= 64) return true;
       }
     }
   }
@@ -187,34 +221,169 @@ function canMove() {
 }
 
 // ── Render ────────────────────────────────────────────────────────────────────
-function render() {
+function render(prevPos) {
   const gridEl = document.getElementById('grid');
-  gridEl.innerHTML = '';
+  const sz     = cellSize();
 
+  // Identify merged tiles and their source IDs
+  const mergeTargets = []; // { cell, r, c }
+  const ghostIds     = new Set();
+  const mergedIds    = new Set();
+
+  for (let r = 0; r < SIZE; r++)
+    for (let c = 0; c < SIZE; c++) {
+      const cell = grid[r][c];
+      if (cell && cell._mergedFrom) {
+        mergeTargets.push({ cell, r, c });
+        mergedIds.add(cell.id);
+        cell._mergedFrom.forEach(id => ghostIds.add(id));
+      }
+    }
+
+  // IDs that belong in the new grid
+  const newIds = new Set();
+  for (let r = 0; r < SIZE; r++)
+    for (let c = 0; c < SIZE; c++) {
+      const cell = grid[r][c];
+      if (cell) newIds.add(cell.id);
+    }
+
+  // Remove tiles not in new grid and not ghost sources
+  for (const [id, el] of tileEls) {
+    if (!newIds.has(id) && !ghostIds.has(id)) {
+      el.remove();
+      tileEls.delete(id);
+    }
+  }
+
+  // --- Step 1: place all NEW-GRID tiles at their final positions ---
   for (let r = 0; r < SIZE; r++) {
     for (let c = 0; c < SIZE; c++) {
       const cell = grid[r][c];
-      const div  = document.createElement('div');
+      if (!cell) continue;
 
-      if (!cell) {
-        div.className = 'cell empty';
+      const pos   = tilePos(r, c, sz);
+      let   el    = tileEls.get(cell.id);
+      const isNew = !el;
 
-      } else if (cell.bomb) {
-        div.className = 'cell bomb';
-        div.textContent = '💣';
-
-      } else {
-        let cls = 'cell tile-' + cell.value;
-        if (cell.immune) cls += ' immune';
-        div.className = cls;
-        div.textContent = cell.value;
+      if (isNew) {
+        el = makeTileEl(gridEl);
+        tileEls.set(cell.id, el);
       }
 
-      gridEl.appendChild(div);
+      applyClass(el, cell);
+      el.style.width  = sz + 'px';
+      el.style.height = sz + 'px';
+      el.style.left   = pos.left + 'px';
+      el.style.top    = pos.top  + 'px';
+      el.style.zIndex = '1';
+
+      // FLIP: animate existing tiles from their old {r,c} to new position
+      if (prevPos && !isNew) {
+        const old = prevPos.get(cell.id);
+        if (old) {
+          const oldP = tilePos(old.r, old.c, sz);
+          const dx   = oldP.left - pos.left;
+          const dy   = oldP.top  - pos.top;
+          if (dx !== 0 || dy !== 0) {
+            el.style.transition = 'none';
+            el.style.transform  = `translate(${dx}px,${dy}px)`;
+            el.offsetHeight; // flush so browser sees the offset
+            el.style.transition = `transform ${SLIDE_MS}ms cubic-bezier(0.25,0.46,0.45,0.94)`;
+            el.style.transform  = 'translate(0,0)';
+          }
+        }
+      }
+
+      // Newly spawned tiles (not in prevPos, not a merge result): scale in after slide
+      if (prevPos && isNew && !mergedIds.has(cell.id)) {
+        el.style.transform  = 'scale(0)';
+        el.style.transition = 'none';
+        setTimeout(() => {
+          el.style.transition = `transform ${Math.round(SLIDE_MS * 0.7)}ms cubic-bezier(0.34,1.56,0.64,1)`;
+          el.style.transform  = 'scale(1)';
+        }, SLIDE_MS + 20);
+      }
+    }
+  }
+
+  // --- Step 2: animate ghost tiles (merge sources) into merge position ---
+  if (prevPos) {
+    for (const { cell, r, c } of mergeTargets) {
+      const mPos = tilePos(r, c, sz);
+
+      // Ghost tiles slide into the merge cell, then disappear
+      for (const srcId of cell._mergedFrom) {
+        const el = tileEls.get(srcId);
+        if (!el) continue;
+
+        const old = prevPos.get(srcId);
+        if (old) {
+          const oldP = tilePos(old.r, old.c, sz);
+          const dx   = oldP.left - mPos.left;
+          const dy   = oldP.top  - mPos.top;
+
+          el.style.left       = mPos.left + 'px';
+          el.style.top        = mPos.top  + 'px';
+          el.style.width      = sz + 'px';
+          el.style.height     = sz + 'px';
+          el.style.zIndex     = '2'; // above the merge result briefly
+          el.style.transition = 'none';
+          el.style.transform  = `translate(${dx}px,${dy}px)`;
+          el.offsetHeight;
+          el.style.transition = `transform ${SLIDE_MS}ms cubic-bezier(0.25,0.46,0.45,0.94)`;
+          el.style.transform  = 'translate(0,0)';
+        }
+
+        // Remove ghost after its slide finishes
+        setTimeout(() => {
+          el.remove();
+          tileEls.delete(srcId);
+        }, SLIDE_MS + 10);
+      }
+
+      // Merged tile pops after the ghosts arrive
+      const mergedEl = tileEls.get(cell.id);
+      if (mergedEl) {
+        mergedEl.style.zIndex = '3';
+        setTimeout(() => {
+          mergedEl.style.transition = 'none';
+          mergedEl.style.transform  = 'scale(1.18)';
+          mergedEl.offsetHeight;
+          mergedEl.style.transition = 'transform 0.1s ease-out';
+          mergedEl.style.transform  = 'scale(1)';
+        }, SLIDE_MS);
+      }
+    }
+  } else {
+    // No animation (init): ensure all tiles are at scale 1 with no transition
+    for (const el of tileEls.values()) {
+      el.style.transition = 'none';
+      el.style.transform  = 'scale(1)';
     }
   }
 }
 
+function makeTileEl(parent) {
+  const el = document.createElement('div');
+  el.style.position   = 'absolute';
+  el.style.willChange = 'transform';
+  el.style.zIndex     = '1';
+  parent.appendChild(el);
+  return el;
+}
+
+function applyClass(el, cell) {
+  if (cell.bomb) {
+    el.className   = 'cell bomb';
+    el.textContent = '💣';
+  } else {
+    el.className   = 'cell tile-' + cell.value + (cell.immune ? ' immune' : '');
+    el.textContent = cell.value;
+  }
+}
+
+// ── HUD / End ─────────────────────────────────────────────────────────────────
 function updateHUD() {
   document.getElementById('score').textContent = score;
   document.getElementById('best').textContent  = best;
@@ -228,6 +397,25 @@ function showEnd(isWin) {
   document.getElementById('overlay').classList.remove('hidden');
 }
 
+// ── Resize: reposition tiles without animation ────────────────────────────────
+window.addEventListener('resize', () => {
+  const sz = cellSize();
+  for (let r = 0; r < SIZE; r++)
+    for (let c = 0; c < SIZE; c++) {
+      const cell = grid[r][c];
+      if (!cell) continue;
+      const el = tileEls.get(cell.id);
+      if (!el) continue;
+      const pos = tilePos(r, c, sz);
+      el.style.transition = 'none';
+      el.style.transform  = 'translate(0,0)';
+      el.style.left       = pos.left + 'px';
+      el.style.top        = pos.top  + 'px';
+      el.style.width      = sz + 'px';
+      el.style.height     = sz + 'px';
+    }
+});
+
 // ── Input: keyboard ───────────────────────────────────────────────────────────
 const KEY_MAP = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down' };
 
@@ -235,7 +423,7 @@ document.addEventListener('keydown', e => {
   if (KEY_MAP[e.key]) { e.preventDefault(); move(KEY_MAP[e.key]); }
 });
 
-// ── Input: touch/swipe ────────────────────────────────────────────────────────
+// ── Input: swipe ──────────────────────────────────────────────────────────────
 let tx = null, ty = null;
 
 document.addEventListener('touchstart', e => {
@@ -252,7 +440,7 @@ document.addEventListener('touchend', e => {
     move(ax > ay ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'));
   }
   tx = ty = null;
-});
+}, { passive: true });
 
 // ── Bootstrap ─────────────────────────────────────────────────────────────────
 best = 0;

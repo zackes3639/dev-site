@@ -116,9 +116,19 @@ body {
   padding: var(--gap);
   border-radius: 14px;
   aspect-ratio: 1;
+  position: relative; /* tiles are absolute children */
 }
 
 /* ── Cells ───────────────────────────────────────────────────────────────── */
+
+/* Static background cells — grid items that size the container */
+.cell-bg {
+  border-radius: 8px;
+  background: rgba(255,255,255,0.04);
+  aspect-ratio: 1;
+}
+
+/* Tile elements — absolutely positioned, animated via JS */
 .cell {
   border-radius: 8px;
   display: flex;
@@ -127,12 +137,7 @@ body {
   font-weight: 900;
   font-size: clamp(1rem, 5vw, 1.55rem);
   line-height: 1;
-  transition: background 0.08s ease;
   user-select: none;
-}
-
-.cell.empty {
-  background: rgba(255,255,255,0.04);
 }
 
 /* Number tiles — warm palette climbing by value */
