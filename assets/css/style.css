@@ -24,9 +24,6 @@ body {
   background: #ffffff;
   color: #0b1220;
   line-height: 1.6;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
 }
 
 body::before {
@@ -59,7 +56,6 @@ body.navbar-transitioning::before {
 main {
   overflow-x: clip;
   transition: opacity 0.78s cubic-bezier(0.22, 1, 0.36, 1);
-  flex: 1;
 }
 
 body.navbar-transitioning main {
@@ -782,8 +778,11 @@ body.navbar-transitioning .navbar.navbar-compact {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 20px 0;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 24px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.035);
 }
 
 .post-category {
