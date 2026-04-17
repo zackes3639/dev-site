@@ -16,6 +16,12 @@ document.querySelectorAll('.newsletter-form, .newsletter-form-inline').forEach(f
       return;
     }
 
+    var consentCheck = form.querySelector('.newsletter-consent-check');
+    if (consentCheck && !consentCheck.checked) {
+      showMessage(form, 'Please agree to the Privacy Policy & Terms to subscribe.', false);
+      return;
+    }
+
     btn.disabled = true;
     var originalText = btn.textContent;
     btn.textContent = 'Subscribing…';

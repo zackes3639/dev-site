@@ -1035,6 +1035,29 @@ body.navbar-transitioning .navbar.navbar-compact {
   margin-bottom: 6px;
 }
 
+.newsletter-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  font-size: 0.78rem;
+  color: #64748b;
+  margin-top: 8px;
+  line-height: 1.4;
+}
+
+.newsletter-consent input[type="checkbox"] {
+  margin-top: 2px;
+  flex-shrink: 0;
+  accent-color: #6c3fd4;
+  cursor: pointer;
+}
+
+.newsletter-consent a {
+  color: #6c3fd4;
+  text-decoration: underline;
+}
+
 .newsletter-inline-headline {
   font-size: 0.95rem;
   font-weight: 700;
