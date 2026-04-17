@@ -755,7 +755,7 @@ body.navbar-transitioning .navbar.navbar-compact {
 }
 
 .page-hero-blog {
-  padding-bottom: clamp(16px, 2vw, 24px);
+  padding-bottom: 8px;
 }
 
 .posts-section {
