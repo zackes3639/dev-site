@@ -14,7 +14,7 @@ function setStatus(message, isError) {
     icon.style.background = '#fee2e2';
     icon.style.color = '#e53935';
     heading.textContent = message;
-    subtext.textContent = 'If you need help, contact zacksimon13@gmail.com.';
+    subtext.textContent = 'If you need help, contact support@zacksimon.dev';
   } else {
     icon.textContent = '✓';
     icon.style.background = '#dcfce7';
@@ -42,7 +42,7 @@ function setStatus(message, isError) {
   })
     .then(function(res) {
       if (!res.ok) throw new Error('Server error: ' + res.status);
-      setStatus('Unsubscribed successfully.', false);
+      setStatus('Unsubscribed from all communications.', false);
     })
     .catch(function() {
       setStatus('Unsubscribe failed.', true);
