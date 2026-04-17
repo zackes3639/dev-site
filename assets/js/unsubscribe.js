@@ -20,7 +20,7 @@ function setStatus(message, isError) {
     icon.style.background = '#dcfce7';
     icon.style.color = '#16a34a';
     heading.textContent = message;
-    subtext.textContent = "You won't receive any more emails or SMS messages from us.";
+    subtext.textContent = "No more emails or SMS messages from us.";
   }
 }
 
@@ -33,7 +33,7 @@ function setStatus(message, isError) {
     return;
   }
 
-  document.getElementById('unsub-email').textContent = email;
+  document.getElementById('unsub-email').textContent = 'Unsubscribed: ' + email;
 
   fetch(UNSUBSCRIBE_URL, {
     method: 'POST',
