@@ -1,0 +1,49 @@
+var CREATE_POST_URL = 'https://33o1s2l689.execute-api.us-east-2.amazonaws.com/create-post';
+
+document.getElementById('admin-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  var password  = document.getElementById('admin-password').value.trim();
+  var title     = document.getElementById('post-title').value.trim();
+  var summary   = document.getElementById('post-summary').value.trim();
+  var content   = document.getElementById('post-content').value.trim();
+  var published = document.getElementById('post-published').checked;
+  var btn       = document.getElementById('admin-submit');
+
+  if (!password) { showMsg('Enter your admin password.', false); return; }
+  if (!title)    { showMsg('Title is required.', false); return; }
+  if (!summary)  { showMsg('Summary is required.', false); return; }
+  if (!content)  { showMsg('Content is required.', false); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Publishing…';
+
+  fetch(CREATE_POST_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password: password, title: title, summary: summary, content: content, published: published })
+  })
+    .then(function(res) {
+      if (res.status === 403) throw new Error('Incorrect password.');
+      if (!res.ok) throw new Error('Server error (' + res.status + '). Try again.');
+      return res.json();
+    })
+    .then(function() {
+      showMsg('Post created successfully.', true);
+      document.getElementById('admin-form').reset();
+      btn.disabled = false;
+      btn.textContent = 'Publish Post';
+    })
+    .catch(function(err) {
+      showMsg(err.message || 'Something went wrong.', false);
+      btn.disabled = false;
+      btn.textContent = 'Publish Post';
+    });
+});
+
+function showMsg(text, success) {
+  var msg = document.getElementById('admin-msg');
+  msg.textContent = text;
+  msg.style.color = success ? '#16a34a' : '#e53935';
+  msg.style.display = 'block';
+}
