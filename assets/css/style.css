@@ -774,6 +774,12 @@ body.navbar-transitioning .navbar.navbar-compact {
   gap: 52px;
 }
 
+#blog-posts {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
 .post-card {
   display: flex;
   flex-direction: column;
