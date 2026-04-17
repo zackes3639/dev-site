@@ -1069,10 +1069,17 @@ body.navbar-transitioning .navbar.navbar-compact {
 }
 
 .newsletter-inline-headline {
-  font-size: 0.95rem;
+  font-size: clamp(1.1rem, 1.6vw, 1.35rem);
   font-weight: 700;
   color: #0b1220;
   margin-bottom: 4px;
+}
+
+.recent-posts-heading {
+  font-size: clamp(1rem, 1.4vw, 1.2rem);
+  font-weight: 700;
+  color: #0b1220;
+  letter-spacing: -0.2px;
 }
 
 .newsletter-inline-copy {
