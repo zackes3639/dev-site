@@ -20,6 +20,9 @@
       padding: clamp(32px, 5vw, 56px);
       max-width: 480px;
       width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       text-align: center;
       overflow: hidden;
       box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
@@ -42,7 +45,9 @@
       font-weight: 700;
       color: #0b1220;
       margin: 0 auto 10px;
-      white-space: nowrap;
+      max-width: 28ch;
+      white-space: normal;
+      text-wrap: balance;
       text-align: center;
       width: 100%;
       display: block;
@@ -52,7 +57,8 @@
       color: #64748b;
       line-height: 1.6;
       margin: 0 0 6px;
-      white-space: nowrap;
+      max-width: 36ch;
+      white-space: normal;
       text-align: center;
       width: 100%;
     }
@@ -60,7 +66,9 @@
       font-size: clamp(0.72rem, 1.6vw, 0.85rem);
       color: #94a3b8;
       margin: 0 0 28px;
-      white-space: nowrap;
+      max-width: 36ch;
+      white-space: normal;
+      overflow-wrap: anywhere;
       text-align: center;
       width: 100%;
     }
@@ -109,7 +117,7 @@
       <div class="unsub-card">
         <div class="unsub-spinner" id="unsub-spinner"></div>
         <div id="unsub-icon" class="unsub-icon" style="display:none;"></div>
-        <h1 class="unsub-heading" id="unsub-heading" style="text-align:center;">Unsubscribing…</h1>
+        <h1 class="unsub-heading" id="unsub-heading">Unsubscribing…</h1>
         <p class="unsub-subtext" id="unsub-subtext">Removing you from email and SMS. Please wait.</p>
         <p class="unsub-email" id="unsub-email"></p>
         <a href="index.html" class="unsub-back">← Back to home</a>
