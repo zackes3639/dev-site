@@ -1165,6 +1165,8 @@ body.navbar-transitioning .navbar.navbar-compact {
   text-transform: uppercase;
   letter-spacing: 1px;
   color: #94a3b8;
+  flex-shrink: 0;
+  margin-right: 12px;
 }
 
 .contact-info-value {
@@ -1172,6 +1174,10 @@ body.navbar-transitioning .navbar.navbar-compact {
   font-weight: 600;
   color: #0b1220;
   transition: color 0.2s ease;
+  min-width: 0;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  text-align: right;
 }
 
 a.contact-info-value:hover {
