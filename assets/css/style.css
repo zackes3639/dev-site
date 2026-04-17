@@ -1273,6 +1273,17 @@ a.contact-info-value:hover {
     max-width: 240px;
   }
 
+  .contact-info-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .contact-info-value {
+    text-align: left;
+    font-size: 0.82rem;
+  }
+
   .about-grid,
   .work-grid,
   .feature-grid.three-col,
