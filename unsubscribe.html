@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Unsubscribe | Zack Simon</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <style>
+    .unsub-wrapper {
+      min-height: calc(100vh - 120px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 24px;
+    }
+    .unsub-card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: clamp(32px, 5vw, 56px);
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    }
+    .unsub-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin: 0 auto 20px;
+      background: #e5e7eb;
+      color: #94a3b8;
+    }
+    .unsub-heading {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #0b1220;
+      margin: 0 0 10px;
+    }
+    .unsub-subtext {
+      font-size: 0.9rem;
+      color: #64748b;
+      line-height: 1.6;
+      margin: 0 0 6px;
+    }
+    .unsub-email {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin: 0 0 28px;
+    }
+    .unsub-back {
+      display: inline-block;
+      margin-top: 16px;
+      font-size: 0.85rem;
+      color: #6c3fd4;
+      text-decoration: none;
+    }
+    .unsub-back:hover {
+      text-decoration: underline;
+    }
+    .unsub-spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid #e5e7eb;
+      border-top-color: #6c3fd4;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <header class="navbar">
+    <div class="nav-left">
+      <a class="logo" href="index.html" aria-label="Go to home page">
+        <img src="assets/images/logo.svg" alt="Zack Simon logo" class="logo-image" />
+      </a>
+    </div>
+    <div class="hotbar" role="navigation" aria-label="Primary navigation">
+      <a class="hot-btn" href="index.html">About Me</a>
+      <a class="hot-btn" href="work.html">Builds</a>
+      <a class="hot-btn" href="blog.html">Blog</a>
+      <a class="hot-btn" href="contact.html">Contact</a>
+    </div>
+    <div class="nav-contact"></div>
+  </header>
+
+  <main>
+    <div class="unsub-wrapper">
+      <div class="unsub-card">
+        <div class="unsub-spinner" id="unsub-spinner"></div>
+        <div id="unsub-icon" class="unsub-icon" style="display:none;"></div>
+        <h1 class="unsub-heading" id="unsub-heading">Unsubscribing…</h1>
+        <p class="unsub-subtext" id="unsub-subtext">Please wait a moment.</p>
+        <p class="unsub-email" id="unsub-email"></p>
+        <a href="index.html" class="unsub-back">← Back to home</a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p><a href="https://zacksimon.dev" class="footer-brand">zacksimon.dev</a></p>
+    <div class="footer-links" aria-label="Footer links">
+      <a href="mailto:zacksimon13@gmail.com">Email</a>
+      <a href="https://www.linkedin.com/in/zackary-simon" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="resume.pdf" download>Resume</a>
+      <a href="work.html">Builds</a>
+      <a href="privacy-terms.html">Privacy &amp; Terms</a>
+    </div>
+  </footer>
+
+  <script src="assets/js/script.js"></script>
+  <script src="assets/js/unsubscribe.js"></script>
+</body>
+</html>
