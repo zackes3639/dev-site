@@ -41,16 +41,14 @@
       color: #94a3b8;
     }
     .unsub-card .unsub-heading {
-      font-size: clamp(1rem, 2.8vw, 1.4rem);
+      font-size: clamp(0.92rem, 2.1vw, 1.4rem);
       font-weight: 700;
       color: #0b1220;
       margin: 0 auto 10px;
-      max-width: 28ch;
-      white-space: normal;
-      text-wrap: balance;
+      max-width: 100%;
+      white-space: nowrap;
       text-align: center;
-      width: 100%;
-      display: block;
+      display: inline-block;
     }
     .unsub-subtext {
       font-size: clamp(0.75rem, 1.8vw, 0.9rem);
@@ -71,6 +69,14 @@
       overflow-wrap: anywhere;
       text-align: center;
       width: 100%;
+    }
+    @media (max-width: 520px) {
+      .unsub-card {
+        padding: 24px 18px;
+      }
+      .unsub-card .unsub-heading {
+        font-size: 0.84rem;
+      }
     }
     .unsub-back {
       display: inline-block;
