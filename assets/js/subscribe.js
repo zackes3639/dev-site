@@ -9,6 +9,23 @@ document.querySelectorAll('select[name="age"]').forEach(function(sel) {
   }
 });
 
+document.querySelectorAll('input[type="tel"]').forEach(function(input) {
+  input.addEventListener('input', function(e) {
+    var digits = input.value.replace(/\D/g, '').slice(0, 10);
+    var formatted = '';
+    if (digits.length === 0) {
+      formatted = '';
+    } else if (digits.length <= 3) {
+      formatted = '(' + digits;
+    } else if (digits.length <= 6) {
+      formatted = '(' + digits.slice(0, 3) + ') ' + digits.slice(3);
+    } else {
+      formatted = '(' + digits.slice(0, 3) + ') ' + digits.slice(3, 6) + '-' + digits.slice(6);
+    }
+    input.value = formatted;
+  });
+});
+
 document.querySelectorAll('.newsletter-form, .newsletter-form-inline').forEach(function(form) {
   form.addEventListener('submit', function(e) {
     e.preventDefault();
