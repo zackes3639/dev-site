@@ -259,6 +259,18 @@ body.navbar-transitioning .navbar.navbar-compact {
   border-width: 0;
 }
 
+.nav-admin {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #64748b;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+
+.nav-admin:hover {
+  color: #0b1220;
+}
+
 .nav-cta {
   display: inline-flex;
   align-items: center;
