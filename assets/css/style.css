@@ -777,7 +777,7 @@ body.navbar-transitioning .navbar.navbar-compact {
 #blog-posts {
   display: flex;
   flex-direction: column;
-  gap: 40px;
+  gap: 20px;
 }
 
 .post-card {
