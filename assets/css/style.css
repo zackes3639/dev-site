@@ -771,7 +771,7 @@ body.navbar-transitioning .navbar.navbar-compact {
 .post-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 32px;
 }
 
 .post-card {
@@ -898,6 +898,10 @@ body.navbar-transitioning .navbar.navbar-compact {
   color: #6c3fd4;
   white-space: nowrap;
   flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
   transition: opacity 0.2s ease;
 }
 
