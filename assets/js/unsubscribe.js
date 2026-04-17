@@ -42,7 +42,7 @@ function setStatus(message, isError) {
   })
     .then(function(res) {
       if (!res.ok) throw new Error('Server error: ' + res.status);
-      setStatus('You have been unsubscribed.', false);
+      setStatus('You have been unsubscribed from all communications.', false);
     })
     .catch(function() {
       setStatus('Something went wrong. Please try again or contact us directly.', true);
