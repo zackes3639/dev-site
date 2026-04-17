@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>60 Second Strategist</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="game-wrapper">
+    <header class="game-header">
+      <h1 class="game-title">60 Second Strategist</h1>
+      <div class="hud">
+        <div class="hud-item">
+          <span class="hud-label">Score</span>
+          <span class="hud-value" id="score">0</span>
+        </div>
+        <div class="hud-item hud-timer">
+          <span class="hud-label">Time</span>
+          <span class="hud-value" id="timer">60</span>
+        </div>
+        <div class="hud-item">
+          <span class="hud-label">Multiplier</span>
+          <span class="hud-value" id="multiplier">x1</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="status-bar">
+      <span id="status-msg">Click a tile to score. Use multipliers wisely.</span>
+    </div>
+
+    <div id="grid" class="grid"></div>
+
+    <div id="overlay" class="overlay">
+      <div class="overlay-card" id="start-card">
+        <h2>Ready?</h2>
+        <p>Click tiles to score points before time runs out.<br>Each tile type has a different effect.</p>
+        <div class="legend">
+          <span class="legend-item gain">Gain +10</span>
+          <span class="legend-item multiplier">2x Next</span>
+          <span class="legend-item risk">Risk ±</span>
+          <span class="legend-item timer-tile">+3s</span>
+          <span class="legend-item block">Block</span>
+        </div>
+        <button class="btn-primary" id="start-btn">Start Game</button>
+      </div>
+
+      <div class="overlay-card hidden" id="end-card">
+        <h2>Time's Up!</h2>
+        <p class="final-score-label">Final Score</p>
+        <p class="final-score" id="final-score">0</p>
+        <p id="final-msg" class="final-msg"></p>
+        <button class="btn-primary" id="replay-btn">Play Again</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
