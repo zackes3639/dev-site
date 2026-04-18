@@ -1434,8 +1434,8 @@ a.contact-info-value:hover {
 
 @media (max-width: 600px) {
   .hero-headline {
-    font-size: clamp(1rem, 5.3vw, 1.45rem);
-    white-space: normal;
+    font-size: clamp(0.55rem, 3.1vw, 1.45rem);
+    white-space: nowrap;
   }
 
   .hotbar {
