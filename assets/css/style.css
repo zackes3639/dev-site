@@ -2469,20 +2469,25 @@ a.contact-info-value:hover {
   border-radius: 10px;
   padding: 22px;
   background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .v2-rest-card .v2-eyebrow {
   color: #94a3b8;
   margin-bottom: 12px;
+  text-align: center;
 }
 
 .v2-rest-row {
   display: block;
-  padding: 9px 0;
+  padding: 14px 0;
   border-bottom: 1px dashed #e5e7eb;
-  font-size: 0.9rem;
+  font-size: 1.05rem;
   color: #0b1220;
   font-weight: 600;
+  text-align: center;
 }
 
 .v2-rest-row:last-child {
