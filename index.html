@@ -25,33 +25,65 @@
   </header>
 
   <main>
-    <section class="hero hero-home hero-home-clean">
-      <div class="hero-text-side" style="align-self: center;">
-        <p class="eyebrow">Architect | Builder | Founder</p>
+    <section class="v2-home-hero">
+      <div class="v2-portrait-card">
+        <img src="assets/images/headshot.jpg" alt="Profile photo of Zack Simon" />
+        <span class="v2-portrait-name-tag">Zack Simon</span>
+      </div>
+
+      <div class="v2-hero-text">
+        <p class="v2-eyebrow">architect · builder · founder</p>
 
         <h1 class="hero-headline">
           <span>Building systems that work —</span>
           <span>so you don't have to.</span>
         </h1>
 
-        <p class="hero-description">
+        <p class="v2-hero-desc">
           Consultant turned engineer building SaaS products that make systems, workflows, and teams easier to run. My background is in consulting, cloud delivery, and product thinking — now I'm turning that into real software.
         </p>
 
-        <div class="hero-buttons">
-          <a href="work.html" class="btn primary">See My Builds</a>
-          <a href="blog/why-i-left-consulting.html" class="btn secondary">Read the Blog</a>
-          <a href="blog.html" class="btn secondary">Get the Build Log</a>
+        <div class="v2-cta-row">
+          <a href="work.html" class="btn primary">See my builds →</a>
+          <a href="blog.html" class="btn secondary">Read the Build Log</a>
+          <a href="blog.html#newsletter" class="v2-btn-ghost">Subscribe</a>
         </div>
       </div>
+    </section>
 
-      <div class="hero-image-side">
-        <div class="profile-card profile-card-simple">
-          <img src="assets/images/headshot.jpg" alt="Profile photo of Zack Simon" class="profile-image" />
-          <div class="profile-name-only">
-            <h3>Zack Simon</h3>
-          </div>
+    <div class="v2-trip-grid-wrap">
+      <p class="v2-section-tag">/ what i do</p>
+      <div class="v2-triptych">
+        <div class="v2-trip-card">
+          <h3>Architect</h3>
+          <p>Cloud-first systems design — clean contracts between services, sensible data flow, things that stay small as they scale.</p>
         </div>
+        <div class="v2-trip-card">
+          <h3>Builder</h3>
+          <p>Hand-rolled HTML/CSS/JS, AWS pipelines, Lambda glue — shipping real surfaces, not slideware.</p>
+        </div>
+        <div class="v2-trip-card">
+          <h3>Founder-track</h3>
+          <p>Probing SaaS problems worth solving — validating with real users before writing the serious code.</p>
+        </div>
+      </div>
+    </div>
+
+    <section class="v2-rail-grid">
+      <div class="v2-featured-build">
+        <p class="v2-eyebrow">latest build · live</p>
+        <h3>The Build Log — Public Blog</h3>
+        <p>My first real shipped product. Static HTML on S3, CloudFront in front, a Lambda that reads markdown source files and generates newsletter digests on demand. Writing here forces me to ship real things and build the backend systems that support them.</p>
+        <a href="blog.html" class="build-link">Read the log →</a>
+      </div>
+
+      <div class="v2-subscribe-teaser">
+        <p class="v2-eyebrow">subscribe</p>
+        <h3>Get the Build Log.</h3>
+        <p>Weekly email + SMS. No fluff.</p>
+        <input type="email" class="v2-teaser-input" placeholder="Email address" aria-label="Email address (teaser — subscribe on blog page)" />
+        <a href="blog.html#newsletter" class="v2-teaser-btn">Subscribe</a>
+        <p class="v2-fine-print">free · unsubscribe any time</p>
       </div>
     </section>
   </main>

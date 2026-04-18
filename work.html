@@ -25,63 +25,111 @@
   </header>
 
   <main>
-    <section class="page-hero page-hero-tight">
-      <div class="page-hero-content narrow">
-        <p class="eyebrow">Builds</p>
-        <h1 class="page-title page-title-nowrap">Building products that work — so you don't have to.</h1>
+    <section class="v2-board-header">
+      <div>
+        <p class="v2-section-tag">/ builds · board</p>
+        <h1>The board is the portfolio.</h1>
+        <p>What's shipped, what's cooking, what's a scribble. Updated when it changes.</p>
+      </div>
+      <div class="v2-sticky-note">honesty &gt; polish</div>
+    </section>
+
+    <section class="v2-kanban">
+      <div class="v2-kanban-col">
+        <div class="v2-kanban-col-head">
+          <h2>Live</h2>
+          <span class="v2-count-badge">3</span>
+        </div>
+
+        <article class="v2-kanban-card">
+          <span class="v2-badge-live"><span class="v2-status-dot"></span>Live</span>
+          <h3>The Build Log</h3>
+          <div class="v2-tag-row">
+            <span class="v2-tag-chip">aws</span>
+            <span class="v2-tag-chip">lambda</span>
+            <span class="v2-tag-chip">md</span>
+          </div>
+          <a href="blog.html" class="build-link">Read →</a>
+        </article>
+
+        <article class="v2-kanban-card">
+          <span class="v2-badge-live"><span class="v2-status-dot"></span>Live</span>
+          <h3>Color Chain</h3>
+          <div class="v2-tag-row">
+            <span class="v2-tag-chip">js</span>
+            <span class="v2-tag-chip">canvas</span>
+          </div>
+        </article>
+
+        <article class="v2-kanban-card v2-kanban-card-dim">
+          <span class="v2-badge-live"><span class="v2-status-dot"></span>Live</span>
+          <h3>zacksimon.dev v1</h3>
+          <div class="v2-tag-row">
+            <span class="v2-tag-chip">html</span>
+            <span class="v2-tag-chip">css</span>
+          </div>
+        </article>
+      </div>
+
+      <div class="v2-kanban-col">
+        <div class="v2-kanban-col-head">
+          <h2>In Progress</h2>
+          <span class="v2-count-badge">2</span>
+        </div>
+
+        <article class="v2-kanban-card">
+          <span class="v2-badge-wip">In Progress</span>
+          <h3>SaaS Validation Lab</h3>
+          <p style="color:#475569; font-size:0.85rem;">Probing operational-leverage problems worth solving.</p>
+          <div class="v2-progress-bar" aria-label="60% complete">
+            <div class="v2-progress-fill" style="width: 60%;"></div>
+          </div>
+        </article>
+
+        <article class="v2-kanban-card v2-kanban-card-dashed">
+          <span class="v2-badge-wip">In Progress</span>
+          <h3>Build Log v2 (SMS digest + tags)</h3>
+          <div class="v2-tag-row">
+            <span class="v2-tag-chip">sms</span>
+            <span class="v2-tag-chip">tags</span>
+          </div>
+        </article>
+      </div>
+
+      <div class="v2-kanban-col">
+        <div class="v2-kanban-col-head">
+          <h2>Ideas</h2>
+          <span class="v2-count-badge">4</span>
+        </div>
+
+        <article class="v2-kanban-card v2-kanban-card-dashed">
+          <span class="v2-badge-idea">Idea</span>
+          <h3>Workflow CRM</h3>
+        </article>
+
+        <article class="v2-kanban-card v2-kanban-card-dashed">
+          <span class="v2-badge-idea">Idea</span>
+          <h3>Ops dashboard</h3>
+        </article>
+
+        <article class="v2-kanban-card v2-kanban-card-dashed">
+          <span class="v2-badge-idea">Idea</span>
+          <h3>Dev time tracker</h3>
+        </article>
+
+        <article class="v2-kanban-card v2-kanban-card-dashed">
+          <span class="v2-badge-idea">Idea</span>
+          <h3>Weekly review tool</h3>
+        </article>
+
+        <span class="v2-add-scribble">+ add a scribble</span>
       </div>
     </section>
 
-    <section class="section builds-section">
-      <p class="section-label" style="margin-bottom: 18px;">Active Builds</p>
-
-      <div class="work-card work-card-featured">
-        <div class="work-card-featured-header">
-          <span class="card-tag">Test Tool #1</span>
-          <span class="build-badge build-badge-live">Live</span>
-        </div>
-        <h3>The Build Log — Public Blog</h3>
-        <p>My first real shipped product. The blog isn't just content — it's infrastructure. Built on a custom pipeline: static HTML on AWS S3, CloudFront for delivery, and a Lambda function that reads markdown source files and generates newsletter digests on demand. Writing here forces me to ship real things, make real decisions, and build the backend systems that support them. It's the foundation everything else connects back to.</p>
-        <a href="blog.html" class="build-link" style="margin-top: 14px; display: inline-block;">Read the Build Log →</a>
-      </div>
-
-      <div class="work-grid work-grid-two" style="margin-top: 16px;">
-        <div class="work-card">
-          <span class="card-tag">Game</span>
-          <h3>Neon Wave</h3>
-          <p>A Galaga-inspired wave shooter with a neon geometric aesthetic. Pilot a glowing triangle, blast formations of magenta polygons, rack up combos. Procedural Web Audio, touch support, localStorage high scores — single HTML file, zero dependencies.</p>
-          <div class="build-footer">
-            <span class="build-badge build-badge-live">Live</span>
-            <a href="game/index.html" class="build-link">Try it now →</a>
-          </div>
-        </div>
-
-        <div class="work-card">
-          <span class="card-tag">Product</span>
-          <h3>SaaS validation lab</h3>
-          <p>Exploring product ideas around operational leverage and workflow clarity — so future builds start from real problems, not vague inspiration.</p>
-          <div class="build-footer">
-            <span class="build-badge build-badge-inprogress">In Progress</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section section-dark builds-section">
-      <p class="section-label" style="margin-bottom: 18px;">Tech Stack</p>
-      <div class="feature-grid three-col">
-        <article class="feature-card">
-          <h3>Interface</h3>
-          <p>HTML, CSS, and JavaScript — the front-end base for product surfaces, interaction patterns, and responsive layouts.</p>
-        </article>
-        <article class="feature-card">
-          <h3>Shipping workflow</h3>
-          <p>VS Code, Git, GitHub, and deployment habits — the operating system for moving ideas from draft to live.</p>
-        </article>
-        <article class="feature-card">
-          <h3>Cloud</h3>
-          <p>AWS — the bridge from static pages to real products with data, services, and room to scale.</p>
-        </article>
+    <section class="v2-dark-cta-bar">
+      <div class="v2-dark-cta-inner">
+        <p>Want to move something? Subscribe.</p>
+        <a href="blog.html#newsletter" class="v2-dark-cta-btn">Get the Build Log →</a>
       </div>
     </section>
   </main>
