@@ -1,10 +1,11 @@
-var CREATE_POST_URL = 'https://33o1s2l689.execute-api.us-east-2.amazonaws.com/create-post';
+var CREATE_POST_URL = 'https://tblw8hlwu0.execute-api.us-east-2.amazonaws.com/posts';
 
 document.getElementById('admin-form').addEventListener('submit', function(e) {
   e.preventDefault();
 
   var password  = document.getElementById('admin-password').value.trim();
   var title     = document.getElementById('post-title').value.trim();
+  var slug      = document.getElementById('post-slug').value.trim();
   var summary   = document.getElementById('post-summary').value.trim();
   var content   = document.getElementById('post-content').value.trim();
   var published = document.getElementById('post-published').checked;
@@ -18,18 +19,22 @@ document.getElementById('admin-form').addEventListener('submit', function(e) {
   btn.disabled = true;
   btn.textContent = 'Publishing…';
 
+  var payload = { password: password, title: title, summary: summary, content: content, published: published };
+  if (slug) payload.slug = slug;
+
   fetch(CREATE_POST_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ password: password, title: title, summary: summary, content: content, published: published })
+    body: JSON.stringify(payload),
   })
     .then(function(res) {
       if (res.status === 403) throw new Error('Incorrect password.');
+      if (res.status === 409) throw new Error('That slug already exists. Choose a different one.');
       if (!res.ok) throw new Error('Server error (' + res.status + '). Try again.');
       return res.json();
     })
-    .then(function() {
-      showMsg('Post created successfully.', true);
+    .then(function(data) {
+      showMsg('Post created: /blog/' + data.slug + '/', true);
       document.getElementById('admin-form').reset();
       btn.disabled = false;
       btn.textContent = 'Publish Post';
