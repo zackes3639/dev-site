@@ -25,47 +25,86 @@
   </header>
 
   <main>
-    <section class="hero hero-home hero-home-clean contact-hero">
-      <div class="hero-text-side">
-        <p class="eyebrow">Let's Connect</p>
+    <section class="v2-contact-top">
+      <p class="v2-section-tag">/ say hello</p>
+      <h1>What brings you here?</h1>
+      <p>Pick the one that fits — routes you to the fastest path for that kind of conversation.</p>
+    </section>
 
-        <h1 class="hero-headline">
-          <span>Open to cloud, product,</span>
-          <span>and founder conversations.</span>
-        </h1>
-
-        <p class="hero-description">
-          Reach out if you want to talk SaaS ideas, cloud engineering, product direction, or technical build collaborations.
-        </p>
-
-        <div class="hero-buttons">
-          <a href="mailto:zacksimon13@gmail.com" class="btn primary">Email Me</a>
-          <a href="https://www.linkedin.com/in/zackary-simon" target="_blank" rel="noopener" class="btn secondary">LinkedIn</a>
-          <a href="resume.pdf" download class="btn secondary">Download Resume</a>
+    <section class="v2-intent-grid">
+      <a class="v2-intent-card v2-intent-card-purple" href="mailto:zacksimon13@gmail.com?subject=Hiring%20inquiry">
+        <div class="v2-intent-head">
+          <span class="v2-intent-eyebrow">option 1</span>
+          <span class="v2-kbd-cap">1</span>
         </div>
+        <h2 class="v2-intent-title">I want to hire you</h2>
+        <p class="v2-intent-desc">Cloud / product / SaaS build work.</p>
+        <div class="v2-intent-foot">
+          <span>→ Email + resume</span>
+          <span aria-hidden="true">↗</span>
+        </div>
+      </a>
+
+      <a class="v2-intent-card v2-intent-card-ink" href="mailto:zacksimon13@gmail.com?subject=Builder%20to%20builder">
+        <div class="v2-intent-head">
+          <span class="v2-intent-eyebrow">option 2</span>
+          <span class="v2-kbd-cap">2</span>
+        </div>
+        <h2 class="v2-intent-title">I'm a fellow builder</h2>
+        <p class="v2-intent-desc">Idea-swap, trade notes, read drafts.</p>
+        <div class="v2-intent-foot">
+          <span>→ Email / DM</span>
+          <span aria-hidden="true">↗</span>
+        </div>
+      </a>
+
+      <a class="v2-intent-card v2-intent-card-green" href="#feedback">
+        <div class="v2-intent-head">
+          <span class="v2-intent-eyebrow">option 3</span>
+          <span class="v2-kbd-cap">3</span>
+        </div>
+        <h2 class="v2-intent-title">I read the blog</h2>
+        <p class="v2-intent-desc">Feedback, a post idea, or a correction.</p>
+        <div class="v2-intent-foot">
+          <span>→ Fast reply form</span>
+          <span aria-hidden="true">↓</span>
+        </div>
+      </a>
+
+      <a class="v2-intent-card v2-intent-card-amber" href="mailto:zacksimon13@gmail.com?subject=Something%20else">
+        <div class="v2-intent-head">
+          <span class="v2-intent-eyebrow">option 4</span>
+          <span class="v2-kbd-cap">4</span>
+        </div>
+        <h2 class="v2-intent-title">Something else</h2>
+        <p class="v2-intent-desc">Press, podcast, random curiosity.</p>
+        <div class="v2-intent-foot">
+          <span>→ Email</span>
+          <span aria-hidden="true">↗</span>
+        </div>
+      </a>
+    </section>
+
+    <section class="v2-info-strip">
+      <div class="v2-direct-card">
+        <span class="v2-mono">// direct</span>
+        <h3>zacksimon13@gmail.com</h3>
+        <p>i read &amp; reply to every email.</p>
       </div>
-
-      <div class="hero-image-side">
-        <div class="contact-info-card">
-          <div class="contact-info-row">
-            <span class="contact-info-label">Email</span>
-            <a href="mailto:zacksimon13@gmail.com" class="contact-info-value">zacksimon13@gmail.com</a>
-          </div>
-          <div class="contact-info-row">
-            <span class="contact-info-label">LinkedIn</span>
-            <a href="https://www.linkedin.com/in/zackary-simon" target="_blank" rel="noopener" class="contact-info-value">zackary-simon</a>
-          </div>
-          <div class="contact-info-row">
-            <span class="contact-info-label">Location</span>
-            <span class="contact-info-value">Tampa, FL</span>
-          </div>
-          <div class="contact-info-row">
-            <span class="contact-info-label">Resume</span>
-            <a href="resume.pdf" download class="contact-info-value">Download PDF</a>
-          </div>
-        </div>
+      <div class="v2-rest-card">
+        <p class="v2-eyebrow">the rest</p>
+        <a class="v2-rest-row" href="https://www.linkedin.com/in/zackary-simon" target="_blank" rel="noopener">LinkedIn · zackary-simon</a>
+        <span class="v2-rest-row">Tampa, FL · EST</span>
+        <a class="v2-rest-row" href="resume.pdf" download>Resume · download PDF</a>
       </div>
     </section>
+
+    <form id="feedback" class="v2-feedback-form" action="mailto:zacksimon13@gmail.com" method="post" enctype="text/plain">
+      <h3>Send a fast reply</h3>
+      <input type="text" name="subject" class="v2-feedback-input" placeholder="Subject" required />
+      <textarea name="message" class="v2-feedback-textarea" placeholder="Your note — typo, idea, correction…" required></textarea>
+      <button type="submit" class="v2-feedback-btn">Send →</button>
+    </form>
   </main>
 
   <footer class="footer">

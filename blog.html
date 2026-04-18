@@ -26,56 +26,98 @@
   </header>
 
   <main>
-    <section class="page-hero page-hero-blog">
-      <div class="page-hero-content narrow">
-        <p class="eyebrow">The Build Log</p>
-        <h1 class="page-title">Building in public.</h1>
-        <p class="page-intro">Real decisions. Real mistakes. Real progress.</p>
+    <section class="v2-blog-header">
+      <div>
+        <p class="v2-section-tag">/ the build log</p>
+        <h1>Building in public.</h1>
+        <p>Real decisions. Real mistakes. Real progress.</p>
       </div>
-
-      <div class="newsletter-inline-box" id="newsletter">
-        <span class="newsletter-inline-badge">Free · Email + SMS</span>
-        <p class="newsletter-inline-headline">Get the Build Log delivered.</p>
-        <p class="newsletter-inline-copy">
-          Weekly email + SMS recap of what I'm shipping. No fluff.
-        </p>
-
-        <form class="newsletter-form-inline">
-          <input type="email" class="newsletter-input" placeholder="Email address" autocomplete="email" />
-          <input type="tel" class="newsletter-input" placeholder="Phone number (for SMS)" autocomplete="tel" />
-
-          <select name="age" class="newsletter-input" required>
-            <option value="" disabled selected>Select age</option>
-          </select>
-
-          <button type="submit" class="newsletter-btn-compact">Subscribe →</button>
-
-          <label class="newsletter-consent">
-            <input type="checkbox" class="newsletter-consent-check" />
-            I agree to the
-            <a href="privacy-terms.html" target="_blank" rel="noopener">
-              Privacy Policy &amp; Terms
-            </a>
-          </label>
-        </form>
+      <div class="v2-tag-pills" role="tablist" aria-label="Filter posts by tag">
+        <button type="button" class="v2-tag-pill v2-tag-pill-active">all</button>
+        <button type="button" class="v2-tag-pill">builds</button>
+        <button type="button" class="v2-tag-pill">infra</button>
+        <button type="button" class="v2-tag-pill">essay</button>
       </div>
     </section>
 
-    <!-- RECENT POSTS HEADER -->
-    <section class="section" style="padding-top: 2px; padding-bottom: 0;">
-      <h2 class="recent-posts-heading">Recent Posts</h2>
-    </section>
+    <section class="v2-blog-grid">
+      <div class="v2-post-list-col">
+        <!-- demo scaffolding, remove when posts load -->
+        <article class="v2-post-card">
+          <div class="v2-post-date-block">
+            <span class="v2-post-date-day">12</span>
+            <span class="v2-post-date-mo">apr</span>
+          </div>
+          <div class="v2-post-meta">
+            <div class="v2-post-meta-row">
+              <span class="v2-tag-chip">infra</span>
+              <span class="v2-post-readtime">6 min read</span>
+            </div>
+            <h3>Setting up this site on AWS</h3>
+            <p>S3 + CloudFront + a tiny Lambda — the pipeline behind every post, and why I keep it boring on purpose.</p>
+          </div>
+          <a href="#" class="v2-post-read-btn">Read →</a>
+        </article>
 
-    <!-- BLOG POSTS -->
-    <section class="section posts-section" style="padding-top: 8px;">
-      <div class="post-list">
-        
+        <!-- demo scaffolding, remove when posts load -->
+        <article class="v2-post-card">
+          <div class="v2-post-date-block">
+            <span class="v2-post-date-day">03</span>
+            <span class="v2-post-date-mo">apr</span>
+          </div>
+          <div class="v2-post-meta">
+            <div class="v2-post-meta-row">
+              <span class="v2-tag-chip">essay</span>
+              <span class="v2-post-readtime">4 min read</span>
+            </div>
+            <h3>Why I left consulting</h3>
+            <p>Slide decks don't ship. A short note on trading leverage-by-story for leverage-by-code.</p>
+          </div>
+          <a href="#" class="v2-post-read-btn">Read →</a>
+        </article>
+
         <!-- Dynamic posts render here -->
         <div id="blog-posts">
           <p>Loading posts...</p>
         </div>
 
+        <button type="button" class="v2-load-older-btn">Load older posts</button>
       </div>
+
+      <aside class="v2-subscribe-rail-wrap">
+        <div class="newsletter-inline-box v2-subscribe-rail" id="newsletter">
+          <p class="v2-eyebrow">free · email + sms</p>
+          <h3>Get the Build Log.</h3>
+          <p>Weekly recap of what I'm shipping. No fluff.</p>
+
+          <form class="newsletter-form-inline">
+            <input type="email" class="newsletter-input" placeholder="Email address" autocomplete="email" />
+            <input type="tel" class="newsletter-input" placeholder="Phone number (for SMS)" autocomplete="tel" />
+
+            <select name="age" class="newsletter-input" required>
+              <option value="" disabled selected>Select age</option>
+            </select>
+
+            <button type="submit" class="newsletter-btn-compact">Subscribe →</button>
+
+            <label class="newsletter-consent">
+              <input type="checkbox" class="newsletter-consent-check" />
+              I agree to the
+              <a href="privacy-terms.html" target="_blank" rel="noopener">
+                Privacy Policy &amp; Terms
+              </a>
+            </label>
+          </form>
+        </div>
+
+        <div class="v2-archive-card">
+          <h4>Archive</h4>
+          <div class="v2-archive-row"><span>apr 2026</span><span>4</span></div>
+          <div class="v2-archive-row"><span>mar 2026</span><span>3</span></div>
+          <div class="v2-archive-row"><span>feb 2026</span><span>2</span></div>
+          <div class="v2-archive-row"><span>jan 2026</span><span>1</span></div>
+        </div>
+      </aside>
     </section>
   </main>
 
