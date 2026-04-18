@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Risk 256</title>
+  <title>Color Chain</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -11,8 +11,8 @@
 
     <header class="game-header">
       <div class="title-block">
-        <h1 class="game-title">Risk 256</h1>
-        <p class="game-sub">Reach <strong>256</strong> — avoid the bombs</p>
+        <h1 class="game-title">Color Chain</h1>
+        <p class="game-sub">Connect <strong>3+</strong> tiles · 5-chain = 2× · 7-chain = 3×</p>
       </div>
       <div class="hud">
         <div class="hud-item">
@@ -20,15 +20,15 @@
           <span class="hud-value" id="score">0</span>
         </div>
         <div class="hud-item">
-          <span class="hud-label">Best</span>
-          <span class="hud-value" id="best">0</span>
+          <span class="hud-label">Time</span>
+          <span class="hud-value" id="timer">60</span>
         </div>
-        <button class="btn-restart" id="restart-btn">↺ Restart</button>
+        <button class="btn-restart" id="restart-btn">↺ New</button>
       </div>
     </header>
 
-    <div class="grid-shell">
-      <div id="grid" class="grid"></div>
+    <div class="canvas-shell">
+      <canvas id="game-canvas"></canvas>
 
       <div id="overlay" class="overlay hidden">
         <div class="overlay-card">
@@ -41,11 +41,11 @@
 
     <footer class="game-footer">
       <div class="legend">
-        <span class="leg leg-num">Numbers merge when equal</span>
-        <span class="leg leg-bomb">💣 destroys tiles ≥ 64 · smaller tiles survive as 2</span>
-        <span class="leg leg-immune">✦ freshly merged tiles immune for 1 move</span>
+        <span class="leg">3+ tiles = 10 pts each</span>
+        <span class="leg">5+ chain = 2× bonus</span>
+        <span class="leg">7+ chain = 3× bonus</span>
       </div>
-      <p class="controls-note">Arrow keys &nbsp;·&nbsp; Swipe on mobile</p>
+      <p class="controls-note">Click and drag to connect same-color tiles</p>
     </footer>
 
   </div>

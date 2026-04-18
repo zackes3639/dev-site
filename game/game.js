@@ -1,510 +1,388 @@
 'use strict';
 
-const SIZE           = 4;
-const WIN            = 256;
-const BOMB_CHANCE    = 0.05;  // 5% — only when a >=32 tile exists
-const MIN_BOMB_TILE  = 32;    // board must have this value before bombs can spawn
-const SLIDE_MS       = 110;
+// ── Constants ─────────────────────────────────────────────────────────────────
+const COLS          = 6;
+const ROWS          = 6;
+const GAP           = 6;
+const PAD           = 8;
+const TILE_R        = 8;
+const GAME_DURATION = 60;
+const MIN_CHAIN     = 3;
+const PTS_PER_TILE  = 10;
+const FALL_GRAVITY  = 3800; // px/s²
 
-const PAD = 8;
-const GAP = 8;
+// Color palette: base fill, highlight (selected), shadow (bottom edge)
+const PALETTE = [
+  { base: '#7c3aed', hi: '#a07cff', shadow: '#4c1d95' }, // purple
+  { base: '#2563eb', hi: '#60a5fa', shadow: '#1e40af' }, // blue
+  { base: '#16a34a', hi: '#4ade80', shadow: '#14532d' }, // green
+  { base: '#ea580c', hi: '#fb923c', shadow: '#9a3412' }, // orange
+];
 
-let grid, score, best, gameOver, won, animating;
-let tileIdCounter = 0;
-let tileEls = new Map(); // id → DOM element
+// ── DOM ───────────────────────────────────────────────────────────────────────
+const canvas      = document.getElementById('game-canvas');
+const ctx         = canvas.getContext('2d');
+const scoreEl     = document.getElementById('score');
+const timerEl     = document.getElementById('timer');
+const overlay     = document.getElementById('overlay');
+const endTitleEl  = document.getElementById('end-title');
+const endMsgEl    = document.getElementById('end-msg');
 
-// ── Cells ─────────────────────────────────────────────────────────────────────
-function num(v) { return { id: ++tileIdCounter, value: v, immune: false, justMerged: false }; }
-function bomb() { return { id: ++tileIdCounter, bomb: true }; }
+document.getElementById('restart-btn').addEventListener('click', startGame);
+document.getElementById('play-again-btn').addEventListener('click', startGame);
 
-function cp(c) {
-  if (!c) return null;
-  return c.bomb
-    ? { id: c.id, bomb: true }
-    : { id: c.id, value: c.value, immune: c.immune, justMerged: c.justMerged };
+// ── State ─────────────────────────────────────────────────────────────────────
+let grid, chain, isDragging, score, timeLeft, gameActive, animating;
+let rafId, prevTs, timerInterval;
+let cw = 0, tileSize = 0;
+
+// ── Grid ──────────────────────────────────────────────────────────────────────
+function makeTile(color) {
+  return { color, opacity: 1, fy: 0, vy: 0, removing: false };
 }
 
-function cellsEq(a, b) {
-  if (!a && !b) return true;
-  if (!a || !b)  return false;
-  if (a.bomb)    return !!b.bomb;
-  return !b.bomb && a.value === b.value;
+function initGrid() {
+  grid = Array.from({ length: ROWS }, () =>
+    Array.from({ length: COLS }, () => makeTile(rand(PALETTE.length)))
+  );
 }
 
-function copyGrid(g) { return g.map(r => r.map(cp)); }
+function rand(n) { return Math.floor(Math.random() * n); }
 
-function gridsEq(a, b) {
-  for (let r = 0; r < SIZE; r++)
-    for (let c = 0; c < SIZE; c++)
-      if (!cellsEq(a[r][c], b[r][c])) return false;
-  return true;
+// ── Canvas sizing ─────────────────────────────────────────────────────────────
+function resizeCanvas() {
+  cw = Math.min(canvas.parentElement.clientWidth, 440);
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width  = Math.round(cw * dpr);
+  canvas.height = Math.round(cw * dpr);
+  canvas.style.width  = cw + 'px';
+  canvas.style.height = cw + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  tileSize = (cw - 2 * PAD - (COLS - 1) * GAP) / COLS;
+  // Snap all fall offsets so pixel values stay valid after resize
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++)
+      if (grid?.[r]?.[c]) { grid[r][c].fy = 0; grid[r][c].vy = 0; }
 }
 
-// ── Grid metrics ──────────────────────────────────────────────────────────────
-function cellSize() {
-  return (document.getElementById('grid').clientWidth - 2 * PAD - (SIZE - 1) * GAP) / SIZE;
+// ── Coordinate helpers ────────────────────────────────────────────────────────
+function tileXY(r, c) {
+  return { x: PAD + c * (tileSize + GAP), y: PAD + r * (tileSize + GAP) };
 }
 
-function tilePos(r, c, sz) {
-  return { left: PAD + c * (sz + GAP), top: PAD + r * (sz + GAP) };
-}
-
-// ── Init ──────────────────────────────────────────────────────────────────────
-function initGame() {
-  grid      = Array.from({ length: SIZE }, () => Array(SIZE).fill(null));
-  score     = 0;
-  gameOver  = false;
-  won       = false;
-  animating = false;
-
-  for (const el of tileEls.values()) el.remove();
-  tileEls.clear();
-
-  const gridEl = document.getElementById('grid');
-  gridEl.querySelectorAll('.cell-bg').forEach(el => el.remove());
-  for (let i = 0; i < SIZE * SIZE; i++) {
-    const bg = document.createElement('div');
-    bg.className = 'cell-bg';
-    gridEl.appendChild(bg);
-  }
-
-  spawn(); spawn();
-  render(null);
-  updateHUD();
-  document.getElementById('overlay').classList.add('hidden');
-}
-
-// ── Spawn ─────────────────────────────────────────────────────────────────────
-function spawn() {
-  const empty = [];
-  for (let r = 0; r < SIZE; r++)
-    for (let c = 0; c < SIZE; c++)
-      if (!grid[r][c]) empty.push([r, c]);
-  if (!empty.length) return;
-
-  const [r, c] = empty[Math.floor(Math.random() * empty.length)];
-
-  // Only allow bombs once a MIN_BOMB_TILE value is on the board
-  let hasBigTile = false;
-  outer: for (let i = 0; i < SIZE; i++)
-    for (let j = 0; j < SIZE; j++) {
-      const cell = grid[i][j];
-      if (cell && !cell.bomb && cell.value >= MIN_BOMB_TILE) { hasBigTile = true; break outer; }
-    }
-
-  grid[r][c] = (hasBigTile && Math.random() < BOMB_CHANCE)
-    ? bomb()
-    : num(Math.random() < 0.9 ? 2 : 4);
-}
-
-// ── Slide ─────────────────────────────────────────────────────────────────────
-// Bomb collision rules:
-//   • tile ≥64 (not immune) + bomb  → both destroyed
-//   • tile <64  (not immune) + bomb  → bomb removed, tile drops to 2
-//   • immune tile + bomb             → bomb acts as wall (both survive)
-function slideLeft(row) {
-  const tiles = row.filter(Boolean);
-  const out   = [];
-  let   delta = 0;
-
-  for (let i = 0; i < tiles.length; i++) {
-    const curr = tiles[i];
-    const prev = out.length ? out[out.length - 1] : null;
-
-    if (!prev) { out.push(cp(curr)); continue; }
-
-    const pB = !!prev.bomb, cB = !!curr.bomb;
-
-    if (!pB && !cB && prev.value === curr.value && !prev.justMerged && !curr.justMerged) {
-      // Equal number tiles merge
-      out.pop();
-      const merged = num(prev.value * 2);
-      merged.justMerged   = true;
-      merged._mergedFrom  = [prev.id, curr.id];
-      delta += merged.value;
-      out.push(merged);
-
-    } else if (pB && !cB) {
-      // prev = bomb, curr = number tile
-      if (curr.immune) {
-        out.push(cp(curr));               // immune: bomb is a wall, tile stops
-      } else if (curr.value >= 64) {
-        out.pop();                        // big tile + bomb: both destroyed
-      } else {
-        out.pop();                        // small tile: bomb gone, tile → 2
-        const d = cp(curr);
-        d.value        = 2;
-        d._downgraded  = true;
-        out.push(d);
-      }
-
-    } else if (!pB && cB) {
-      // prev = number tile, curr = bomb
-      if (prev.immune) {
-        out.push(cp(curr));               // immune: bomb is a wall, stops here
-      } else if (prev.value >= 64) {
-        out.pop();                        // big tile + bomb: both destroyed
-      } else {
-        const d = out.pop();              // small tile: bomb gone, tile → 2
-        d.value        = 2;
-        d._downgraded  = true;
-        out.push(d);
-      }
-
-    } else {
-      out.push(cp(curr));
+function gridHit(px, py) {
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const { x, y } = tileXY(r, c);
+      if (px >= x && px < x + tileSize && py >= y && py < y + tileSize)
+        return { row: r, col: c };
     }
   }
-
-  while (out.length < SIZE) out.push(null);
-  return { row: out, delta };
+  return null;
 }
-
-function slideRight(row) {
-  const { row: r, delta } = slideLeft([...row].reverse());
-  return { row: r.reverse(), delta };
-}
-
-function applySlide(g, dir) {
-  const horiz = dir === 'left' || dir === 'right';
-  const fn    = (dir === 'left' || dir === 'up') ? slideLeft : slideRight;
-  let   delta = 0;
-
-  for (let i = 0; i < SIZE; i++) {
-    const line = horiz ? g[i] : g.map(row => row[i]);
-    const { row: out, delta: d } = fn(line);
-    delta += d;
-    if (horiz) g[i] = out;
-    else       out.forEach((cell, r) => { g[r][i] = cell; });
-  }
-  return delta;
-}
-
-// ── Move ──────────────────────────────────────────────────────────────────────
-function move(dir) {
-  if (gameOver || won || animating) return;
-
-  // Promote justMerged → immune; clear stale animation flags
-  for (let r = 0; r < SIZE; r++)
-    for (let c = 0; c < SIZE; c++) {
-      const cell = grid[r][c];
-      if (cell && !cell.bomb) {
-        cell.immune     = cell.justMerged;
-        cell.justMerged = false;
-        delete cell._mergedFrom;
-        delete cell._downgraded;
-      }
-    }
-
-  // Snapshot {r,c} for every tile before the slide
-  const prevPos = new Map();
-  for (let r = 0; r < SIZE; r++)
-    for (let c = 0; c < SIZE; c++) {
-      const cell = grid[r][c];
-      if (cell) prevPos.set(cell.id, { r, c });
-    }
-
-  const snap  = copyGrid(grid);
-  const delta = applySlide(grid, dir);
-
-  if (gridsEq(snap, grid)) return;
-
-  score += delta;
-  if (score > best) best = score;
-
-  spawn();
-
-  outer: for (let r = 0; r < SIZE; r++)
-    for (let c = 0; c < SIZE; c++) {
-      const cell = grid[r][c];
-      if (cell && !cell.bomb && cell.value >= WIN) { won = true; break outer; }
-    }
-
-  if (!won && !canMove()) gameOver = true;
-
-  animating = true;
-  render(prevPos);
-  updateHUD();
-
-  setTimeout(() => {
-    animating = false;
-    if (won)           showEnd(true);
-    else if (gameOver) showEnd(false);
-  }, SLIDE_MS + 60);
-}
-
-// ── Lose detection ────────────────────────────────────────────────────────────
-function canMove() {
-  for (let r = 0; r < SIZE; r++)
-    for (let c = 0; c < SIZE; c++)
-      if (!grid[r][c]) return true;
-
-  for (let r = 0; r < SIZE; r++) {
-    for (let c = 0; c < SIZE; c++) {
-      const a = grid[r][c];
-      if (!a) continue;
-      for (const [nr, nc] of [[r, c + 1], [r + 1, c]]) {
-        if (nr >= SIZE || nc >= SIZE) continue;
-        const b = grid[nr][nc];
-        if (!b) continue;
-        // Equal number tiles can merge
-        if (!a.bomb && !b.bomb && a.value === b.value) return true;
-        // Any non-immune number tile adjacent to a bomb can interact
-        if (a.bomb  && !b.bomb && !b.immune) return true;
-        if (!a.bomb && b.bomb  && !a.immune) return true;
-      }
-    }
-  }
-  return false;
-}
-
-// ── Render ────────────────────────────────────────────────────────────────────
-function render(prevPos) {
-  const gridEl = document.getElementById('grid');
-  const sz     = cellSize();
-
-  // Collect merge targets and ghost IDs
-  const mergeTargets = [];
-  const ghostIds     = new Set();
-  const mergedIds    = new Set();
-
-  for (let r = 0; r < SIZE; r++)
-    for (let c = 0; c < SIZE; c++) {
-      const cell = grid[r][c];
-      if (cell && cell._mergedFrom) {
-        mergeTargets.push({ cell, r, c });
-        mergedIds.add(cell.id);
-        cell._mergedFrom.forEach(id => ghostIds.add(id));
-      }
-    }
-
-  const newIds = new Set();
-  for (let r = 0; r < SIZE; r++)
-    for (let c = 0; c < SIZE; c++) {
-      const cell = grid[r][c];
-      if (cell) newIds.add(cell.id);
-    }
-
-  // Remove tiles gone from the grid; show poof for destroyed bombs
-  for (const [id, el] of tileEls) {
-    if (!newIds.has(id) && !ghostIds.has(id)) {
-      if (prevPos && el.classList.contains('bomb')) {
-        const old = prevPos.get(id);
-        if (old) showPoof(gridEl, old.r, old.c, sz);
-      }
-      el.remove();
-      tileEls.delete(id);
-    }
-  }
-
-  // Step 1: place tiles at final positions, FLIP-animate the ones that moved
-  for (let r = 0; r < SIZE; r++) {
-    for (let c = 0; c < SIZE; c++) {
-      const cell = grid[r][c];
-      if (!cell) continue;
-
-      const pos   = tilePos(r, c, sz);
-      let   el    = tileEls.get(cell.id);
-      const isNew = !el;
-
-      if (isNew) {
-        el = makeTileEl(gridEl);
-        tileEls.set(cell.id, el);
-      }
-
-      applyClass(el, cell);
-      el.style.width  = sz + 'px';
-      el.style.height = sz + 'px';
-      el.style.left   = pos.left + 'px';
-      el.style.top    = pos.top  + 'px';
-      el.style.zIndex = '1';
-      el.style.filter = '';
-
-      if (prevPos && !isNew) {
-        const old = prevPos.get(cell.id);
-        if (old) {
-          const oldP = tilePos(old.r, old.c, sz);
-          const dx   = oldP.left - pos.left;
-          const dy   = oldP.top  - pos.top;
-          if (dx !== 0 || dy !== 0) {
-            el.style.transition = 'none';
-            el.style.transform  = `translate(${dx}px,${dy}px)`;
-            el.offsetHeight;
-            el.style.transition = `transform ${SLIDE_MS}ms cubic-bezier(0.25,0.46,0.45,0.94)`;
-            el.style.transform  = 'translate(0,0)';
-          }
-        }
-      }
-
-      // New spawn tiles scale in after the slide
-      if (prevPos && isNew && !mergedIds.has(cell.id)) {
-        el.style.transform  = 'scale(0)';
-        el.style.transition = 'none';
-        setTimeout(() => {
-          el.style.transition = `transform ${Math.round(SLIDE_MS * 0.7)}ms cubic-bezier(0.34,1.56,0.64,1)`;
-          el.style.transform  = 'scale(1)';
-        }, SLIDE_MS + 20);
-      }
-
-      // Downgraded tile (killed a bomb, dropped to 2): dark flash
-      if (prevPos && cell._downgraded) {
-        setTimeout(() => {
-          el.style.transition = 'none';
-          el.style.filter     = 'brightness(0.15) saturate(0)';
-          el.offsetHeight;
-          el.style.transition = 'filter 0.35s ease-out';
-          el.style.filter     = 'brightness(1) saturate(1)';
-        }, SLIDE_MS);
-      }
-    }
-  }
-
-  // Step 2: animate merge ghost tiles into the merge position, then remove
-  if (prevPos) {
-    for (const { cell, r, c } of mergeTargets) {
-      const mPos = tilePos(r, c, sz);
-
-      for (const srcId of cell._mergedFrom) {
-        const el = tileEls.get(srcId);
-        if (!el) continue;
-
-        const old = prevPos.get(srcId);
-        if (old) {
-          const oldP = tilePos(old.r, old.c, sz);
-          const dx   = oldP.left - mPos.left;
-          const dy   = oldP.top  - mPos.top;
-
-          el.style.left       = mPos.left + 'px';
-          el.style.top        = mPos.top  + 'px';
-          el.style.width      = sz + 'px';
-          el.style.height     = sz + 'px';
-          el.style.zIndex     = '2';
-          el.style.transition = 'none';
-          el.style.transform  = `translate(${dx}px,${dy}px)`;
-          el.offsetHeight;
-          el.style.transition = `transform ${SLIDE_MS}ms cubic-bezier(0.25,0.46,0.45,0.94)`;
-          el.style.transform  = 'translate(0,0)';
-        }
-
-        setTimeout(() => { el.remove(); tileEls.delete(srcId); }, SLIDE_MS + 10);
-      }
-
-      // Merged tile: pop scale + brightness flash
-      const mergedEl = tileEls.get(cell.id);
-      if (mergedEl) {
-        mergedEl.style.zIndex = '3';
-        setTimeout(() => {
-          mergedEl.style.transition = 'none';
-          mergedEl.style.transform  = 'scale(1.2)';
-          mergedEl.style.filter     = 'brightness(2.2)';
-          mergedEl.offsetHeight;
-          mergedEl.style.transition = `transform 0.12s ease-out, filter 0.28s ease-out`;
-          mergedEl.style.transform  = 'scale(1)';
-          mergedEl.style.filter     = 'brightness(1)';
-        }, SLIDE_MS);
-      }
-    }
-  } else {
-    for (const el of tileEls.values()) {
-      el.style.transition = 'none';
-      el.style.transform  = 'scale(1)';
-    }
-  }
-}
-
-// ── Poof animation for destroyed bombs ────────────────────────────────────────
-function showPoof(parent, r, c, sz) {
-  const pos  = tilePos(r, c, sz);
-  const poof = document.createElement('div');
-  poof.className    = 'bomb-poof';
-  poof.style.left   = pos.left + 'px';
-  poof.style.top    = pos.top  + 'px';
-  poof.style.width  = sz + 'px';
-  poof.style.height = sz + 'px';
-  poof.textContent  = '💥';
-  parent.appendChild(poof);
-  poof.addEventListener('animationend', () => poof.remove(), { once: true });
-}
-
-function makeTileEl(parent) {
-  const el = document.createElement('div');
-  el.style.position   = 'absolute';
-  el.style.willChange = 'transform, filter';
-  el.style.zIndex     = '1';
-  parent.appendChild(el);
-  return el;
-}
-
-function applyClass(el, cell) {
-  if (cell.bomb) {
-    el.className   = 'cell bomb';
-    el.textContent = '💣';
-  } else {
-    el.className   = 'cell tile-' + cell.value + (cell.immune ? ' immune' : '');
-    el.textContent = cell.value;
-  }
-}
-
-// ── HUD / End ─────────────────────────────────────────────────────────────────
-function updateHUD() {
-  document.getElementById('score').textContent = score;
-  document.getElementById('best').textContent  = best;
-}
-
-function showEnd(isWin) {
-  document.getElementById('end-title').textContent = isWin ? '🎉 You Win!' : 'Game Over';
-  document.getElementById('end-msg').textContent   = isWin
-    ? 'You hit 256! Final score: ' + score
-    : 'No valid moves left. Score: ' + score;
-  document.getElementById('overlay').classList.remove('hidden');
-}
-
-// ── Resize ────────────────────────────────────────────────────────────────────
-window.addEventListener('resize', () => {
-  const sz = cellSize();
-  for (let r = 0; r < SIZE; r++)
-    for (let c = 0; c < SIZE; c++) {
-      const cell = grid[r][c];
-      if (!cell) continue;
-      const el = tileEls.get(cell.id);
-      if (!el) continue;
-      const pos = tilePos(r, c, sz);
-      el.style.transition = 'none';
-      el.style.transform  = 'translate(0,0)';
-      el.style.left       = pos.left + 'px';
-      el.style.top        = pos.top  + 'px';
-      el.style.width      = sz + 'px';
-      el.style.height     = sz + 'px';
-    }
-});
 
 // ── Input ─────────────────────────────────────────────────────────────────────
-const KEY_MAP = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down' };
+function evtPt(e) {
+  const rect  = canvas.getBoundingClientRect();
+  const scale = cw / rect.width;
+  const src   = e.touches ? e.touches[0] : e;
+  return {
+    x: (src.clientX - rect.left) * scale,
+    y: (src.clientY - rect.top)  * scale,
+  };
+}
 
-document.addEventListener('keydown', e => {
-  if (KEY_MAP[e.key]) { e.preventDefault(); move(KEY_MAP[e.key]); }
-});
+function isAdjacent(a, b) {
+  return Math.abs(a.row - b.row) + Math.abs(a.col - b.col) === 1;
+}
 
-let tx = null, ty = null;
+function inChain(r, c) {
+  return chain.some(t => t.row === r && t.col === c);
+}
 
-document.addEventListener('touchstart', e => {
-  tx = e.touches[0].clientX;
-  ty = e.touches[0].clientY;
-}, { passive: true });
+function onDown(e) {
+  if (!gameActive || animating) return;
+  e.preventDefault();
+  const { x, y } = evtPt(e);
+  const hit = gridHit(x, y);
+  if (!hit || !grid[hit.row][hit.col]) return;
+  chain = [hit];
+  isDragging = true;
+}
 
-document.addEventListener('touchend', e => {
-  if (tx == null) return;
-  const dx = e.changedTouches[0].clientX - tx;
-  const dy = e.changedTouches[0].clientY - ty;
-  const ax = Math.abs(dx), ay = Math.abs(dy);
-  if (Math.max(ax, ay) >= 24) {
-    move(ax > ay ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'));
+function onMove(e) {
+  if (!isDragging || !gameActive) return;
+  e.preventDefault();
+  const { x, y } = evtPt(e);
+  const hit = gridHit(x, y);
+  if (!hit || !grid[hit.row][hit.col]) return;
+
+  const last = chain[chain.length - 1];
+  if (last.row === hit.row && last.col === hit.col) return;
+
+  // Backtrack when dragging over the second-to-last tile
+  if (chain.length >= 2) {
+    const prev = chain[chain.length - 2];
+    if (prev.row === hit.row && prev.col === hit.col) { chain.pop(); return; }
   }
-  tx = ty = null;
-}, { passive: true });
 
-// ── Bootstrap ─────────────────────────────────────────────────────────────────
-best = 0;
-document.getElementById('restart-btn').addEventListener('click', initGame);
-document.getElementById('play-again-btn').addEventListener('click', initGame);
-initGame();
+  const color0 = grid[chain[0].row][chain[0].col].color;
+  const t = grid[hit.row][hit.col];
+  if (!inChain(hit.row, hit.col) && isAdjacent(last, hit) && t.color === color0)
+    chain.push(hit);
+}
+
+function onUp() {
+  if (!isDragging) return;
+  isDragging = false;
+  if (chain.length >= MIN_CHAIN) commitChain();
+  else chain = [];
+}
+
+canvas.addEventListener('mousedown',  onDown, { passive: false });
+canvas.addEventListener('mousemove',  onMove, { passive: false });
+canvas.addEventListener('mouseup',    onUp);
+canvas.addEventListener('touchstart', onDown, { passive: false });
+canvas.addEventListener('touchmove',  onMove, { passive: false });
+canvas.addEventListener('touchend',   onUp,   { passive: false });
+window.addEventListener('mouseup',    onUp);
+
+// ── Scoring ───────────────────────────────────────────────────────────────────
+function calcScore(len) {
+  const mult = len >= 7 ? 3 : len >= 5 ? 2 : 1;
+  return len * PTS_PER_TILE * mult;
+}
+
+function showScorePop(pts, chainTiles) {
+  const mid      = chainTiles[Math.floor(chainTiles.length / 2)];
+  const { x, y } = tileXY(mid.row, mid.col);
+  const scale    = canvas.getBoundingClientRect().width / cw;
+  const pop      = document.createElement('span');
+  pop.className  = 'score-pop';
+  pop.textContent = '+' + pts;
+  pop.style.left  = ((x + tileSize / 2) * scale) + 'px';
+  pop.style.top   = (y * scale) + 'px';
+  canvas.parentElement.appendChild(pop);
+  pop.addEventListener('animationend', () => pop.remove());
+}
+
+// ── Chain commit ──────────────────────────────────────────────────────────────
+function commitChain() {
+  const done = [...chain];
+  chain = [];
+  animating = true;
+
+  const pts = calcScore(done.length);
+  score += pts;
+  scoreEl.textContent = score;
+  showScorePop(pts, done);
+
+  // Mark tiles for fade-out
+  done.forEach(({ row, col }) => { grid[row][col].removing = true; });
+
+  setTimeout(() => {
+    done.forEach(({ row, col }) => { grid[row][col] = null; });
+    applyGravity();
+    spawnTiles();
+    animating = false;
+  }, 220);
+}
+
+// ── Gravity ───────────────────────────────────────────────────────────────────
+function applyGravity() {
+  for (let c = 0; c < COLS; c++) {
+    let write = ROWS - 1;
+    for (let r = ROWS - 1; r >= 0; r--) {
+      if (grid[r][c] !== null) {
+        if (r !== write) {
+          // Tile drops (write - r) rows; start it above its destination
+          grid[r][c].fy = -(write - r) * (tileSize + GAP);
+          grid[r][c].vy = 0;
+          grid[write][c] = grid[r][c];
+          grid[r][c] = null;
+        }
+        write--;
+      }
+    }
+  }
+}
+
+function spawnTiles() {
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (grid[r][c] === null) {
+        const t = makeTile(rand(PALETTE.length));
+        t.fy      = -(r + 1) * (tileSize + GAP); // spawn above row 0
+        t.opacity = 0;
+        grid[r][c] = t;
+      }
+    }
+  }
+}
+
+// ── Rendering ─────────────────────────────────────────────────────────────────
+function rr(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.arcTo(x + w, y,     x + w, y + r,     r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+  ctx.lineTo(x + r, y + h);
+  ctx.arcTo(x,     y + h, x,     y + h - r, r);
+  ctx.lineTo(x, y + r);
+  ctx.arcTo(x,     y,     x + r, y,         r);
+  ctx.closePath();
+}
+
+function render(ts) {
+  const dt = Math.min(ts - prevTs, 50); // cap delta to avoid large jumps
+  prevTs = ts;
+
+  ctx.clearRect(0, 0, cw, cw);
+
+  // Grid background
+  ctx.fillStyle = '#1a2642';
+  rr(0, 0, cw, cw, 14);
+  ctx.fill();
+
+  // Empty cell slots
+  ctx.fillStyle = 'rgba(255,255,255,0.035)';
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const { x, y } = tileXY(r, c);
+      rr(x, y, tileSize, tileSize, TILE_R);
+      ctx.fill();
+    }
+  }
+
+  // Chain connector line — drawn behind tiles
+  if (chain.length >= 2) {
+    const pal0 = PALETTE[grid[chain[0].row][chain[0].col]?.color ?? 0];
+    ctx.save();
+    ctx.strokeStyle  = pal0.hi;
+    ctx.lineWidth    = tileSize * 0.22;
+    ctx.lineCap      = 'round';
+    ctx.lineJoin     = 'round';
+    ctx.globalAlpha  = 0.45;
+    ctx.beginPath();
+    chain.forEach(({ row, col }, i) => {
+      const t = grid[row][col];
+      const { x, y } = tileXY(row, col);
+      const cx = x + tileSize / 2;
+      const cy = y + (t?.fy ?? 0) + tileSize / 2;
+      i === 0 ? ctx.moveTo(cx, cy) : ctx.lineTo(cx, cy);
+    });
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // Tiles
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const t = grid[r]?.[c];
+      if (!t) continue;
+
+      // Gravity-based fall animation
+      if (t.fy < 0) {
+        t.vy += FALL_GRAVITY * dt / 1000;
+        t.fy  = Math.min(0, t.fy + t.vy * dt / 1000);
+        if (t.fy === 0) t.vy = 0;
+      }
+
+      // Opacity: fade out when removing, fade in when spawned
+      if (t.removing) {
+        t.opacity = Math.max(0, t.opacity - dt / 180);
+      } else if (t.opacity < 1) {
+        t.opacity = Math.min(1, t.opacity + dt / 200);
+      }
+
+      const { x, y } = tileXY(r, c);
+      const drawY    = y + t.fy;
+      const pal      = PALETTE[t.color];
+      const sel      = inChain(r, c);
+
+      ctx.save();
+      ctx.globalAlpha = t.opacity;
+
+      if (sel) {
+        ctx.shadowColor = pal.hi;
+        ctx.shadowBlur  = 16;
+      }
+
+      // Tile body
+      ctx.fillStyle = sel ? pal.hi : pal.base;
+      rr(x, drawY, tileSize, tileSize, TILE_R);
+      ctx.fill();
+
+      // Bottom-edge depth stripe (clipped to tile via separate draw)
+      ctx.shadowBlur = 0;
+      ctx.save();
+      rr(x, drawY, tileSize, tileSize, TILE_R);
+      ctx.clip();
+      ctx.fillStyle = pal.shadow;
+      ctx.fillRect(x, drawY + tileSize * 0.82, tileSize, tileSize * 0.18);
+      ctx.restore();
+
+      // Specular highlight dot (top-left)
+      ctx.fillStyle = 'rgba(255,255,255,0.22)';
+      ctx.beginPath();
+      ctx.arc(x + tileSize * 0.28, drawY + tileSize * 0.28, tileSize * 0.11, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+  }
+
+  rafId = requestAnimationFrame(render);
+}
+
+// ── Timer ─────────────────────────────────────────────────────────────────────
+function startTimer() {
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    if (!gameActive) return;
+    timeLeft = Math.max(0, timeLeft - 1);
+    timerEl.textContent = timeLeft;
+    timerEl.classList.toggle('timer-low', timeLeft <= 10);
+    if (timeLeft === 0) endGame();
+  }, 1000);
+}
+
+// ── Game lifecycle ────────────────────────────────────────────────────────────
+function startGame() {
+  score      = 0;
+  timeLeft   = GAME_DURATION;
+  chain      = [];
+  isDragging = false;
+  animating  = false;
+  gameActive = true;
+
+  scoreEl.textContent = '0';
+  timerEl.textContent = GAME_DURATION;
+  timerEl.classList.remove('timer-low');
+  overlay.classList.add('hidden');
+
+  resizeCanvas();
+  initGrid();
+  startTimer();
+
+  if (rafId) cancelAnimationFrame(rafId);
+  prevTs = performance.now();
+  rafId  = requestAnimationFrame(render);
+}
+
+function endGame() {
+  gameActive = false;
+  clearInterval(timerInterval);
+  chain = [];
+
+  endTitleEl.textContent = "Time's Up!";
+  endMsgEl.textContent   = score >= 800 ? `${score} pts — incredible run!`
+    : score >= 400 ? `${score} pts — well played!`
+    : `${score} pts — keep chaining!`;
+  overlay.classList.remove('hidden');
+}
+
+window.addEventListener('resize', () => { if (gameActive) resizeCanvas(); });
+startGame();

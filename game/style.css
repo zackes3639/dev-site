@@ -7,8 +7,6 @@
   --text:    #e8eaf0;
   --muted:   #7a8aaa;
   --radius:  10px;
-  --gap:     8px;
-  --grid-bg: #1a2642;
 }
 
 body {
@@ -55,7 +53,7 @@ body {
   margin-top: 2px;
 }
 
-.game-sub strong { color: #ffd60a; }
+.game-sub strong { color: #a07cff; }
 
 .hud {
   display: flex;
@@ -85,7 +83,10 @@ body {
   font-size: 1.2rem;
   font-weight: 800;
   color: #fff;
+  transition: color 0.3s;
 }
+
+.hud-value.timer-low { color: #f87171; }
 
 .btn-restart {
   background: var(--surface);
@@ -102,67 +103,37 @@ body {
 
 .btn-restart:hover { background: #1f2d47; border-color: #2d4060; }
 
-/* ── Grid shell (positions overlay) ─────────────────────────────────────── */
-.grid-shell {
+/* ── Canvas shell ────────────────────────────────────────────────────────── */
+.canvas-shell {
   position: relative;
+  line-height: 0;
 }
 
-/* ── Grid ────────────────────────────────────────────────────────────────── */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--gap);
-  background: var(--grid-bg);
-  padding: var(--gap);
+#game-canvas {
+  display: block;
   border-radius: 14px;
-  aspect-ratio: 1;
-  position: relative; /* tiles are absolute children */
-}
-
-/* ── Cells ───────────────────────────────────────────────────────────────── */
-
-/* Static background cells — grid items that size the container */
-.cell-bg {
-  border-radius: 8px;
-  background: rgba(255,255,255,0.04);
-  aspect-ratio: 1;
-}
-
-/* Tile elements — absolutely positioned, animated via JS */
-.cell {
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 900;
-  font-size: clamp(1rem, 5vw, 1.55rem);
-  line-height: 1;
+  touch-action: none;
+  cursor: crosshair;
   user-select: none;
 }
 
-/* Number tiles — warm palette climbing by value */
-.tile-2   { background: #3d5a80; color: #cde0f5; }
-.tile-4   { background: #5468b0; color: #dce6ff; }
-.tile-8   { background: #c47b2b; color: #fff; }
-.tile-16  { background: #d4612b; color: #fff; }
-.tile-32  { background: #d44040; color: #fff; }
-.tile-64  { background: #b02828; color: #fff; }
-.tile-128 { background: #d4a820; color: #1a1000; font-size: clamp(0.8rem, 4vw, 1.2rem); }
-.tile-256 { background: #f5c518; color: #1a1000; font-size: clamp(0.8rem, 4vw, 1.2rem);
-            box-shadow: 0 0 20px rgba(245,197,24,0.5); }
-
-/* Immune — subtle gold ring shows 1-move shield */
-.cell.immune {
-  outline: 2px solid rgba(245,197,24,0.7);
-  outline-offset: -2px;
+/* ── Score pop ───────────────────────────────────────────────────────────── */
+.score-pop {
+  position: absolute;
+  pointer-events: none;
+  font-weight: 900;
+  font-size: 1.05rem;
+  color: #fff;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.6);
+  z-index: 5;
+  transform: translateX(-50%);
+  animation: scorePop 0.65s ease-out forwards;
 }
 
-/* Bomb tile */
-.cell.bomb {
-  background: #3d0f0f;
-  font-size: clamp(1.2rem, 6vw, 1.8rem);
-  box-shadow: inset 0 0 12px rgba(200,30,30,0.3);
-  border: 1px solid rgba(200,30,30,0.25);
+@keyframes scorePop {
+  0%   { opacity: 1;   transform: translateX(-50%) translateY(0)     scale(1); }
+  60%  { opacity: 1;   transform: translateX(-50%) translateY(-24px)  scale(1.2); }
+  100% { opacity: 0;   transform: translateX(-50%) translateY(-48px)  scale(0.9); }
 }
 
 /* ── Overlay ─────────────────────────────────────────────────────────────── */
@@ -204,7 +175,7 @@ body {
 }
 
 .btn-primary {
-  background: #6c3fd4;
+  background: #7c3aed;
   color: #fff;
   border: none;
   padding: 11px 28px;
@@ -215,7 +186,7 @@ body {
   transition: background 0.15s, transform 0.1s;
 }
 
-.btn-primary:hover  { background: #7c52dc; }
+.btn-primary:hover  { background: #8b4cf3; }
 .btn-primary:active { transform: scale(0.97); }
 
 /* ── Footer legend ───────────────────────────────────────────────────────── */
@@ -247,28 +218,8 @@ body {
   color: var(--border);
 }
 
-/* ── Bomb poof ───────────────────────────────────────────────────────────── */
-.bomb-poof {
-  position: absolute;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  z-index: 20;
-  font-size: clamp(1.4rem, 6vw, 2rem);
-  animation: poofAnim 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-@keyframes poofAnim {
-  0%   { transform: scale(0.2); opacity: 1; }
-  55%  { transform: scale(1.4); opacity: 1; }
-  100% { transform: scale(2);   opacity: 0; }
-}
-
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 400px) {
   .hud-item { padding: 6px 10px; min-width: 52px; }
   .hud-value { font-size: 1rem; }
-  .cell { font-size: clamp(0.85rem, 5.5vw, 1.2rem); }
-  .tile-128, .tile-256 { font-size: clamp(0.7rem, 4.5vw, 1rem); }
 }
