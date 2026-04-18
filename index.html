@@ -77,19 +77,29 @@
         <a href="blog.html" class="build-link">Read the log →</a>
       </div>
 
-      <div class="v2-subscribe-teaser">
-        <p class="v2-eyebrow">subscribe</p>
+      <div class="newsletter-inline-box v2-subscribe-rail">
+        <p class="v2-eyebrow">free · email + sms</p>
         <h3>Get the Build Log.</h3>
-        <p>Weekly email + SMS. No fluff.</p>
-        <form class="newsletter-form">
-          <input type="email" class="v2-teaser-input" placeholder="Email address" autocomplete="email" />
-          <button type="submit" class="v2-teaser-btn">Subscribe</button>
-          <label class="newsletter-consent" style="margin-top:8px;font-size:0.78rem;color:#64748b;display:flex;align-items:flex-start;gap:6px;">
-            <input type="checkbox" class="newsletter-consent-check" style="margin-top:2px;" />
-            I agree to the <a href="privacy-terms.html" target="_blank" rel="noopener" style="color:#6c3fd4;">Privacy Policy &amp; Terms</a>
+        <p>Weekly recap of what I'm shipping. No fluff.</p>
+
+        <form class="newsletter-form-inline">
+          <input type="email" class="newsletter-input" placeholder="Email address" autocomplete="email" />
+          <input type="tel" class="newsletter-input" placeholder="Phone number (for SMS)" autocomplete="tel" />
+
+          <select name="age" class="newsletter-input" required>
+            <option value="" disabled selected>Select age</option>
+          </select>
+
+          <button type="submit" class="newsletter-btn-compact">Subscribe →</button>
+
+          <label class="newsletter-consent">
+            <input type="checkbox" class="newsletter-consent-check" />
+            I agree to the
+            <a href="privacy-terms.html" target="_blank" rel="noopener">
+              Privacy Policy &amp; Terms
+            </a>
           </label>
         </form>
-        <p class="v2-fine-print">free · unsubscribe any time</p>
       </div>
     </section>
   </main>

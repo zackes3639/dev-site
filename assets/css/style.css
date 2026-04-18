@@ -2236,11 +2236,12 @@ a.contact-info-value:hover {
 
 .v2-subscribe-rail-wrap {
   position: sticky;
-  top: 0;
+  top: 12px;
   display: flex;
   flex-direction: column;
   gap: 14px;
   min-width: 0;
+  align-self: start;
 }
 
 .v2-subscribe-rail {
