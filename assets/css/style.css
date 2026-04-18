@@ -2245,6 +2245,7 @@ a.contact-info-value:hover {
 }
 
 .v2-subscribe-rail {
+  margin-top: 0;
   background: #f5f3ff;
   border: 1.5px solid #6c3fd4;
   border-radius: 8px;
