@@ -62,6 +62,29 @@
       inset: 0;
       z-index: 998;
     }
+    .v2-direct-pitch {
+      color: rgba(255,255,255,0.75);
+      font-size: 0.88rem;
+      line-height: 1.55;
+      margin-bottom: 14px;
+    }
+    .v2-direct-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-bottom: 18px;
+    }
+    .v2-direct-chip {
+      font-size: 0.72rem;
+      font-weight: 700;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      letter-spacing: 0.04em;
+      color: #6c3fd4;
+      background: rgba(108,63,212,0.12);
+      border: 1px solid rgba(108,63,212,0.28);
+      border-radius: 5px;
+      padding: 3px 9px;
+    }
   </style>
 </head>
 <body>
@@ -164,7 +187,14 @@ Reached out from your site — here's what I'm after:
 
     <section class="v2-info-strip">
       <div class="v2-direct-card">
-        <span class="v2-mono">// direct</span>
+        <span class="v2-mono">// for hire</span>
+        <p class="v2-direct-pitch">I build SaaS products, websites, and the cloud infra behind them. Fast turnaround. Async-friendly.</p>
+        <div class="v2-direct-chips">
+          <span class="v2-direct-chip">SaaS dev</span>
+          <span class="v2-direct-chip">Web builds</span>
+          <span class="v2-direct-chip">AWS / cloud</span>
+          <span class="v2-direct-chip">Product thinking</span>
+        </div>
         <h3>zacksimon13@gmail.com</h3>
         <p>i read &amp; reply to every email.</p>
       </div>
