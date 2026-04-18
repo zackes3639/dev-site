@@ -5,6 +5,64 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Contact | Zack Simon</title>
   <link rel="stylesheet" href="assets/css/style.css" />
+  <style>
+    .email-picker {
+      position: fixed;
+      background: #ffffff;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 10px;
+      box-shadow: 0 12px 36px rgba(15, 23, 42, 0.13);
+      padding: 14px 16px;
+      z-index: 999;
+      min-width: 220px;
+      animation: picker-in 0.15s ease;
+    }
+    @keyframes picker-in {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .email-picker-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #94a3b8;
+      margin-bottom: 10px;
+    }
+    .email-picker-options {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .email-picker-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 7px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #0b1220;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.12s ease;
+      border: 1px solid #f1f5f9;
+    }
+    .email-picker-btn:hover {
+      background: #f8fafc;
+      border-color: #e2e8f0;
+    }
+    .email-picker-btn svg {
+      flex-shrink: 0;
+      width: 18px;
+      height: 18px;
+    }
+    .email-picker-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 998;
+    }
+  </style>
 </head>
 <body>
   <header class="navbar">
@@ -32,7 +90,21 @@
     </section>
 
     <section class="v2-intent-grid">
-      <a class="v2-intent-card v2-intent-card-purple" href="mailto:mail@zacksimon.dev?subject=Hiring%20Inquiry&body=Hi%20Zack%2C%0A%0AI%20came%20across%20your%20site%20and%20I%27m%20interested%20in%20talking%20about%20potential%20work%20together.%0A%0AHere%27s%20a%20bit%20about%20what%20I%27m%20looking%20for%3A%0A%5BDescribe%20the%20role%20or%20project%5D%0A%0ATech%20stack%20%2F%20domain%3A%0A%5BCloud%20%2F%20product%20%2F%20SaaS%20%2F%20other%5D%0A%0ALooking%20forward%20to%20hearing%20from%20you.%0A%0A%E2%80%94%20%5BYour%20name%5D">
+      <div class="v2-intent-card v2-intent-card-purple"
+           data-subject="Hiring Inquiry"
+           data-body="Hi Zack,
+
+I came across your site and I'm interested in talking about potential work together.
+
+Here's a bit about what I'm looking for:
+[Describe the role or project]
+
+Tech stack / domain:
+[Cloud / product / SaaS / other]
+
+Looking forward to hearing from you.
+
+— [Your name]">
         <div class="v2-intent-head">
           <span class="v2-intent-eyebrow">option 1</span>
           <span class="v2-kbd-cap">1</span>
@@ -43,9 +115,20 @@
           <span>→ Email + resume</span>
           <span aria-hidden="true">↗</span>
         </div>
-      </a>
+      </div>
 
-      <a class="v2-intent-card v2-intent-card-ink" href="mailto:mail@zacksimon.dev?subject=Fellow%20Builder&body=Hey%20Zack%2C%0A%0AFound%20your%20site%20%E2%80%94%20looks%20like%20we%27re%20building%20in%20similar%20spaces.%0A%0AWhat%20I%27m%20working%20on%3A%0A%5BYour%20project%20or%20idea%5D%0A%0AWould%20love%20to%20swap%20notes%20%2F%20share%20what%20you%27re%20building%20%2F%20read%20a%20draft%20if%20you%27re%20up%20for%20it.%0A%0A%E2%80%94%20%5BYour%20name%5D">
+      <div class="v2-intent-card v2-intent-card-ink"
+           data-subject="Fellow Builder"
+           data-body="Hey Zack,
+
+Found your site — looks like we're building in similar spaces.
+
+What I'm working on:
+[Your project or idea]
+
+Would love to swap notes / share what you're building / read a draft if you're up for it.
+
+— [Your name]">
         <div class="v2-intent-head">
           <span class="v2-intent-eyebrow">option 2</span>
           <span class="v2-kbd-cap">2</span>
@@ -56,9 +139,16 @@
           <span>→ Email / DM</span>
           <span aria-hidden="true">↗</span>
         </div>
-      </a>
+      </div>
 
-      <a class="v2-intent-card v2-intent-card-amber" href="mailto:mail@zacksimon.dev?subject=Quick%20Note&body=Hey%20Zack%2C%0A%0AReached%20out%20from%20your%20site%20%E2%80%94%20here%27s%20what%20I%27m%20after%3A%0A%5BPress%20inquiry%20%2F%20podcast%20invite%20%2F%20something%20else%5D%0A%0A%E2%80%94%20%5BYour%20name%5D">
+      <div class="v2-intent-card v2-intent-card-amber"
+           data-subject="Quick Note"
+           data-body="Hey Zack,
+
+Reached out from your site — here's what I'm after:
+[Press inquiry / podcast invite / something else]
+
+— [Your name]">
         <div class="v2-intent-head">
           <span class="v2-intent-eyebrow">option 3</span>
           <span class="v2-kbd-cap">3</span>
@@ -69,7 +159,7 @@
           <span>→ Email</span>
           <span aria-hidden="true">↗</span>
         </div>
-      </a>
+      </div>
     </section>
 
     <section class="v2-info-strip">
@@ -100,5 +190,67 @@
   </footer>
 
   <script src="assets/js/script.js"></script>
+  <script>
+    const TO = 'mail@zacksimon.dev';
+
+    const iconMail = `<svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="4" width="16" height="12" rx="2" stroke="#64748b" stroke-width="1.5"/><path d="M2 7l8 5 8-5" stroke="#64748b" stroke-width="1.5"/></svg>`;
+    const iconGmail = `<svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 5.5h16v10a1 1 0 01-1 1H3a1 1 0 01-1-1v-10z" stroke="#EA4335" stroke-width="1.4"/><path d="M2 5.5l8 6 8-6" stroke="#EA4335" stroke-width="1.4"/></svg>`;
+    const iconOutlook = `<svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="4" width="10" height="12" rx="1.5" fill="#0078D4" opacity=".15" stroke="#0078D4" stroke-width="1.4"/><path d="M12 8h5a1 1 0 011 1v6a1 1 0 01-1 1h-5V8z" stroke="#0078D4" stroke-width="1.4"/><path d="M12 10l3 2.5L18 10" stroke="#0078D4" stroke-width="1.2"/></svg>`;
+
+    let picker = null;
+    let backdrop = null;
+
+    function closePicker() {
+      if (picker) { picker.remove(); picker = null; }
+      if (backdrop) { backdrop.remove(); backdrop = null; }
+    }
+
+    function openPicker(card, e) {
+      e.stopPropagation();
+      closePicker();
+
+      const subject = card.dataset.subject;
+      const body = card.dataset.body;
+      const mailto = `mailto:${TO}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      const gmail  = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(TO)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      const outlook = `https://outlook.live.com/mail/0/deeplink/compose?to=${encodeURIComponent(TO)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+      backdrop = document.createElement('div');
+      backdrop.className = 'email-picker-backdrop';
+      backdrop.addEventListener('click', closePicker);
+      document.body.appendChild(backdrop);
+
+      picker = document.createElement('div');
+      picker.className = 'email-picker';
+      picker.innerHTML = `
+        <p class="email-picker-label">Open with</p>
+        <div class="email-picker-options">
+          <a class="email-picker-btn" href="${mailto}">${iconMail} Mail App</a>
+          <a class="email-picker-btn" href="${gmail}" target="_blank" rel="noopener">${iconGmail} Gmail</a>
+          <a class="email-picker-btn" href="${outlook}" target="_blank" rel="noopener">${iconOutlook} Outlook</a>
+        </div>
+      `;
+      document.body.appendChild(picker);
+
+      const cardRect = card.getBoundingClientRect();
+      const pickerW = 220;
+      let left = cardRect.left;
+      let top = cardRect.bottom + 8;
+
+      if (left + pickerW > window.innerWidth - 12) left = window.innerWidth - pickerW - 12;
+      if (top + 140 > window.innerHeight) top = cardRect.top - 148;
+
+      picker.style.left = left + 'px';
+      picker.style.top  = (top + window.scrollY) + 'px';
+
+      picker.querySelectorAll('.email-picker-btn').forEach(btn => {
+        btn.addEventListener('click', closePicker);
+      });
+    }
+
+    document.querySelectorAll('.v2-intent-card').forEach(card => {
+      card.addEventListener('click', e => openPicker(card, e));
+    });
+  </script>
 </body>
 </html>

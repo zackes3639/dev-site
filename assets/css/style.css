@@ -2354,6 +2354,8 @@ a.contact-info-value:hover {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   color: #0b1220;
   min-height: 200px;
+  text-decoration: none;
+  cursor: pointer;
 }
 
 .v2-intent-card:hover {
