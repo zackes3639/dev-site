@@ -2129,6 +2129,13 @@ a.contact-info-value:hover {
   line-height: 1.7;
 }
 
+.v2-post-body {
+  color: #334155;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  grid-column: 1 / -1;
+}
+
 .v2-post-date-block {
   display: flex;
   flex-direction: column;

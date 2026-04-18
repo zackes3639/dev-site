@@ -9,6 +9,19 @@ function formatDate(isoString) {
   });
 }
 
+function formatDateParts(isoString) {
+  var d = new Date(isoString);
+  return {
+    day: String(d.getDate()).padStart(2, '0'),
+    mo: d.toLocaleDateString('en-US', { month: 'short' }).toLowerCase()
+  };
+}
+
+function estimateReadTime(text) {
+  var words = text ? text.trim().split(/\s+/).length : 0;
+  return Math.max(1, Math.round(words / 200)) + ' min read';
+}
+
 function renderContent(content) {
   return content
     .split(/\n\n+/)
@@ -25,9 +38,11 @@ function toggleContent(postId) {
   if (body.style.display === 'none') {
     body.style.display = 'block';
     btn.textContent = 'Collapse ←';
+    btn.style.alignSelf = 'flex-start';
   } else {
     body.style.display = 'none';
     btn.textContent = 'Read →';
+    btn.style.alignSelf = '';
   }
 }
 
@@ -56,22 +71,30 @@ function renderPosts(posts) {
 
   posts.forEach(function(post) {
     var article = document.createElement('article');
-    article.className = 'post-card';
+    article.className = 'v2-post-card';
 
     var safeId = post.post_id.replace(/[^a-zA-Z0-9]/g, '-');
+    var dateParts = formatDateParts(post.created_at);
+    var tag = post.tag || post.tags || '';
+    var readTime = estimateReadTime(post.content);
 
     article.innerHTML =
-      '<div class="post-card-top">' +
-        '<div>' +
-          '<h2 class="post-title">' + escapeHtml(post.title) + '</h2>' +
-          '<p class="post-excerpt">' + escapeHtml(post.summary) + '</p>' +
+      '<div class="v2-post-date-block">' +
+        '<span class="v2-post-date-day">' + dateParts.day + '</span>' +
+        '<span class="v2-post-date-mo">' + dateParts.mo + '</span>' +
+      '</div>' +
+      '<div class="v2-post-meta">' +
+        '<div class="v2-post-meta-row">' +
+          (tag ? '<span class="v2-tag-chip">' + escapeHtml(tag) + '</span>' : '') +
+          '<span class="v2-post-readtime">' + readTime + '</span>' +
         '</div>' +
-        '<button id="post-toggle-' + safeId + '" class="post-link" onclick="toggleContent(\'' + safeId + '\')">Read →</button>' +
+        '<h3>' + escapeHtml(post.title) + '</h3>' +
+        '<p>' + escapeHtml(post.summary) + '</p>' +
+        '<div id="post-body-' + safeId + '" class="v2-post-body" style="display:none;padding-top:12px;">' +
+          renderContent(escapeHtml(post.content)) +
+        '</div>' +
       '</div>' +
-      '<div id="post-body-' + safeId + '" class="post-body" style="display:none;padding-top:16px;">' +
-        renderContent(escapeHtml(post.content)) +
-      '</div>' +
-      '<span class="post-date">' + formatDate(post.created_at) + '</span>';
+      '<button id="post-toggle-' + safeId + '" class="v2-post-read-btn" onclick="toggleContent(\'' + safeId + '\')">Read →</button>';
 
     container.appendChild(article);
   });
