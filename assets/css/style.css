@@ -1764,7 +1764,7 @@ a.contact-info-value:hover {
 .v2-board-header {
   max-width: var(--content-max);
   margin-inline: auto;
-  padding: var(--space-hero) var(--gutter) clamp(14px, 2.5vw, 22px);
+  padding: clamp(12px, 2vw, 20px) var(--gutter) clamp(14px, 2.5vw, 22px);
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 28px;
@@ -1986,7 +1986,7 @@ a.contact-info-value:hover {
 .v2-blog-header {
   max-width: var(--content-max);
   margin-inline: auto;
-  padding: var(--space-hero) var(--gutter) clamp(10px, 2vw, 18px);
+  padding: clamp(12px, 2vw, 20px) var(--gutter) clamp(10px, 2vw, 18px);
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 22px;
@@ -2307,7 +2307,7 @@ a.contact-info-value:hover {
 .v2-contact-top {
   max-width: var(--content-max);
   margin-inline: auto;
-  padding: var(--space-hero) var(--gutter) clamp(14px, 2.5vw, 22px);
+  padding: clamp(12px, 2vw, 20px) var(--gutter) clamp(14px, 2.5vw, 22px);
 }
 
 .v2-contact-top h1 {
