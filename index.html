@@ -56,15 +56,15 @@
       <div class="v2-triptych">
         <div class="v2-trip-card">
           <h3>Architect</h3>
-          <p>Cloud-first systems design — clean contracts between services, sensible data flow, things that stay small as they scale.</p>
+          <p>Designing systems that stay clean as they grow — clear service boundaries, sensible data flow, AWS-native infrastructure.</p>
         </div>
         <div class="v2-trip-card">
-          <h3>Builder</h3>
-          <p>Hand-rolled HTML/CSS/JS, AWS pipelines, Lambda glue — shipping real surfaces, not slideware.</p>
+          <h3>Build</h3>
+          <p>Writing real code and shipping real products — HTML/CSS/JS frontends, Lambda backends, S3 pipelines. No slide decks.</p>
         </div>
         <div class="v2-trip-card">
-          <h3>Founder-track</h3>
-          <p>Probing SaaS problems worth solving — validating with real users before writing the serious code.</p>
+          <h3>Found</h3>
+          <p>Identifying operational problems worth solving and turning them into SaaS — validating with real users before committing to the hard code.</p>
         </div>
       </div>
     </div>
@@ -81,8 +81,14 @@
         <p class="v2-eyebrow">subscribe</p>
         <h3>Get the Build Log.</h3>
         <p>Weekly email + SMS. No fluff.</p>
-        <input type="email" class="v2-teaser-input" placeholder="Email address" aria-label="Email address (teaser — subscribe on blog page)" />
-        <a href="blog.html#newsletter" class="v2-teaser-btn">Subscribe</a>
+        <form class="newsletter-form">
+          <input type="email" class="v2-teaser-input" placeholder="Email address" autocomplete="email" />
+          <button type="submit" class="v2-teaser-btn">Subscribe</button>
+          <label class="newsletter-consent" style="margin-top:8px;font-size:0.78rem;color:#64748b;display:flex;align-items:flex-start;gap:6px;">
+            <input type="checkbox" class="newsletter-consent-check" style="margin-top:2px;" />
+            I agree to the <a href="privacy-terms.html" target="_blank" rel="noopener" style="color:#6c3fd4;">Privacy Policy &amp; Terms</a>
+          </label>
+        </form>
         <p class="v2-fine-print">free · unsubscribe any time</p>
       </div>
     </section>
@@ -100,5 +106,6 @@
   </footer>
 
   <script src="assets/js/script.js"></script>
+  <script src="assets/js/subscribe.js"></script>
 </body>
 </html>

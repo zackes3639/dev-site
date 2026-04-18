@@ -2236,7 +2236,7 @@ a.contact-info-value:hover {
 
 .v2-subscribe-rail-wrap {
   position: sticky;
-  top: 20px;
+  top: 0;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -2298,6 +2298,14 @@ a.contact-info-value:hover {
   border-bottom: none;
 }
 
+.v2-archive-row[style*="cursor"] {
+  transition: color 0.15s;
+}
+
+.v2-archive-row[style*="cursor"]:hover {
+  color: #6c3fd4;
+}
+
 .v2-archive-row span:last-child {
   color: #94a3b8;
   font-weight: 700;
@@ -2329,7 +2337,7 @@ a.contact-info-value:hover {
   margin-inline: auto;
   padding: 0 var(--gutter) clamp(18px, 3vw, 28px);
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 14px;
 }
 

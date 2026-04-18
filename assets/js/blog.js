@@ -1,4 +1,5 @@
 var POSTS_URL = 'https://33o1s2l689.execute-api.us-east-2.amazonaws.com/posts';
+var allPosts = [];
 
 function formatDate(isoString) {
   var d = new Date(isoString);
@@ -44,6 +45,66 @@ function toggleContent(postId) {
     btn.textContent = 'Read →';
     btn.style.alignSelf = '';
   }
+}
+
+function monthKey(isoString) {
+  var d = new Date(isoString);
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+}
+
+function monthLabel(key) {
+  var parts = key.split('-');
+  var d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, 1);
+  return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }).toLowerCase();
+}
+
+function buildArchive(posts) {
+  var archiveCard = document.getElementById('archive-card');
+  if (!archiveCard) return;
+
+  archiveCard.querySelectorAll('.v2-archive-row').forEach(function(r) { r.remove(); });
+
+  var counts = {};
+  posts.forEach(function(post) {
+    var key = monthKey(post.created_at);
+    counts[key] = (counts[key] || 0) + 1;
+  });
+
+  var keys = Object.keys(counts).sort().reverse();
+  if (keys.length === 0) return;
+
+  var allRow = document.createElement('div');
+  allRow.className = 'v2-archive-row';
+  allRow.style.cssText = 'cursor:pointer;';
+  allRow.innerHTML = '<span style="font-style:italic;">all posts</span><span>' + posts.length + '</span>';
+  allRow.addEventListener('click', function() {
+    setActiveArchiveRow(allRow);
+    renderPosts(allPosts);
+  });
+  archiveCard.appendChild(allRow);
+
+  keys.forEach(function(key) {
+    var row = document.createElement('div');
+    row.className = 'v2-archive-row';
+    row.style.cssText = 'cursor:pointer;';
+    row.innerHTML = '<span>' + monthLabel(key) + '</span><span>' + counts[key] + '</span>';
+    row.addEventListener('click', function() {
+      setActiveArchiveRow(row);
+      renderPosts(allPosts.filter(function(p) { return monthKey(p.created_at) === key; }));
+    });
+    archiveCard.appendChild(row);
+  });
+}
+
+function setActiveArchiveRow(activeRow) {
+  var archiveCard = document.getElementById('archive-card');
+  if (!archiveCard) return;
+  archiveCard.querySelectorAll('.v2-archive-row').forEach(function(r) {
+    r.style.fontWeight = '';
+    r.style.color = '';
+  });
+  activeRow.style.fontWeight = '700';
+  activeRow.style.color = '#6c3fd4';
 }
 
 function escapeHtml(str) {
@@ -111,7 +172,9 @@ document.addEventListener("DOMContentLoaded", function() {
     })
     .then(function(posts) {
       console.log("Posts loaded:", posts);
+      allPosts = posts;
       renderPosts(posts);
+      buildArchive(posts);
     })
     .catch(function(err) {
       console.error("Blog load error:", err);
