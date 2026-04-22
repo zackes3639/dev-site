@@ -37,92 +37,88 @@
       <div class="v2-kanban-col">
         <div class="v2-kanban-col-head">
           <h2>Live</h2>
-          <span class="v2-count-badge">3</span>
+          <span class="v2-count-badge" id="col-live-count">3</span>
         </div>
-
-        <article class="v2-kanban-card">
-          <span class="v2-badge-live"><span class="v2-status-dot"></span>Live</span>
-          <h3>The Build Log</h3>
-          <div class="v2-tag-row">
-            <span class="v2-tag-chip">aws</span>
-            <span class="v2-tag-chip">lambda</span>
-            <span class="v2-tag-chip">md</span>
-          </div>
-          <a href="/blog/" class="build-link">Read →</a>
-        </article>
-
-        <article class="v2-kanban-card">
-          <span class="v2-badge-live"><span class="v2-status-dot"></span>Live</span>
-          <h3>Neon Wave</h3>
-          <p style="color:#475569; font-size:0.85rem;">A retro shoot 'em up — survive endless waves of enemies on a neon grid.</p>
-          <div class="v2-tag-row">
-            <span class="v2-tag-chip">js</span>
-            <span class="v2-tag-chip">canvas</span>
-          </div>
-          <a href="game/index.html" class="build-link">Play →</a>
-        </article>
-
-        <article class="v2-kanban-card v2-kanban-card-dim">
-          <span class="v2-badge-live"><span class="v2-status-dot"></span>Live</span>
-          <h3>zacksimon.dev v1</h3>
-          <div class="v2-tag-row">
-            <span class="v2-tag-chip">html</span>
-            <span class="v2-tag-chip">css</span>
-          </div>
-        </article>
+        <div id="col-live-cards">
+          <article class="v2-kanban-card">
+            <span class="v2-badge-live"><span class="v2-status-dot"></span>Live</span>
+            <h3>The Build Log</h3>
+            <div class="v2-tag-row">
+              <span class="v2-tag-chip">aws</span>
+              <span class="v2-tag-chip">lambda</span>
+              <span class="v2-tag-chip">md</span>
+            </div>
+            <a href="/blog/" class="build-link">Read →</a>
+          </article>
+          <article class="v2-kanban-card">
+            <span class="v2-badge-live"><span class="v2-status-dot"></span>Live</span>
+            <h3>Neon Wave</h3>
+            <p style="color:#475569; font-size:0.85rem;">A retro shoot 'em up — survive endless waves of enemies on a neon grid.</p>
+            <div class="v2-tag-row">
+              <span class="v2-tag-chip">js</span>
+              <span class="v2-tag-chip">canvas</span>
+            </div>
+            <a href="game/index.html" class="build-link">Play →</a>
+          </article>
+          <article class="v2-kanban-card v2-kanban-card-dim">
+            <span class="v2-badge-live"><span class="v2-status-dot"></span>Live</span>
+            <h3>zacksimon.dev v1</h3>
+            <div class="v2-tag-row">
+              <span class="v2-tag-chip">html</span>
+              <span class="v2-tag-chip">css</span>
+            </div>
+          </article>
+        </div>
       </div>
 
       <div class="v2-kanban-col">
         <div class="v2-kanban-col-head">
           <h2>In Progress</h2>
-          <span class="v2-count-badge">2</span>
+          <span class="v2-count-badge" id="col-wip-count">2</span>
         </div>
-
-        <article class="v2-kanban-card">
-          <span class="v2-badge-wip">In Progress</span>
-          <h3>SaaS Validation Lab</h3>
-          <p style="color:#475569; font-size:0.85rem;">Probing operational-leverage problems worth solving.</p>
-          <div class="v2-progress-bar" aria-label="60% complete">
-            <div class="v2-progress-fill" style="width: 60%;"></div>
-          </div>
-        </article>
-
-        <article class="v2-kanban-card v2-kanban-card-dashed">
-          <span class="v2-badge-wip">In Progress</span>
-          <h3>Build Log v2 (SMS digest + tags)</h3>
-          <div class="v2-tag-row">
-            <span class="v2-tag-chip">sms</span>
-            <span class="v2-tag-chip">tags</span>
-          </div>
-        </article>
+        <div id="col-wip-cards">
+          <article class="v2-kanban-card">
+            <span class="v2-badge-wip">In Progress</span>
+            <h3>SaaS Validation Lab</h3>
+            <p style="color:#475569; font-size:0.85rem;">Probing operational-leverage problems worth solving.</p>
+            <div class="v2-progress-bar" aria-label="60% complete">
+              <div class="v2-progress-fill" style="width: 60%;"></div>
+            </div>
+          </article>
+          <article class="v2-kanban-card v2-kanban-card-dashed">
+            <span class="v2-badge-wip">In Progress</span>
+            <h3>Build Log v2 (SMS digest + tags)</h3>
+            <div class="v2-tag-row">
+              <span class="v2-tag-chip">sms</span>
+              <span class="v2-tag-chip">tags</span>
+            </div>
+          </article>
+        </div>
       </div>
 
       <div class="v2-kanban-col">
         <div class="v2-kanban-col-head">
           <h2>Ideas</h2>
-          <span class="v2-count-badge">4</span>
+          <span class="v2-count-badge" id="col-idea-count">4</span>
         </div>
-
-        <article class="v2-kanban-card v2-kanban-card-dashed">
-          <span class="v2-badge-idea">Idea</span>
-          <h3>Workflow CRM</h3>
-        </article>
-
-        <article class="v2-kanban-card v2-kanban-card-dashed">
-          <span class="v2-badge-idea">Idea</span>
-          <h3>Ops dashboard</h3>
-        </article>
-
-        <article class="v2-kanban-card v2-kanban-card-dashed">
-          <span class="v2-badge-idea">Idea</span>
-          <h3>Dev time tracker</h3>
-        </article>
-
-        <article class="v2-kanban-card v2-kanban-card-dashed">
-          <span class="v2-badge-idea">Idea</span>
-          <h3>Weekly review tool</h3>
-        </article>
-
+        <div id="col-idea-cards">
+          <article class="v2-kanban-card v2-kanban-card-dashed">
+            <span class="v2-badge-idea">Idea</span>
+            <h3>Workflow CRM</h3>
+          </article>
+          <article class="v2-kanban-card v2-kanban-card-dashed">
+            <span class="v2-badge-idea">Idea</span>
+            <h3>Ops dashboard</h3>
+          </article>
+          <article class="v2-kanban-card v2-kanban-card-dashed">
+            <span class="v2-badge-idea">Idea</span>
+            <h3>Dev time tracker</h3>
+          </article>
+          <article class="v2-kanban-card v2-kanban-card-dashed">
+            <span class="v2-badge-idea">Idea</span>
+            <h3>Weekly review tool</h3>
+          </article>
+        </div>
       </div>
     </section>
 
@@ -146,5 +142,60 @@
   </footer>
 
   <script src="/assets/js/script.js"></script>
+  <script>
+    var BUILDS_API_URL = 'https://33o1s2l689.execute-api.us-east-2.amazonaws.com/builds';
+
+    var STATUS_CFG = {
+      live: { badge: 'v2-badge-live', label: '<span class="v2-status-dot"></span>Live', cardMod: '' },
+      wip:  { badge: 'v2-badge-wip',  label: 'In Progress',                              cardMod: 'v2-kanban-card-dashed' },
+      idea: { badge: 'v2-badge-idea', label: 'Idea',                                     cardMod: 'v2-kanban-card-dashed' }
+    };
+
+    function esc(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function buildCardHtml(b) {
+      var cfg = STATUS_CFG[b.status] || STATUS_CFG.idea;
+      var cls = 'v2-kanban-card' + (cfg.cardMod ? ' ' + cfg.cardMod : '') + (b.dim ? ' v2-kanban-card-dim' : '');
+      var html = '<article class="' + cls + '">';
+      html += '<span class="' + cfg.badge + '">' + cfg.label + '</span>';
+      html += '<h3>' + esc(b.title) + '</h3>';
+      if (b.description) html += '<p style="color:#475569;font-size:0.85rem;">' + esc(b.description) + '</p>';
+      if (b.tags && b.tags.length) {
+        html += '<div class="v2-tag-row">';
+        b.tags.forEach(function(t) { html += '<span class="v2-tag-chip">' + esc(t) + '</span>'; });
+        html += '</div>';
+      }
+      if (b.status === 'wip' && b.progress > 0) {
+        html += '<div class="v2-progress-bar" aria-label="' + b.progress + '% complete">';
+        html += '<div class="v2-progress-fill" style="width:' + b.progress + '%;"></div></div>';
+      }
+      if (b.link) html += '<a href="' + esc(b.link) + '" class="build-link">' + esc(b.link_label || 'View →') + '</a>';
+      html += '</article>';
+      return html;
+    }
+
+    function renderBuilds(builds) {
+      builds.sort(function(a, b) {
+        var ao = a.sort_order || 0, bo = b.sort_order || 0;
+        if (ao !== bo) return ao - bo;
+        return (a.created_at || '').localeCompare(b.created_at || '');
+      });
+      var grouped = { live: [], wip: [], idea: [] };
+      builds.forEach(function(b) { if (grouped[b.status]) grouped[b.status].push(b); });
+      ['live', 'wip', 'idea'].forEach(function(s) {
+        document.getElementById('col-' + s + '-cards').innerHTML = grouped[s].map(buildCardHtml).join('');
+        document.getElementById('col-' + s + '-count').textContent = grouped[s].length;
+      });
+    }
+
+    if (!BUILDS_API_URL.includes('CONFIGURE_ME')) {
+      fetch(BUILDS_API_URL)
+        .then(function(r) { return r.json(); })
+        .then(renderBuilds)
+        .catch(function() {}); // keep static fallback on error
+    }
+  </script>
 </body>
 </html>

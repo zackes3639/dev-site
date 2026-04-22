@@ -192,8 +192,56 @@
       margin: 0;
     }
 
+    /* ── Hub ── */
+    .admin-hub {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    @media (max-width: 480px) { .admin-hub { grid-template-columns: 1fr; } }
+    .admin-hub-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 28px 22px;
+      cursor: pointer;
+      transition: border-color 0.18s, box-shadow 0.18s;
+      text-align: left;
+      background: none;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .admin-hub-card:hover {
+      border-color: #6c3fd4;
+      box-shadow: 0 4px 18px rgba(108,63,212,0.10);
+    }
+    .admin-hub-card-label {
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #6c3fd4;
+      margin: 0 0 8px;
+    }
+    .admin-hub-card-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #0b1220;
+      margin: 0 0 5px;
+    }
+    .admin-hub-card-desc {
+      font-size: 0.82rem;
+      color: #64748b;
+      margin: 0;
+    }
+
+    /* ── Extra badges for builds ── */
+    .badge-live { background: #dcfce7; color: #15803d; }
+    .badge-wip  { background: #fef3c7; color: #d97706; }
+    .badge-idea { background: #f1f5f9; color: #64748b; }
+
     /* ── Views ── */
-    #view-login, #view-list, #view-form { display: none; }
+    #view-login, #view-hub, #view-list, #view-form,
+    #view-builds-list, #view-builds-form { display: none; }
   </style>
 </head>
 <body>
@@ -219,6 +267,22 @@
 
       <div class="admin-card">
 
+        <!-- HUB VIEW -->
+        <div id="view-hub">
+          <div class="admin-hub">
+            <button class="admin-hub-card" id="hub-builds-btn">
+              <p class="admin-hub-card-label">Kanban</p>
+              <h2 class="admin-hub-card-title">Builds</h2>
+              <p class="admin-hub-card-desc">Add, edit, and move cards on the board</p>
+            </button>
+            <button class="admin-hub-card" id="hub-blog-btn">
+              <p class="admin-hub-card-label">Blog</p>
+              <h2 class="admin-hub-card-title">The Build Log</h2>
+              <p class="admin-hub-card-desc">Write, edit, and publish posts</p>
+            </button>
+          </div>
+        </div>
+
         <!-- LOGIN VIEW -->
         <div id="view-login">
           <div class="admin-field">
@@ -231,6 +295,10 @@
 
         <!-- LIST VIEW -->
         <div id="view-list">
+          <div class="admin-form-header" style="margin-bottom:20px">
+            <button class="admin-back-btn" id="blog-back-to-hub-btn">← Admin</button>
+            <p class="admin-form-title">The Build Log</p>
+          </div>
           <div class="admin-list-header">
             <p class="admin-list-title" id="list-count">Posts</p>
             <button class="admin-btn" id="new-post-btn">+ New Post</button>
@@ -274,6 +342,74 @@
             <hr class="admin-divider" />
             <button type="submit" id="form-submit-btn" class="admin-btn admin-btn-full">Save Post</button>
             <p class="admin-msg" id="form-msg"></p>
+          </form>
+        </div>
+
+        <!-- BUILDS LIST VIEW -->
+        <div id="view-builds-list">
+          <div class="admin-form-header" style="margin-bottom:20px">
+            <button class="admin-back-btn" id="builds-back-to-hub-btn">← Admin</button>
+            <p class="admin-form-title">Builds</p>
+          </div>
+          <div class="admin-list-header">
+            <p class="admin-list-title" id="builds-list-count">Builds</p>
+            <button class="admin-btn" id="new-build-btn">+ New Build</button>
+          </div>
+          <div id="builds-list-body"></div>
+          <p class="admin-msg" id="builds-list-msg"></p>
+        </div>
+
+        <!-- BUILDS FORM VIEW -->
+        <div id="view-builds-form">
+          <div class="admin-form-header">
+            <button class="admin-back-btn" id="builds-back-btn">← Back</button>
+            <p class="admin-form-title" id="builds-form-mode-title">New Build</p>
+          </div>
+
+          <form id="builds-form">
+            <div class="admin-field">
+              <label class="admin-label" for="b-title">Title</label>
+              <input type="text" id="b-title" class="admin-input" placeholder="Build title" />
+            </div>
+            <div class="admin-field">
+              <label class="admin-label" for="b-description">Description <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#cbd5e1">(optional)</span></label>
+              <textarea id="b-description" class="admin-textarea" style="min-height:80px" placeholder="Short description shown on the card"></textarea>
+            </div>
+            <div class="admin-field">
+              <label class="admin-label" for="b-status">Status</label>
+              <select id="b-status" class="admin-input">
+                <option value="live">Live</option>
+                <option value="wip">In Progress</option>
+                <option value="idea">Idea</option>
+              </select>
+            </div>
+            <div class="admin-field" id="b-progress-field" style="display:none">
+              <label class="admin-label" for="b-progress">Progress <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#cbd5e1">(0–100)</span></label>
+              <input type="number" id="b-progress" class="admin-input" min="0" max="100" placeholder="60" />
+            </div>
+            <div class="admin-field">
+              <label class="admin-label" for="b-tags">Tags <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#cbd5e1">(optional, comma-separated)</span></label>
+              <input type="text" id="b-tags" class="admin-input" placeholder="e.g. aws, js, canvas" />
+            </div>
+            <div class="admin-field">
+              <label class="admin-label" for="b-link">Link URL <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#cbd5e1">(optional)</span></label>
+              <input type="text" id="b-link" class="admin-input" placeholder="https://… or /path/" />
+            </div>
+            <div class="admin-field">
+              <label class="admin-label" for="b-link-label">Link Label <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#cbd5e1">(optional)</span></label>
+              <input type="text" id="b-link-label" class="admin-input" placeholder="View →" />
+            </div>
+            <div class="admin-field">
+              <label class="admin-label" for="b-sort">Sort Order <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#cbd5e1">(lower = higher in column)</span></label>
+              <input type="number" id="b-sort" class="admin-input" placeholder="0" value="0" />
+            </div>
+            <div class="admin-toggle-row">
+              <input type="checkbox" id="b-dim" />
+              <label class="admin-toggle-label" for="b-dim">Dim this card (muted visual style for archived items)</label>
+            </div>
+            <hr class="admin-divider" />
+            <button type="submit" id="builds-form-submit-btn" class="admin-btn admin-btn-full">Save Build</button>
+            <p class="admin-msg" id="builds-form-msg"></p>
           </form>
         </div>
 
