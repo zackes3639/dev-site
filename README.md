@@ -68,6 +68,17 @@ npm run smoke:briefly
 
 Site deploy still syncs root static files to S3 + CloudFront invalidation via `.github/workflows/deploy.yml`.
 
+## Branch and workflow model
+
+- `main` = stable integration branch
+- `briefly-dev` = active development branch for ongoing Briefly work
+
+Workflow and guardrails docs:
+
+- `AGENTS.md` (working contract for future Codex sessions)
+- `PLANS.md` (execution-plan template)
+- `docs/dev-workflow.md` (lightweight branch/commit/validation process)
+
 ## Notes
 
 - `apps/site` is intentionally a placeholder while we complete phased migration from root static files.
