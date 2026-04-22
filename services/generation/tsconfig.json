@@ -4,6 +4,7 @@
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {
+      "@briefly/contracts": ["../../packages/contracts/src"],
       "@briefly/shared": ["../../packages/shared/src"]
     }
   },

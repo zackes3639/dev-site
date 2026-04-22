@@ -1,9 +1,22 @@
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
+import { ValidationError } from "./errors";
 
-export const parseJsonBody = <T>(event: APIGatewayProxyEventV2): T => {
+interface ParseOptions {
+  allowEmpty?: boolean;
+}
+
+export const parseJsonBody = <T>(event: APIGatewayProxyEventV2, options: ParseOptions = {}): T => {
   if (!event.body) {
-    throw new Error("Request body is required");
+    if (options.allowEmpty) {
+      return {} as T;
+    }
+
+    throw new ValidationError("Request body is required");
   }
 
-  return JSON.parse(event.body) as T;
+  try {
+    return JSON.parse(event.body) as T;
+  } catch {
+    throw new ValidationError("Request body must be valid JSON");
+  }
 };

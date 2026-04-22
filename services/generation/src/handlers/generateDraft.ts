@@ -1,16 +1,10 @@
 import type { Context } from "aws-lambda";
+import type { DraftItem, DailyInputItem, StartGenerationWorkflowInput } from "@briefly/contracts";
 import { GetCommand, PutCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { createId, logError, logInfo } from "@briefly/shared";
 import { buildLogV1Prompt } from "../prompts/buildLogV1";
-import { generateMarkdown } from "../lib/model";
 import { ddb } from "../lib/dynamo";
-
-interface GenerateDraftEvent {
-  run_id: string;
-  input_id: string;
-  style_preset?: "build_log_v1";
-  target_word_count?: number;
-}
+import { generateMarkdown } from "../lib/model";
 
 const toSlug = (title: string): string =>
   title
@@ -20,18 +14,25 @@ const toSlug = (title: string): string =>
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-");
 
-export const handler = async (event: GenerateDraftEvent, _context: Context) => {
-  try {
-    const dailyInputsTable = process.env.DAILY_INPUTS_TABLE;
-    const draftsTable = process.env.DRAFTS_TABLE;
-    const workflowRunsTable = process.env.WORKFLOW_RUNS_TABLE;
-    if (!dailyInputsTable || !draftsTable || !workflowRunsTable) {
-      throw new Error("Missing DAILY_INPUTS_TABLE, DRAFTS_TABLE, or WORKFLOW_RUNS_TABLE");
-    }
+const requiredEnv = () => {
+  const dailyInputsTable = process.env.DAILY_INPUTS_TABLE;
+  const draftsTable = process.env.DRAFTS_TABLE;
+  const workflowRunsTable = process.env.WORKFLOW_RUNS_TABLE;
 
+  if (!dailyInputsTable || !draftsTable || !workflowRunsTable) {
+    throw new Error("Missing DAILY_INPUTS_TABLE, DRAFTS_TABLE, or WORKFLOW_RUNS_TABLE");
+  }
+
+  return { dailyInputsTable, draftsTable, workflowRunsTable };
+};
+
+export const handler = async (event: StartGenerationWorkflowInput, _context: Context) => {
+  const cfg = requiredEnv();
+
+  try {
     const dailyInputRecord = await ddb.send(
       new GetCommand({
-        TableName: dailyInputsTable,
+        TableName: cfg.dailyInputsTable,
         Key: { input_id: event.input_id }
       })
     );
@@ -40,8 +41,9 @@ export const handler = async (event: GenerateDraftEvent, _context: Context) => {
       throw new Error(`Daily input not found: ${event.input_id}`);
     }
 
-    const bullets = Array.isArray(dailyInputRecord.Item.bullets)
-      ? dailyInputRecord.Item.bullets.map((value) => String(value))
+    const dailyInput = dailyInputRecord.Item as DailyInputItem;
+    const bullets = Array.isArray(dailyInput.bullets)
+      ? dailyInput.bullets.map((value) => String(value))
       : [];
 
     if (bullets.length !== 3) {
@@ -66,59 +68,74 @@ export const handler = async (event: GenerateDraftEvent, _context: Context) => {
       .trim();
 
     const title = firstHeading || `Build Log - ${new Date().toISOString().slice(0, 10)}`;
+    const now = new Date().toISOString();
 
-    const draft = {
+    const draft: DraftItem = {
       draft_id: createId("draft"),
       input_id: event.input_id,
       run_id: event.run_id,
       title,
       slug_suggestion: toSlug(title),
-      summary: bullets.join(" ").slice(0, 180),
+      summary: bullets.join(" ").slice(0, 320),
       content_md: contentMd,
       status: "pending_review",
       prompt_version: promptVersion,
       model_id: modelId,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      editor_notes: "",
+      version: 1,
+      created_at: now,
+      updated_at: now
     };
 
     await ddb.send(
       new PutCommand({
-        TableName: draftsTable,
+        TableName: cfg.draftsTable,
         Item: draft
       })
     );
 
     await ddb.send(
       new UpdateCommand({
-        TableName: dailyInputsTable,
+        TableName: cfg.dailyInputsTable,
         Key: { input_id: event.input_id },
-        UpdateExpression: "SET #status = :status, updated_at = :updatedAt",
+        UpdateExpression: "SET #status = :status, latest_run_id = :runId, updated_at = :updatedAt",
         ExpressionAttributeNames: { "#status": "status" },
         ExpressionAttributeValues: {
           ":status": "pending_review",
-          ":updatedAt": new Date().toISOString()
+          ":runId": event.run_id,
+          ":updatedAt": now
         }
       })
     );
 
     await ddb.send(
       new UpdateCommand({
-        TableName: workflowRunsTable,
+        TableName: cfg.workflowRunsTable,
         Key: { run_id: event.run_id },
         UpdateExpression:
-          "SET #status = :status, ended_at = :endedAt, updated_at = :updatedAt, result_draft_id = :draftId",
-        ExpressionAttributeNames: { "#status": "status" },
+          "SET #status = :status, ended_at = :endedAt, updated_at = :updatedAt, #result = :result",
+        ExpressionAttributeNames: {
+          "#status": "status",
+          "#result": "result"
+        },
         ExpressionAttributeValues: {
           ":status": "pending_review",
-          ":endedAt": new Date().toISOString(),
-          ":updatedAt": new Date().toISOString(),
-          ":draftId": draft.draft_id
+          ":endedAt": now,
+          ":updatedAt": now,
+          ":result": {
+            draft_id: draft.draft_id,
+            status: "pending_review"
+          }
         }
       })
     );
 
-    logInfo("draft_generated", { runId: event.run_id, inputId: event.input_id, modelId });
+    logInfo("draft_generated", {
+      runId: event.run_id,
+      inputId: event.input_id,
+      draftId: draft.draft_id,
+      modelId
+    });
 
     return {
       ...draft,
@@ -128,6 +145,40 @@ export const handler = async (event: GenerateDraftEvent, _context: Context) => {
       }
     };
   } catch (error) {
+    const failedAt = new Date().toISOString();
+
+    await Promise.allSettled([
+      ddb.send(
+        new UpdateCommand({
+          TableName: cfg.workflowRunsTable,
+          Key: { run_id: event.run_id },
+          UpdateExpression:
+            "SET #status = :status, ended_at = :endedAt, updated_at = :updatedAt, error_message = :errorMessage",
+          ExpressionAttributeNames: {
+            "#status": "status"
+          },
+          ExpressionAttributeValues: {
+            ":status": "failed",
+            ":endedAt": failedAt,
+            ":updatedAt": failedAt,
+            ":errorMessage": String(error)
+          }
+        })
+      ),
+      ddb.send(
+        new UpdateCommand({
+          TableName: cfg.dailyInputsTable,
+          Key: { input_id: event.input_id },
+          UpdateExpression: "SET #status = :status, updated_at = :updatedAt",
+          ExpressionAttributeNames: { "#status": "status" },
+          ExpressionAttributeValues: {
+            ":status": "failed",
+            ":updatedAt": failedAt
+          }
+        })
+      )
+    ]);
+
     logError("draft_generation_failed", {
       runId: event.run_id,
       inputId: event.input_id,

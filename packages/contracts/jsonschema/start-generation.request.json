@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "StartGenerationRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "style_preset": {
+      "type": "string",
+      "enum": ["build_log_v1"]
+    },
+    "target_word_count": {
+      "type": "integer",
+      "minimum": 250,
+      "maximum": 1500
+    }
+  }
+}

@@ -1,58 +1,48 @@
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
-import { UpdateCommand } from "@aws-sdk/lib-dynamodb";
-import { json, logError, logInfo } from "@briefly/shared";
-import { loadConfig } from "../lib/config";
-import { ddb } from "../repositories/dynamo";
-import { parseJsonBody } from "../lib/body";
+import type { UpdateDraftResponse } from "@briefly/contracts";
+import { json, logInfo } from "@briefly/shared";
 import { requireIdentity } from "../lib/auth";
-
-interface UpdateDraftBody {
-  title?: string;
-  summary?: string;
-  content_md?: string;
-  editor_notes?: string;
-  status?: "pending_review" | "approved" | "rejected";
-}
+import { parseJsonBody } from "../lib/body";
+import { loadConfig } from "../lib/config";
+import { toErrorResponse } from "../lib/errorResponse";
+import { validateIdPathParam, validateUpdateDraft } from "../lib/validators";
+import { DraftsRepository } from "../repositories/draftsRepository";
 
 export const handler = async (event: APIGatewayProxyEventV2) => {
   try {
     const identity = requireIdentity(event);
-    const draftId = event.pathParameters?.draftId;
-    if (!draftId) {
-      return json(400, { message: "Missing path parameter: draftId" });
-    }
+    const draftId = validateIdPathParam(event.pathParameters?.draftId, "draftId");
+    const payload = validateUpdateDraft(parseJsonBody<unknown>(event));
 
-    const body = parseJsonBody<UpdateDraftBody>(event);
     const cfg = loadConfig();
-    const now = new Date().toISOString();
+    const draftsRepository = new DraftsRepository(cfg.draftsTable);
 
-    await ddb.send(
-      new UpdateCommand({
-        TableName: cfg.draftsTable,
-        Key: { draft_id: draftId },
-        UpdateExpression:
-          "SET title = if_not_exists(title, :empty), summary = :summary, content_md = :content, editor_notes = :notes, #status = :status, reviewed_by = :reviewedBy, updated_at = :updatedAt",
-        ExpressionAttributeNames: {
-          "#status": "status"
-        },
-        ExpressionAttributeValues: {
-          ":empty": "",
-          ":summary": body.summary ?? "",
-          ":content": body.content_md ?? "",
-          ":notes": body.editor_notes ?? "",
-          ":status": body.status ?? "pending_review",
-          ":reviewedBy": identity.userId,
-          ":updatedAt": now
-        },
-        ConditionExpression: "attribute_exists(draft_id)",
-        ReturnValues: "ALL_NEW"
-      })
-    );
+    const updatedDraft = await draftsRepository.updateForReview({
+      draft_id: draftId,
+      expected_version: payload.expected_version,
+      patch: {
+        ...(typeof payload.title === "string" ? { title: payload.title } : {}),
+        ...(typeof payload.summary === "string" ? { summary: payload.summary } : {}),
+        ...(typeof payload.content_md === "string" ? { content_md: payload.content_md } : {}),
+        ...(typeof payload.editor_notes === "string" ? { editor_notes: payload.editor_notes } : {}),
+        ...(typeof payload.status === "string" ? { status: payload.status } : {})
+      },
+      reviewed_by: identity.userId,
+      updated_at: new Date().toISOString()
+    });
 
-    logInfo("draft_updated", { draftId, userId: identity.userId });
-    return json(200, { draft_id: draftId, updated_at: now });
+    logInfo("draft_updated", {
+      draftId,
+      reviewer: identity.userId,
+      version: updatedDraft.version
+    });
+
+    const response: UpdateDraftResponse = {
+      draft: updatedDraft
+    };
+
+    return json(200, response);
   } catch (error) {
-    logError("update_draft_failed", { error: String(error) });
-    return json(500, { message: "Failed to update draft" });
+    return toErrorResponse(error, "Failed to update draft");
   }
 };

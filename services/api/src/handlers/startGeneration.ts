@@ -1,84 +1,96 @@
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
-import { PutCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { StartExecutionCommand, SFNClient } from "@aws-sdk/client-sfn";
-import type { StartGenerationRequest, StartGenerationResponse } from "@briefly/contracts";
+import type { StartGenerationResponse } from "@briefly/contracts";
 import { createId, json, logError, logInfo } from "@briefly/shared";
+import { requireIdentity } from "../lib/auth";
 import { parseJsonBody } from "../lib/body";
 import { loadConfig } from "../lib/config";
-import { ddb } from "../repositories/dynamo";
-import { requireIdentity } from "../lib/auth";
+import { ConflictError, NotFoundError } from "../lib/errors";
+import { toErrorResponse } from "../lib/errorResponse";
+import { validateIdPathParam, validateStartGeneration } from "../lib/validators";
+import { DailyInputsRepository } from "../repositories/dailyInputsRepository";
+import { createGenerationWorkflowRun, markWorkflowRunFailed } from "../repositories/workflowRunHelpers";
+import { WorkflowRunsRepository } from "../repositories/workflowRunsRepository";
 
 const sfn = new SFNClient({});
 
 export const handler = async (event: APIGatewayProxyEventV2) => {
   try {
-    requireIdentity(event);
-    const inputId = event.pathParameters?.inputId;
-    if (!inputId) {
-      return json(400, { message: "Missing path parameter: inputId" });
+    const identity = requireIdentity(event);
+    const inputId = validateIdPathParam(event.pathParameters?.inputId, "inputId");
+    const payload = validateStartGeneration(parseJsonBody<unknown>(event, { allowEmpty: true }));
+
+    const cfg = loadConfig();
+    const dailyInputsRepository = new DailyInputsRepository(cfg.dailyInputsTable);
+    const workflowRunsRepository = new WorkflowRunsRepository(cfg.workflowRunsTable);
+
+    const dailyInput = await dailyInputsRepository.getById(inputId);
+    if (!dailyInput) {
+      throw new NotFoundError("Daily input not found", { input_id: inputId });
     }
 
-    const body = parseJsonBody<StartGenerationRequest>(event);
-    const cfg = loadConfig();
+    if (dailyInput.status === "running") {
+      throw new ConflictError("Daily input already has a generation run in progress", {
+        input_id: inputId,
+        latest_run_id: dailyInput.latest_run_id
+      });
+    }
+
+    if (dailyInput.status === "pending_review") {
+      throw new ConflictError("Daily input already has a draft pending review", {
+        input_id: inputId,
+        latest_run_id: dailyInput.latest_run_id
+      });
+    }
 
     const runId = createId("run");
-    const now = new Date().toISOString();
+    const startedAt = new Date().toISOString();
 
-    await ddb.send(
-      new PutCommand({
-        TableName: cfg.workflowRunsTable,
-        Item: {
-          run_id: runId,
-          workflow_name: "generate-draft",
-          entity_ref: `daily_input#${inputId}`,
-          status: "running",
-          started_at: now,
-          created_at: now,
-          updated_at: now,
-          request: {
-            style_preset: body.style_preset ?? "build_log_v1",
-            target_word_count: body.target_word_count ?? 500
-          }
-        }
-      })
-    );
+    await createGenerationWorkflowRun(workflowRunsRepository, {
+      run_id: runId,
+      input_id: inputId,
+      started_at: startedAt,
+      request: {
+        style_preset: payload.style_preset,
+        target_word_count: payload.target_word_count
+      }
+    });
 
-    await ddb.send(
-      new UpdateCommand({
-        TableName: cfg.dailyInputsTable,
-        Key: { input_id: inputId },
-        UpdateExpression: "SET #status = :status, latest_run_id = :runId, updated_at = :updatedAt",
-        ExpressionAttributeNames: { "#status": "status" },
-        ExpressionAttributeValues: {
-          ":status": "running",
-          ":runId": runId,
-          ":updatedAt": now
-        }
-      })
-    );
+    await dailyInputsRepository.updateStatus(inputId, "running", startedAt, runId);
 
-    await sfn.send(
-      new StartExecutionCommand({
-        stateMachineArn: cfg.generationStateMachineArn,
-        name: runId,
-        input: JSON.stringify({
-          run_id: runId,
-          input_id: inputId,
-          style_preset: body.style_preset ?? "build_log_v1",
-          target_word_count: body.target_word_count ?? 500
+    try {
+      await sfn.send(
+        new StartExecutionCommand({
+          stateMachineArn: cfg.generationStateMachineArn,
+          name: runId,
+          input: JSON.stringify({
+            run_id: runId,
+            input_id: inputId,
+            requested_by: identity.userId,
+            style_preset: payload.style_preset,
+            target_word_count: payload.target_word_count
+          })
         })
-      })
-    );
+      );
+    } catch (error) {
+      const failedAt = new Date().toISOString();
+      await Promise.allSettled([
+        markWorkflowRunFailed(workflowRunsRepository, runId, failedAt, String(error)),
+        dailyInputsRepository.updateStatus(inputId, "failed", failedAt, runId)
+      ]);
+      throw error;
+    }
 
     const response: StartGenerationResponse = {
       run_id: runId,
-      status: "running"
+      status: "running",
+      started_at: startedAt
     };
 
-    logInfo("generation_started", { runId, inputId });
+    logInfo("generation_started", { inputId, runId, userId: identity.userId });
     return json(202, response);
   } catch (error) {
     logError("start_generation_failed", { error: String(error) });
-    return json(500, { message: "Failed to start generation" });
+    return toErrorResponse(error, "Failed to start generation");
   }
 };

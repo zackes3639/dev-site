@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PublishDraftRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "expected_version",
+    "edited_title",
+    "edited_summary",
+    "edited_content_md",
+    "slug",
+    "publish_at"
+  ],
+  "properties": {
+    "expected_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "edited_title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 180
+    },
+    "edited_summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 320
+    },
+    "edited_content_md": {
+      "type": "string",
+      "minLength": 1
+    },
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "maxLength": 120
+    },
+    "publish_at": {
+      "type": "string",
+      "enum": ["now"]
+    }
+  }
+}

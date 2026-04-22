@@ -203,6 +203,16 @@ export class BrieflyStack extends cdk.Stack {
       "services/api/src/handlers/startGeneration.ts",
       apiEnv
     );
+    const getWorkflowRunLambda = createNodeLambda(
+      "BrieflyApiGetWorkflowRunLambda",
+      "services/api/src/handlers/getWorkflowRun.ts",
+      apiEnv
+    );
+    const getDailyInputDraftLambda = createNodeLambda(
+      "BrieflyApiGetDailyInputDraftLambda",
+      "services/api/src/handlers/getDailyInputDraft.ts",
+      apiEnv
+    );
     const getDraftLambda = createNodeLambda(
       "BrieflyApiGetDraftLambda",
       "services/api/src/handlers/getDraft.ts",
@@ -220,6 +230,9 @@ export class BrieflyStack extends cdk.Stack {
     );
 
     dailyInputs.grantReadWriteData(createDailyInputLambda);
+    dailyInputs.grantReadData(getDailyInputDraftLambda);
+    drafts.grantReadData(getDailyInputDraftLambda);
+    workflowRuns.grantReadData(getWorkflowRunLambda);
     drafts.grantReadWriteData(getDraftLambda);
     drafts.grantReadWriteData(updateDraftLambda);
 
@@ -286,6 +299,20 @@ export class BrieflyStack extends cdk.Stack {
       "/v1/daily-inputs/{inputId}/generate",
       [apigwv2.HttpMethod.POST],
       new integrations.HttpLambdaIntegration("StartGenerationIntegration", startGenerationLambda)
+    );
+
+    addJwtRoute(
+      "GetWorkflowRunRoute",
+      "/v1/workflow-runs/{runId}",
+      [apigwv2.HttpMethod.GET],
+      new integrations.HttpLambdaIntegration("GetWorkflowRunIntegration", getWorkflowRunLambda)
+    );
+
+    addJwtRoute(
+      "GetDailyInputDraftRoute",
+      "/v1/daily-inputs/{inputId}/draft",
+      [apigwv2.HttpMethod.GET],
+      new integrations.HttpLambdaIntegration("GetDailyInputDraftIntegration", getDailyInputDraftLambda)
     );
 
     addJwtRoute(

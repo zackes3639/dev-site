@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "UpdateDraftRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["expected_version"],
+  "properties": {
+    "expected_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 180
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 320
+    },
+    "content_md": {
+      "type": "string",
+      "minLength": 1
+    },
+    "editor_notes": {
+      "type": "string",
+      "maxLength": 2000
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pending_review", "approved", "rejected"]
+    }
+  },
+  "anyOf": [
+    { "required": ["title"] },
+    { "required": ["summary"] },
+    { "required": ["content_md"] },
+    { "required": ["editor_notes"] },
+    { "required": ["status"] }
+  ]
+}

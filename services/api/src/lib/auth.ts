@@ -1,4 +1,5 @@
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
+import { UnauthorizedError } from "./errors";
 
 export interface RequestIdentity {
   userId: string;
@@ -10,7 +11,7 @@ export const requireIdentity = (event: APIGatewayProxyEventV2): RequestIdentity 
     .authorizer?.jwt;
   const sub = jwt?.claims?.sub;
   if (typeof sub !== "string" || sub.length === 0) {
-    throw new Error("Unauthorized: missing JWT subject");
+    throw new UnauthorizedError("Missing JWT subject");
   }
 
   const emailClaim = jwt?.claims?.email;

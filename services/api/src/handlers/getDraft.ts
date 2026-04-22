@@ -1,33 +1,30 @@
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
-import { GetCommand } from "@aws-sdk/lib-dynamodb";
-import { json, logError } from "@briefly/shared";
-import { loadConfig } from "../lib/config";
-import { ddb } from "../repositories/dynamo";
+import type { GetDraftResponse } from "@briefly/contracts";
+import { json } from "@briefly/shared";
 import { requireIdentity } from "../lib/auth";
+import { loadConfig } from "../lib/config";
+import { NotFoundError } from "../lib/errors";
+import { toErrorResponse } from "../lib/errorResponse";
+import { validateIdPathParam } from "../lib/validators";
+import { DraftsRepository } from "../repositories/draftsRepository";
 
 export const handler = async (event: APIGatewayProxyEventV2) => {
   try {
     requireIdentity(event);
-    const draftId = event.pathParameters?.draftId;
-    if (!draftId) {
-      return json(400, { message: "Missing path parameter: draftId" });
-    }
+
+    const draftId = validateIdPathParam(event.pathParameters?.draftId, "draftId");
 
     const cfg = loadConfig();
-    const result = await ddb.send(
-      new GetCommand({
-        TableName: cfg.draftsTable,
-        Key: { draft_id: draftId }
-      })
-    );
+    const draftsRepository = new DraftsRepository(cfg.draftsTable);
 
-    if (!result.Item) {
-      return json(404, { message: "Draft not found" });
+    const draft = await draftsRepository.getById(draftId);
+    if (!draft) {
+      throw new NotFoundError("Draft not found", { draft_id: draftId });
     }
 
-    return json(200, result.Item);
+    const response: GetDraftResponse = { draft };
+    return json(200, response);
   } catch (error) {
-    logError("get_draft_failed", { error: String(error) });
-    return json(500, { message: "Failed to fetch draft" });
+    return toErrorResponse(error, "Failed to fetch draft");
   }
 };

@@ -6,29 +6,246 @@ paths:
   /v1/daily-inputs:
     post:
       summary: Create a daily input
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDailyInputRequest'
       responses:
         '201':
           description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateDailyInputResponse'
   /v1/daily-inputs/{inputId}/generate:
     post:
       summary: Start generation workflow
+      parameters:
+        - in: path
+          name: inputId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StartGenerationRequest'
       responses:
         '202':
           description: Workflow started
+  /v1/daily-inputs/{inputId}/draft:
+    get:
+      summary: Fetch latest draft linked to daily input
+      parameters:
+        - in: path
+          name: inputId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Linked draft response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetDailyInputDraftResponse'
+  /v1/workflow-runs/{runId}:
+    get:
+      summary: Fetch workflow run status
+      parameters:
+        - in: path
+          name: runId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Workflow run fetched
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetWorkflowRunResponse'
   /v1/drafts/{draftId}:
     get:
       summary: Fetch draft
+      parameters:
+        - in: path
+          name: draftId
+          required: true
+          schema:
+            type: string
       responses:
         '200':
           description: Draft fetched
     put:
       summary: Update reviewed draft
+      parameters:
+        - in: path
+          name: draftId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDraftRequest'
       responses:
         '200':
           description: Draft updated
   /v1/drafts/{draftId}/publish:
     post:
       summary: Publish approved draft
+      parameters:
+        - in: path
+          name: draftId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublishDraftRequest'
       responses:
         '200':
           description: Published
+components:
+  schemas:
+    CreateDailyInputRequest:
+      type: object
+      required: [input_date, bullets]
+      properties:
+        input_date:
+          type: string
+          format: date
+        bullets:
+          type: array
+          minItems: 3
+          maxItems: 3
+          items:
+            type: string
+    CreateDailyInputResponse:
+      type: object
+      required: [input_id, status, created_at]
+      properties:
+        input_id:
+          type: string
+        status:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    StartGenerationRequest:
+      type: object
+      properties:
+        style_preset:
+          type: string
+          enum: [build_log_v1]
+        target_word_count:
+          type: integer
+    GetWorkflowRunResponse:
+      type: object
+      properties:
+        workflow_run:
+          $ref: '#/components/schemas/WorkflowRunStatusView'
+    WorkflowRunStatusView:
+      type: object
+      required: [run_id, workflow_name, status, lifecycle_status, started_at]
+      properties:
+        run_id:
+          type: string
+        workflow_name:
+          type: string
+          enum: [generate-draft, publish-draft]
+        status:
+          type: string
+          enum: [running, pending_review, completed, failed]
+        lifecycle_status:
+          type: string
+          enum: [running, completed, failed]
+        input_id:
+          type: string
+        draft_id:
+          type: string
+        started_at:
+          type: string
+          format: date-time
+        ended_at:
+          type: string
+          format: date-time
+        error_message:
+          type: string
+    GetDailyInputDraftResponse:
+      type: object
+      required: [input_id]
+      properties:
+        input_id:
+          type: string
+        draft:
+          allOf:
+            - $ref: '#/components/schemas/DraftItemResponse'
+          nullable: true
+    DraftItemResponse:
+      type: object
+      required:
+        [draft_id, input_id, run_id, title, slug_suggestion, summary, content_md, status, prompt_version, model_id, editor_notes, version, created_at, updated_at]
+      properties:
+        draft_id: { type: string }
+        input_id: { type: string }
+        run_id: { type: string }
+        title: { type: string }
+        slug_suggestion: { type: string }
+        summary: { type: string }
+        content_md: { type: string }
+        status: { type: string }
+        prompt_version: { type: string }
+        model_id: { type: string }
+        editor_notes: { type: string }
+        reviewed_by: { type: string }
+        published_post_id: { type: string }
+        version: { type: integer }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    UpdateDraftRequest:
+      type: object
+      required: [expected_version]
+      properties:
+        expected_version:
+          type: integer
+          minimum: 1
+        title:
+          type: string
+        summary:
+          type: string
+        content_md:
+          type: string
+        editor_notes:
+          type: string
+        status:
+          type: string
+          enum: [pending_review, approved, rejected]
+    PublishDraftRequest:
+      type: object
+      required: [expected_version, edited_title, edited_summary, edited_content_md, slug, publish_at]
+      properties:
+        expected_version:
+          type: integer
+          minimum: 1
+        edited_title:
+          type: string
+        edited_summary:
+          type: string
+        edited_content_md:
+          type: string
+        slug:
+          type: string
+        publish_at:
+          type: string
+          enum: [now]

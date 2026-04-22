@@ -6,18 +6,149 @@
     <title>Briefly Admin</title>
   </head>
   <body>
-    <main>
-      <h1>Briefly Admin</h1>
-      <p>Submit daily inputs, review drafts, and publish to The Build Log.</p>
-      <form id="daily-input-form">
-        <label>Input date <input name="input_date" type="date" required /></label>
-        <label>Bullet 1 <input name="bullet_1" type="text" required /></label>
-        <label>Bullet 2 <input name="bullet_2" type="text" required /></label>
-        <label>Bullet 3 <input name="bullet_3" type="text" required /></label>
-        <button type="submit">Submit</button>
-      </form>
-      <pre id="output" aria-live="polite"></pre>
+    <main class="app">
+      <header class="page-header">
+        <h1>Briefly Admin</h1>
+        <p>Daily input to published Build Log workflow.</p>
+      </header>
+
+      <section class="card" aria-labelledby="connection-heading">
+        <h2 id="connection-heading">Connection</h2>
+        <form id="connection-form" class="form-grid">
+          <label>
+            API base
+            <input id="api-base" name="api_base" type="url" placeholder="https://example.execute-api.us-east-2.amazonaws.com" required />
+          </label>
+          <label>
+            Admin bearer token
+            <input id="admin-token" name="admin_token" type="password" autocomplete="off" placeholder="Bearer token" required />
+          </label>
+          <button id="save-connection" type="submit">Save connection</button>
+        </form>
+        <p id="connection-state" class="status" aria-live="polite"></p>
+      </section>
+
+      <section class="card" aria-labelledby="create-input-heading">
+        <h2 id="create-input-heading">1. Create Daily Input</h2>
+        <form id="daily-input-form" class="form-grid">
+          <label>
+            Input date
+            <input id="input-date" name="input_date" type="date" required />
+          </label>
+          <label>
+            Tone
+            <select id="tone" name="tone">
+              <option value="practical" selected>practical</option>
+              <option value="reflective">reflective</option>
+              <option value="technical">technical</option>
+            </select>
+          </label>
+          <label>
+            Tags (comma-separated)
+            <input id="tags" name="tags" type="text" placeholder="build-log, briefly" />
+          </label>
+          <label>
+            Bullet 1
+            <textarea id="bullet-1" name="bullet_1" rows="2" required></textarea>
+          </label>
+          <label>
+            Bullet 2
+            <textarea id="bullet-2" name="bullet_2" rows="2" required></textarea>
+          </label>
+          <label>
+            Bullet 3
+            <textarea id="bullet-3" name="bullet_3" rows="2" required></textarea>
+          </label>
+          <button id="create-input-btn" type="submit">Create daily input</button>
+        </form>
+        <p id="create-input-state" class="status" aria-live="polite"></p>
+      </section>
+
+      <section class="card" aria-labelledby="start-generation-heading">
+        <h2 id="start-generation-heading">2. Start Generation</h2>
+        <form id="generation-form" class="form-grid">
+          <label>
+            Daily input id
+            <input id="generation-input-id" name="input_id" type="text" required />
+          </label>
+          <label>
+            Style preset
+            <select id="style-preset" name="style_preset">
+              <option value="build_log_v1" selected>build_log_v1</option>
+            </select>
+          </label>
+          <label>
+            Target word count
+            <input id="target-word-count" name="target_word_count" type="number" min="250" max="1500" value="500" required />
+          </label>
+          <div class="button-row">
+            <button id="start-generation-btn" type="submit">Start generation</button>
+            <button id="check-run-btn" type="button">Check run status</button>
+          </div>
+          <label>
+            Generation run id
+            <input id="generation-run-id" name="run_id" type="text" placeholder="run_xxx" />
+          </label>
+        </form>
+        <p id="generation-state" class="status" aria-live="polite"></p>
+      </section>
+
+      <section class="card" aria-labelledby="draft-workspace-heading">
+        <h2 id="draft-workspace-heading">3. Draft Workspace</h2>
+        <form id="load-draft-form" class="form-grid compact">
+          <label>
+            Draft id
+            <input id="draft-id" name="draft_id" type="text" placeholder="draft_xxx" required />
+          </label>
+          <div class="button-row">
+            <button id="load-draft-btn" type="submit">Load draft</button>
+            <button id="reload-draft-btn" type="button">Reload draft</button>
+          </div>
+        </form>
+
+        <dl id="draft-meta" class="meta-grid"></dl>
+
+        <form id="draft-edit-form" class="form-grid" autocomplete="off">
+          <label>
+            Title
+            <input id="draft-title" name="title" type="text" required />
+          </label>
+          <label>
+            Summary
+            <textarea id="draft-summary" name="summary" rows="3" required></textarea>
+          </label>
+          <label>
+            Status
+            <select id="draft-status" name="status">
+              <option value="pending_review">pending_review</option>
+              <option value="approved">approved</option>
+              <option value="rejected">rejected</option>
+            </select>
+          </label>
+          <label>
+            Editor notes
+            <textarea id="draft-editor-notes" name="editor_notes" rows="3"></textarea>
+          </label>
+          <label>
+            Content (Markdown)
+            <textarea id="draft-content" name="content_md" rows="14" required></textarea>
+          </label>
+          <button id="save-draft-btn" type="submit">Save draft changes</button>
+        </form>
+
+        <form id="publish-form" class="form-grid compact">
+          <label>
+            Publish slug
+            <input id="publish-slug" name="slug" type="text" required />
+          </label>
+          <button id="publish-btn" type="submit">Publish draft</button>
+        </form>
+
+        <div id="slug-conflict" class="conflict hidden" aria-live="polite"></div>
+        <p id="draft-state" class="status" aria-live="polite"></p>
+      </section>
     </main>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
