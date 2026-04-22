@@ -34,7 +34,7 @@ document.getElementById('admin-form').addEventListener('submit', function(e) {
       return res.json();
     })
     .then(function(data) {
-      showMsg('Post created: /blog/' + data.slug + '/', true);
+      showMsg('Post Successfully Created', true);
       document.getElementById('admin-form').reset();
       btn.disabled = false;
       btn.textContent = 'Publish Post';
