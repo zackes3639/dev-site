@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="/assets/css/style.css" />
   <style>
     .admin-wrapper {
-      max-width: 680px;
+      max-width: 780px;
       margin: 0 auto;
       padding: clamp(32px, 5vw, 64px) clamp(16px, 3.2vw, 32px);
     }
@@ -32,6 +32,8 @@
       padding: clamp(24px, 4vw, 40px);
       box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
     }
+
+    /* ── Login ── */
     .admin-field {
       display: flex;
       flex-direction: column;
@@ -57,11 +59,7 @@
       box-sizing: border-box;
       transition: border-color 0.2s;
     }
-    .admin-input:focus {
-      outline: none;
-      border-color: #6c3fd4;
-      background: #ffffff;
-    }
+    .admin-input:focus { outline: none; border-color: #6c3fd4; background: #fff; }
     .admin-textarea {
       width: 100%;
       min-height: 200px;
@@ -77,11 +75,7 @@
       font-family: inherit;
       transition: border-color 0.2s;
     }
-    .admin-textarea:focus {
-      outline: none;
-      border-color: #6c3fd4;
-      background: #ffffff;
-    }
+    .admin-textarea:focus { outline: none; border-color: #6c3fd4; background: #fff; }
     .admin-toggle-row {
       display: flex;
       align-items: center;
@@ -89,49 +83,117 @@
       margin-bottom: 28px;
     }
     .admin-toggle-row input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
+      width: 18px; height: 18px;
       accent-color: #6c3fd4;
-      cursor: pointer;
-      flex-shrink: 0;
+      cursor: pointer; flex-shrink: 0;
     }
-    .admin-toggle-label {
-      font-size: 0.9rem;
-      color: #475569;
-      cursor: pointer;
-    }
-    .admin-divider {
-      border: none;
-      border-top: 1px solid #f1f5f9;
-      margin: 0 0 24px;
-    }
-    .admin-submit {
-      width: 100%;
-      height: 48px;
+    .admin-toggle-label { font-size: 0.9rem; color: #475569; cursor: pointer; }
+    .admin-divider { border: none; border-top: 1px solid #f1f5f9; margin: 0 0 24px; }
+    .admin-btn {
+      height: 44px;
+      padding: 0 20px;
       border: 1px solid #6c3fd4;
       border-radius: 8px;
       background: #ffffff;
       color: #0b1220;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       font-weight: 600;
       cursor: pointer;
-      transition: background 0.2s, transform 0.15s;
-      box-shadow: 0 4px 12px rgba(108, 63, 212, 0.12);
+      transition: background 0.2s;
+      box-shadow: 0 4px 12px rgba(108,63,212,0.10);
     }
-    .admin-submit:hover {
-      background: #f6f2ff;
+    .admin-btn:hover { background: #f6f2ff; }
+    .admin-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .admin-btn-full { width: 100%; height: 48px; font-size: 0.95rem; }
+    .admin-btn-danger {
+      border-color: #e53935;
+      color: #e53935;
+      box-shadow: none;
     }
-    .admin-submit:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-    }
+    .admin-btn-danger:hover { background: #fff5f5; }
     .admin-msg {
       display: none;
       margin-top: 16px;
       font-size: 0.875rem;
       text-align: center;
     }
+
+    /* ── Post list ── */
+    .admin-list-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .admin-list-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #0b1220;
+      margin: 0;
+    }
+    .admin-post-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .admin-post-row:last-child { border-bottom: none; }
+    .admin-post-info { flex: 1; min-width: 0; }
+    .admin-post-row-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #0b1220;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .admin-post-meta {
+      font-size: 0.78rem;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+    .admin-post-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 2px 8px;
+      border-radius: 99px;
+      flex-shrink: 0;
+    }
+    .badge-published { background: #dcfce7; color: #15803d; }
+    .badge-draft     { background: #f1f5f9; color: #64748b; }
+    .admin-row-actions { display: flex; gap: 8px; flex-shrink: 0; }
+    .admin-empty { color: #94a3b8; font-size: 0.9rem; padding: 24px 0; text-align: center; }
+
+    /* ── Form header ── */
+    .admin-form-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .admin-back-btn {
+      background: none;
+      border: none;
+      color: #6c3fd4;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0;
+    }
+    .admin-back-btn:hover { text-decoration: underline; }
+    .admin-form-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #0b1220;
+      margin: 0;
+    }
+
+    /* ── Views ── */
+    #view-login, #view-list, #view-form { display: none; }
   </style>
 </head>
 <body>
@@ -153,45 +215,68 @@
   <main>
     <div class="admin-wrapper">
       <p class="admin-eyebrow">Admin</p>
-      <h1 class="admin-title">New Blog Post</h1>
+      <h1 class="admin-title" id="admin-page-title">Sign In</h1>
 
       <div class="admin-card">
-        <form id="admin-form">
+
+        <!-- LOGIN VIEW -->
+        <div id="view-login">
           <div class="admin-field">
             <label class="admin-label" for="admin-password">Admin Password</label>
             <input type="password" id="admin-password" class="admin-input" placeholder="Enter password" autocomplete="current-password" />
           </div>
+          <button id="login-btn" class="admin-btn admin-btn-full">Sign In</button>
+          <p class="admin-msg" id="login-msg"></p>
+        </div>
 
-          <hr class="admin-divider" />
+        <!-- LIST VIEW -->
+        <div id="view-list">
+          <div class="admin-list-header">
+            <p class="admin-list-title" id="list-count">Posts</p>
+            <button class="admin-btn" id="new-post-btn">+ New Post</button>
+          </div>
+          <div id="post-list-body"></div>
+          <p class="admin-msg" id="list-msg"></p>
+        </div>
 
-          <div class="admin-field">
-            <label class="admin-label" for="post-title">Title</label>
-            <input type="text" id="post-title" class="admin-input" placeholder="Post title" />
+        <!-- FORM VIEW -->
+        <div id="view-form">
+          <div class="admin-form-header">
+            <button class="admin-back-btn" id="back-btn">← Back</button>
+            <p class="admin-form-title" id="form-mode-title">New Post</p>
           </div>
 
-          <div class="admin-field">
-            <label class="admin-label" for="post-slug">Slug <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#cbd5e1">(optional — auto-generated from title)</span></label>
-            <input type="text" id="post-slug" class="admin-input" placeholder="my-post-slug" />
-          </div>
+          <form id="post-form">
+            <div class="admin-field">
+              <label class="admin-label" for="f-title">Title</label>
+              <input type="text" id="f-title" class="admin-input" placeholder="Post title" />
+            </div>
+            <div class="admin-field">
+              <label class="admin-label" for="f-slug">Slug <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#cbd5e1">(optional — auto-generated from title)</span></label>
+              <input type="text" id="f-slug" class="admin-input" placeholder="my-post-slug" />
+            </div>
+            <div class="admin-field">
+              <label class="admin-label" for="f-summary">Summary</label>
+              <input type="text" id="f-summary" class="admin-input" placeholder="One-line summary shown on the blog index" />
+            </div>
+            <div class="admin-field">
+              <label class="admin-label" for="f-tag">Tag <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#cbd5e1">(optional)</span></label>
+              <input type="text" id="f-tag" class="admin-input" placeholder="e.g. AWS, Career, Building" />
+            </div>
+            <div class="admin-field">
+              <label class="admin-label" for="f-content">Content</label>
+              <textarea id="f-content" class="admin-textarea" placeholder="Full post content. Separate paragraphs with a blank line."></textarea>
+            </div>
+            <div class="admin-toggle-row">
+              <input type="checkbox" id="f-published" />
+              <label class="admin-toggle-label" for="f-published">Publish immediately</label>
+            </div>
+            <hr class="admin-divider" />
+            <button type="submit" id="form-submit-btn" class="admin-btn admin-btn-full">Save Post</button>
+            <p class="admin-msg" id="form-msg"></p>
+          </form>
+        </div>
 
-          <div class="admin-field">
-            <label class="admin-label" for="post-summary">Summary</label>
-            <input type="text" id="post-summary" class="admin-input" placeholder="One-line summary shown on the blog index" />
-          </div>
-
-          <div class="admin-field">
-            <label class="admin-label" for="post-content">Content</label>
-            <textarea id="post-content" class="admin-textarea" placeholder="Full post content. Separate paragraphs with a blank line."></textarea>
-          </div>
-
-          <div class="admin-toggle-row">
-            <input type="checkbox" id="post-published" />
-            <label class="admin-toggle-label" for="post-published">Publish immediately</label>
-          </div>
-
-          <button type="submit" id="admin-submit" class="admin-submit">Publish Post</button>
-          <p class="admin-msg" id="admin-msg"></p>
-        </form>
       </div>
     </div>
   </main>
