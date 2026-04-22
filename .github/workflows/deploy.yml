@@ -45,3 +45,19 @@ jobs:
           aws cloudfront create-invalidation \
             --distribution-id ${CLOUDFRONT_DISTRIBUTION_ID} \
             --paths "/*"
+
+      - name: Run smoke test (with retries)
+        env:
+          SITE_URL: https://zacksimon.dev
+          PUBLIC_API_BASE: https://33o1s2l689.execute-api.us-east-2.amazonaws.com
+          WRITE_API_BASE: https://tblw8hlwu0.execute-api.us-east-2.amazonaws.com
+        run: |
+          for i in 1 2 3 4 5 6; do
+            if ./scripts/smoke-test.sh; then
+              exit 0
+            fi
+            echo "Smoke test attempt ${i} failed. Retrying in 20s..."
+            sleep 20
+          done
+          echo "Smoke test failed after retries."
+          exit 1

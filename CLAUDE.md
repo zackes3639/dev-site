@@ -59,5 +59,5 @@ Password auth only — the `password` field in the POST body is checked against 
 
 - Phone numbers are normalized to E.164 (`+1XXXXXXXXXX`) before storage.
 - Slugs are optional at creation but required for the post detail page to work. Auto-generate from title if not provided.
-- `get_posts.py` filters to `published == True` only; unpublished posts are never returned to the public.
-- CORS on subscribe/unsubscribe is restricted to `https://zacksimon.dev`; create_post/get_posts use `*`.
+- `get_posts.py` returns published posts by default, and supports admin listing with `?include_drafts=1&password=<ADMIN_PASSWORD>`.
+- CORS on subscribe/unsubscribe and get_posts is restricted to `https://zacksimon.dev`; write Lambdas allow `*`.

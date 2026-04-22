@@ -27,7 +27,7 @@ Personal site — static frontend on S3/CloudFront with a serverless backend on 
 
 | Route | Lambda | Description |
 |-------|--------|-------------|
-| `GET /posts` | `get_posts.py` | All published posts, newest-first |
+| `GET /posts` | `get_posts.py` | Published posts, newest-first (`?include_drafts=1&password=...` for admin list) |
 | `GET /builds` | `get_builds.py` | All build cards, sorted by `sort_order` |
 | `POST /subscribe` | `subscribe.py` | Add subscriber (email and/or phone) |
 | `POST /unsubscribe` | `unsubscribe.py` | Set subscriber status to inactive |
@@ -49,7 +49,7 @@ Personal site — static frontend on S3/CloudFront with a serverless backend on 
 Fields: `title`, `slug`, `summary`, `content`, `published`, `created_at`, `tag`
 
 **`ZS_DEV_BUILDS`** — PK: `build_id` (String)
-Fields: `title`, `description`, `status` (`live`/`wip`/`idea`), `tags`, `link`, `link_label`, `progress`, `dim`, `sort_order`, `created_at`
+Fields: `title`, `description`, `status` (`live`/`wip`/`idea`), `tags`, `link`, `progress`, `dim`, `sort_order`, `created_at`
 
 ## Deploy
 
@@ -62,6 +62,20 @@ aws s3 sync . s3://dev-site-647932856401-us-east-2-an \
   --exclude "lambda/*" --exclude "node_modules/*" --exclude ".DS_Store" --delete
 
 aws cloudfront create-invalidation --distribution-id <ID> --paths "/*"
+```
+
+**Smoke test (manual):**
+```bash
+./scripts/smoke-test.sh
+```
+
+Optional environment overrides:
+```bash
+SITE_URL=https://zacksimon.dev \
+PUBLIC_API_BASE=https://33o1s2l689.execute-api.us-east-2.amazonaws.com \
+WRITE_API_BASE=https://tblw8hlwu0.execute-api.us-east-2.amazonaws.com \
+ADMIN_PASSWORD='your-admin-password' \
+./scripts/smoke-test.sh
 ```
 
 **Lambda:** zip the file in `lambda/` and upload via Console or CLI.

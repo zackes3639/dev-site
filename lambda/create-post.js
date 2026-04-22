@@ -38,6 +38,10 @@ exports.handler = async (event) => {
     return { statusCode: 403, headers: HEADERS, body: JSON.stringify({ error: 'Forbidden' }) };
   }
 
+  if (body._validate === true) {
+    return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ success: true }) };
+  }
+
   const title     = String(body.title   || '').trim();
   const summary   = String(body.summary || '').trim();
   const content   = String(body.content || '').trim();
@@ -70,10 +74,14 @@ exports.handler = async (event) => {
 
   const post_id  = randomUUID();
   const created_at = new Date().toISOString();
+  const tag = String(body.tag || '').trim();
+
+  const item = { post_id, slug, title, summary, content, published, created_at };
+  if (tag) item.tag = tag;
 
   await client.send(new PutItemCommand({
     TableName: TABLE,
-    Item: marshall({ post_id, slug, title, summary, content, published, created_at }),
+    Item: marshall(item),
   }));
 
   return {

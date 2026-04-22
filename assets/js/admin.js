@@ -112,8 +112,11 @@ function loadPostList() {
   body.innerHTML = '<p class="admin-empty">Loading…</p>';
   clearMsg('list-msg');
 
-  fetch(POSTS_URL)
+  var listUrl = POSTS_URL + '?include_drafts=1&password=' + encodeURIComponent(sessionPassword);
+
+  fetch(listUrl)
     .then(function(res) {
+      if (res.status === 403) throw new Error('Session expired or password is incorrect. Please sign in again.');
       if (!res.ok) throw new Error('Failed to load posts');
       return res.json();
     })
@@ -121,7 +124,14 @@ function loadPostList() {
       allPosts = posts;
       renderPostList(posts);
     })
-    .catch(function() {
+    .catch(function(err) {
+      if (err && /sign in again/i.test(err.message)) {
+        sessionPassword = '';
+        setPageTitle('Sign In');
+        showView('view-login');
+        showMsg('login-msg', err.message, false);
+        return;
+      }
       body.innerHTML = '<p class="admin-empty">Failed to load posts.</p>';
     });
 }
