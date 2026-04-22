@@ -1,0 +1,34 @@
+openapi: 3.0.3
+info:
+  title: Briefly API
+  version: 1.0.0
+paths:
+  /v1/daily-inputs:
+    post:
+      summary: Create a daily input
+      responses:
+        '201':
+          description: Created
+  /v1/daily-inputs/{inputId}/generate:
+    post:
+      summary: Start generation workflow
+      responses:
+        '202':
+          description: Workflow started
+  /v1/drafts/{draftId}:
+    get:
+      summary: Fetch draft
+      responses:
+        '200':
+          description: Draft fetched
+    put:
+      summary: Update reviewed draft
+      responses:
+        '200':
+          description: Draft updated
+  /v1/drafts/{draftId}/publish:
+    post:
+      summary: Publish approved draft
+      responses:
+        '200':
+          description: Published

@@ -1,81 +1,75 @@
-# zacksimon.dev
+# zacksimon.dev + Briefly (Monorepo Scaffold)
 
-Personal site — static frontend on S3/CloudFront with a serverless backend on AWS.
+This repository now includes a TypeScript monorepo scaffold for **Briefly** while keeping the current production site live.
 
-## Stack
+## Current state
 
-- **Frontend:** HTML, CSS, vanilla JS — no build step, deployed directly to S3
-- **Backend:** AWS API Gateway (HTTP API) + Lambda (Python 3.12) + DynamoDB
-- **CI/CD:** GitHub Actions → S3 sync + CloudFront invalidation on push to `main`
-- **Lambda deploys:** Manual (zip + upload via CLI or Console)
+- Production site is still static files at repository root and deploys to S3/CloudFront.
+- Existing Python Lambdas in `lambda/` still power current blog/build endpoints.
+- New Briefly v1 architecture is scaffolded in workspace packages and is ready for implementation.
 
-## Pages
+## Monorepo layout
 
-| Path | Description |
-|------|-------------|
-| `/` | About |
-| `/work/` | Builds — Kanban board, rendered dynamically from DynamoDB |
-| `/blog/` | The Build Log — blog index |
-| `/blog/post/?slug=` | Individual post viewer |
-| `/contact/` | Contact |
-| `/admin/` | Admin panel — manage Builds board and blog posts |
-| `/unsubscribe/` | Email/SMS unsubscribe |
-
-## API
-
-**Public API** (`33o1s2l689.execute-api.us-east-2.amazonaws.com`)
-
-| Route | Lambda | Description |
-|-------|--------|-------------|
-| `GET /posts` | `get_posts.py` | Published posts, newest-first (`?include_drafts=1&password=...` for admin list) |
-| `GET /builds` | `get_builds.py` | All build cards, sorted by `sort_order` |
-| `POST /subscribe` | `subscribe.py` | Add subscriber (email and/or phone) |
-| `POST /unsubscribe` | `unsubscribe.py` | Set subscriber status to inactive |
-
-**Write API** (`tblw8hlwu0.execute-api.us-east-2.amazonaws.com`) — password-protected
-
-| Route | Lambda | Description |
-|-------|--------|-------------|
-| `POST /posts` | `create_post.py` | Create post |
-| `PUT /posts/update` | `update_post.py` | Update post |
-| `DELETE /posts/delete` | `delete_post.py` | Delete post |
-| `POST /builds` | `create_build.py` | Create build card |
-| `PUT /builds/update` | `update_build.py` | Update build card |
-| `DELETE /builds/delete` | `delete_build.py` | Delete build card |
-
-## DynamoDB Tables
-
-**`ZS_DEV_BLOG_POSTS`** — PK: `post_id` (String)
-Fields: `title`, `slug`, `summary`, `content`, `published`, `created_at`, `tag`
-
-**`ZS_DEV_BUILDS`** — PK: `build_id` (String)
-Fields: `title`, `description`, `status` (`live`/`wip`/`idea`), `tags`, `link`, `progress`, `dim`, `sort_order`, `created_at`
-
-## Deploy
-
-**Site (automatic):** push to `main` — GitHub Actions handles S3 sync and CloudFront invalidation.
-
-**Site (manual):**
-```bash
-aws s3 sync . s3://dev-site-647932856401-us-east-2-an \
-  --exclude ".git/*" --exclude ".github/*" --exclude ".claude/*" \
-  --exclude "lambda/*" --exclude "node_modules/*" --exclude ".DS_Store" --delete
-
-aws cloudfront create-invalidation --distribution-id <ID> --paths "/*"
+```text
+apps/
+  site/                 # target home for zacksimon.dev frontend (migration pending)
+  admin-briefly/        # Briefly admin frontend (Vite + TS scaffold)
+services/
+  api/                  # API Gateway Lambda handlers (TS)
+  generation/           # Bedrock generation Lambda (TS)
+  publishing/           # publish service Lambda (TS)
+packages/
+  contracts/            # shared API/data contracts + schemas
+  shared/               # shared utilities (ids, logger, http response)
+infra/
+  cdk/                  # AWS CDK stack for Briefly v1
+scripts/
+  smoke/briefly-smoke.sh
 ```
 
-**Smoke test (manual):**
+## Briefly v1 architecture choices
+
+- TypeScript
+- Monorepo workspaces
+- API Gateway + Lambda
+- DynamoDB tables:
+  - `briefly_daily_inputs`
+  - `briefly_drafts`
+  - `briefly_posts`
+  - `briefly_workflow_runs`
+- Bedrock generation
+- Human review before publish (no auto-publish)
+
+## Workspace commands
+
+From repo root:
+
 ```bash
-./scripts/smoke-test.sh
+npm install
+npm run typecheck
+npm run build
 ```
 
-Optional environment overrides:
+Run deploy smoke for existing site:
+
 ```bash
-SITE_URL=https://zacksimon.dev \
-PUBLIC_API_BASE=https://33o1s2l689.execute-api.us-east-2.amazonaws.com \
-WRITE_API_BASE=https://tblw8hlwu0.execute-api.us-east-2.amazonaws.com \
-ADMIN_PASSWORD='your-admin-password' \
-./scripts/smoke-test.sh
+npm run smoke:deploy
 ```
 
-**Lambda:** zip the file in `lambda/` and upload via Console or CLI.
+Run Briefly API smoke checks:
+
+```bash
+API_BASE=https://<briefly-api-id>.execute-api.<region>.amazonaws.com \
+ADMIN_BEARER_TOKEN=<jwt> \
+npm run smoke:briefly
+```
+
+## Existing production deploy (unchanged)
+
+Site deploy still syncs root static files to S3 + CloudFront invalidation via `.github/workflows/deploy.yml`.
+
+## Notes
+
+- `apps/site` is intentionally a placeholder while we complete phased migration from root static files.
+- CDK stack is scaffolded to provision Cognito, API, Lambdas, Step Functions, and DynamoDB for Briefly v1.
+- Detailed architecture notes: `docs/briefly-v1-architecture.md`.

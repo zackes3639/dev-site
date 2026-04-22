@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CreateDailyInputRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["input_date", "bullets"],
+  "properties": {
+    "input_date": { "type": "string", "format": "date" },
+    "bullets": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "tone": {
+      "type": "string",
+      "enum": ["practical", "reflective", "technical"]
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    }
+  }
+}

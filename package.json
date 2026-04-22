@@ -1,0 +1,23 @@
+{
+  "name": "zacksimon-dev-monorepo",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Monorepo scaffold for zacksimon.dev + Briefly",
+  "workspaces": [
+    "apps/*",
+    "services/*",
+    "packages/*",
+    "infra/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "smoke:deploy": "./scripts/smoke-test.sh",
+    "smoke:briefly": "./scripts/smoke/briefly-smoke.sh"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.12",
+    "typescript": "^5.8.3"
+  }
+}

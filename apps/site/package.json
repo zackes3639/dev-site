@@ -1,0 +1,9 @@
+{
+  "name": "@briefly/site",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "echo 'Static site remains at repo root for now; migrate into apps/site in phase 2.'",
+    "typecheck": "echo 'No TypeScript in apps/site yet.'"
+  }
+}

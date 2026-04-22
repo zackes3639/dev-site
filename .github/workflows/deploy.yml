@@ -37,6 +37,15 @@ jobs:
             --exclude ".github/*" \
             --exclude ".DS_Store" \
             --exclude "lambda/*" \
+            --exclude "apps/*" \
+            --exclude "services/*" \
+            --exclude "packages/*" \
+            --exclude "infra/*" \
+            --exclude "docs/*" \
+            --exclude "node_modules/*" \
+            --exclude "package.json" \
+            --exclude "package-lock.json" \
+            --exclude "tsconfig*.json" \
             --exclude "CLAUDE.md" \
             --exclude "memory/*"
 
