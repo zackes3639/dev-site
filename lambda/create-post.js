@@ -1,8 +1,9 @@
-const { DynamoDBClient, PutItemCommand, GetItemCommand } = require('@aws-sdk/client-dynamodb');
+const { DynamoDBClient, PutItemCommand, QueryCommand } = require('@aws-sdk/client-dynamodb');
 const { marshall } = require('@aws-sdk/util-dynamodb');
+const { randomUUID } = require('crypto');
 
 const client = new DynamoDBClient({});
-const TABLE  = 'blog-posts';
+const TABLE  = 'ZS_DEV_BLOG_POSTS';
 
 const HEADERS = {
   'Access-Control-Allow-Origin':  '*',
@@ -55,20 +56,12 @@ exports.handler = async (event) => {
     return { statusCode: 400, headers: HEADERS, body: JSON.stringify({ error: 'Could not generate a valid slug from title' }) };
   }
 
-  // Reject if slug already exists
-  const existing = await client.send(new GetItemCommand({
-    TableName: TABLE,
-    Key: marshall({ slug }),
-  }));
-  if (existing.Item) {
-    return { statusCode: 409, headers: HEADERS, body: JSON.stringify({ error: `Slug "${slug}" already exists` }) };
-  }
-
-  const createdAt = new Date().toISOString();
+  const post_id  = randomUUID();
+  const created_at = new Date().toISOString();
 
   await client.send(new PutItemCommand({
     TableName: TABLE,
-    Item: marshall({ slug, title, summary, content, published, createdAt }),
+    Item: marshall({ post_id, slug, title, summary, content, published, created_at }),
   }));
 
   return {
