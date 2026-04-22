@@ -171,7 +171,16 @@
         html += '<div class="v2-progress-bar" aria-label="' + b.progress + '% complete">';
         html += '<div class="v2-progress-fill" style="width:' + b.progress + '%;"></div></div>';
       }
-      if (b.link) html += '<a href="' + esc(b.link) + '" class="build-link">' + esc(b.link_label || 'View →') + '</a>';
+      if (b.link) {
+        var href = b.link;
+        if (href && !href.startsWith('/') && !href.startsWith('http://') && !href.startsWith('https://')) {
+          href = 'https://' + href;
+        }
+        var isExternal = href.startsWith('http');
+        html += '<a href="' + esc(href) + '" class="build-link"' +
+          (isExternal ? ' target="_blank" rel="noopener noreferrer"' : '') + '>' +
+          esc(b.link_label || 'View →') + '</a>';
+      }
       html += '</article>';
       return html;
     }
