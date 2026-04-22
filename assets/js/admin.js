@@ -414,7 +414,6 @@ function openEditBuildForm(buildId) {
   document.getElementById('b-progress').value    = build.progress || '';
   document.getElementById('b-tags').value        = (build.tags || []).join(', ');
   document.getElementById('b-link').value        = build.link || '';
-  document.getElementById('b-link-label').value  = build.link_label || '';
   document.getElementById('b-sort').value        = build.sort_order != null ? build.sort_order : '0';
   document.getElementById('b-dim').checked       = !!build.dim;
   document.getElementById('builds-form-mode-title').textContent = 'Edit Build';
@@ -435,7 +434,6 @@ document.getElementById('builds-form').addEventListener('submit', function(e) {
   var progressVal = document.getElementById('b-progress').value.trim();
   var tagsRaw     = document.getElementById('b-tags').value.trim();
   var link        = document.getElementById('b-link').value.trim();
-  var linkLabel   = document.getElementById('b-link-label').value.trim();
   var sortOrder   = document.getElementById('b-sort').value.trim();
   var dim         = document.getElementById('b-dim').checked;
 
@@ -454,7 +452,6 @@ document.getElementById('builds-form').addEventListener('submit', function(e) {
     status:      status,
     tags:        tags,
     link:        link,
-    link_label:  linkLabel,
     progress:    progressVal ? parseInt(progressVal, 10) : 0,
     dim:         dim,
     sort_order:  sortOrder ? parseInt(sortOrder, 10) : 0
