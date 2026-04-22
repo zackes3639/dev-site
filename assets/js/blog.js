@@ -155,7 +155,7 @@ function renderPosts(posts) {
           renderContent(escapeHtml(post.content)) +
         '</div>' +
       '</div>' +
-      '<button id="post-toggle-' + safeId + '" class="v2-post-read-btn" onclick="toggleContent(\'' + safeId + '\')">Read →</button>';
+      '<a href="/blog/post/?slug=' + encodeURIComponent(post.slug) + '" class="v2-post-read-btn">Read →</a>';
 
     container.appendChild(article);
   });

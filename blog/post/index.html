@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Loading… | Zack Simon</title>
+  <link rel="stylesheet" href="/assets/css/style.css" />
+</head>
+<body>
+  <header class="navbar">
+    <div class="nav-left">
+      <a class="logo" href="/" aria-label="Go to home page">
+        <img src="/assets/images/logo.svg" alt="Zack Simon logo" class="logo-image" />
+      </a>
+    </div>
+    <div class="hotbar" role="navigation" aria-label="Primary navigation">
+      <a class="hot-btn" href="/">About Me</a>
+      <a class="hot-btn" href="/work/">Builds</a>
+      <a class="hot-btn hot-btn-active" href="/blog/">The Build Log</a>
+      <a class="hot-btn" href="/contact/">Contact</a>
+    </div>
+    <div class="nav-contact"><a href="/admin/" class="nav-admin">Admin</a></div>
+  </header>
+
+  <main>
+    <section class="section post-header-section">
+      <a href="/blog/" class="post-back">← Back to Blog</a>
+      <h1 class="post-page-title" id="post-title">Loading…</h1>
+      <p class="post-page-date" id="post-date"></p>
+    </section>
+
+    <section class="section post-body-section">
+      <div class="post-body" id="post-body"></div>
+    </section>
+
+    <section class="section newsletter-section">
+      <div class="newsletter-inline-box newsletter-post-box">
+        <span class="newsletter-inline-badge">Free · Email + SMS</span>
+        <p class="newsletter-inline-headline">Get the Build Log delivered.</p>
+        <p class="newsletter-inline-copy">Weekly email + SMS recap of what I'm shipping. No fluff.</p>
+        <form class="newsletter-form-inline">
+          <input type="email" class="newsletter-input" placeholder="Email address" autocomplete="email" />
+          <input type="tel" class="newsletter-input" placeholder="Phone number (for SMS)" autocomplete="tel" />
+          <select name="age" class="newsletter-input" required>
+            <option value="" disabled selected>Select age</option>
+          </select>
+          <button type="submit" class="newsletter-btn-compact">Subscribe →</button>
+          <label class="newsletter-consent">
+            <input type="checkbox" class="newsletter-consent-check" />
+            I agree to the <a href="/privacy-terms/" target="_blank" rel="noopener">Privacy Policy &amp; Terms</a>
+          </label>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p><a href="https://zacksimon.dev" class="footer-brand">zacksimon.dev</a></p>
+    <div class="footer-links" aria-label="Footer links">
+      <a href="mailto:zacksimon13@gmail.com">Email</a>
+      <a href="https://www.linkedin.com/in/zackary-simon" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="/resume.pdf" download>Resume</a>
+      <a href="/work/">Builds</a>
+      <a href="/privacy-terms/">Privacy &amp; Terms</a>
+    </div>
+  </footer>
+
+  <script src="/assets/js/script.js"></script>
+  <script src="/assets/js/subscribe.js"></script>
+  <script>
+    var POSTS_URL = 'https://33o1s2l689.execute-api.us-east-2.amazonaws.com/posts';
+
+    function renderContent(content) {
+      return content
+        .split(/\n\n+/)
+        .map(function(para) { return '<p>' + para.replace(/\n/g, '<br>') + '</p>'; })
+        .join('');
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function formatDate(isoString) {
+      return new Date(isoString).toLocaleDateString('en-US', {
+        year: 'numeric', month: 'long', day: 'numeric'
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      var slug = new URLSearchParams(window.location.search).get('slug');
+
+      if (!slug) {
+        document.getElementById('post-title').textContent = 'Post not found.';
+        return;
+      }
+
+      fetch(POSTS_URL)
+        .then(function(res) {
+          if (!res.ok) throw new Error('Failed to load posts');
+          return res.json();
+        })
+        .then(function(posts) {
+          var post = posts.find(function(p) { return p.slug === slug; });
+
+          if (!post) {
+            document.getElementById('post-title').textContent = 'Post not found.';
+            document.title = 'Post not found | Zack Simon';
+            return;
+          }
+
+          document.title = post.title + ' | Zack Simon';
+          document.getElementById('post-title').textContent = post.title;
+          document.getElementById('post-date').textContent = formatDate(post.created_at);
+          document.getElementById('post-body').innerHTML = renderContent(escapeHtml(post.content));
+        })
+        .catch(function() {
+          document.getElementById('post-title').textContent = 'Failed to load post.';
+        });
+    });
+  </script>
+</body>
+</html>
