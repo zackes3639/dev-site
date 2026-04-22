@@ -2,7 +2,7 @@ const { DynamoDBClient, PutItemCommand } = require('@aws-sdk/client-dynamodb');
 const { marshall } = require('@aws-sdk/util-dynamodb');
 
 const client = new DynamoDBClient({});
-const TABLE = 'ZS_DEV_SUBSCRIBERS';
+const TABLE = 'ZS_DEV_BLOG_SIGN_UP_DATA';
 
 const HEADERS = {
   'Access-Control-Allow-Origin':  '*',
