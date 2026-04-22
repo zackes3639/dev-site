@@ -1,4 +1,4 @@
-const { DynamoDBClient, PutItemCommand, QueryCommand } = require('@aws-sdk/client-dynamodb');
+const { DynamoDBClient, PutItemCommand, ScanCommand } = require('@aws-sdk/client-dynamodb');
 const { marshall } = require('@aws-sdk/util-dynamodb');
 const { randomUUID } = require('crypto');
 
@@ -54,6 +54,18 @@ exports.handler = async (event) => {
 
   if (!slug) {
     return { statusCode: 400, headers: HEADERS, body: JSON.stringify({ error: 'Could not generate a valid slug from title' }) };
+  }
+
+  const existing = await client.send(new ScanCommand({
+    TableName: TABLE,
+    FilterExpression: 'slug = :slug',
+    ExpressionAttributeValues: { ':slug': { S: slug } },
+    ProjectionExpression: 'post_id',
+    Limit: 1,
+  }));
+
+  if (existing.Count > 0) {
+    return { statusCode: 409, headers: HEADERS, body: JSON.stringify({ error: 'Slug already exists' }) };
   }
 
   const post_id  = randomUUID();
