@@ -33,10 +33,10 @@ scripts/
 - Monorepo workspaces
 - API Gateway + Lambda
 - DynamoDB tables:
-  - `briefly_daily_inputs`
-  - `briefly_drafts`
-  - `briefly_posts`
-  - `briefly_workflow_runs`
+  - `*_daily_inputs`
+  - `*_drafts`
+  - `*_posts`
+  - `*_workflow_runs`
 - Bedrock generation
 - Human review before publish (no auto-publish)
 
@@ -48,6 +48,16 @@ From repo root:
 npm install
 npm run typecheck
 npm run build
+```
+
+Briefly dev infra checks/deploy:
+
+```bash
+npm run briefly:dev:typecheck
+npm run briefly:dev:synth
+# deploy only when explicitly requested
+npm run briefly:dev:deploy
+npm run briefly:dev:outputs
 ```
 
 Run deploy smoke for existing site:
@@ -83,4 +93,6 @@ Workflow and guardrails docs:
 
 - `apps/site` is intentionally a placeholder while we complete phased migration from root static files.
 - CDK stack is scaffolded to provision Cognito, API, Lambdas, Step Functions, and DynamoDB for Briefly v1.
+- Briefly AWS provisioning is dev-only right now and isolated from live-site deploy behavior.
 - Detailed architecture notes: `docs/briefly-v1-architecture.md`.
+- Dev deploy runbook: `docs/briefly-dev-deploy.md`.

@@ -59,6 +59,16 @@ In final handoff notes, always include:
 - Validation run and result
 - Explicit AWS deployment status
 
+## Briefly dev infra workflow
+
+- Briefly AWS infrastructure is dev-only for now (`BrieflyV1DevStack`).
+- Use root scripts for infrastructure checks:
+  - `npm run briefly:dev:typecheck`
+  - `npm run briefly:dev:synth`
+  - `npm run briefly:dev:diff`
+- Only run `npm run briefly:dev:deploy` when explicitly asked.
+- Runbook and manual Cognito steps live in `docs/briefly-dev-deploy.md`.
+
 ## Agent contract
 
 `AGENTS.md` is the primary working contract for future Codex sessions in this repo.

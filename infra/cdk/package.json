@@ -6,7 +6,10 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "cdk:synth": "cdk synth",
-    "cdk:deploy": "cdk deploy"
+    "cdk:deploy": "cdk deploy",
+    "cdk:synth:dev": "cdk synth BrieflyV1DevStack -c brieflyStage=dev",
+    "cdk:diff:dev": "cdk diff BrieflyV1DevStack -c brieflyStage=dev",
+    "cdk:deploy:dev": "cdk deploy BrieflyV1DevStack --require-approval never -c brieflyStage=dev"
   },
   "dependencies": {
     "aws-cdk-lib": "^2.195.0",

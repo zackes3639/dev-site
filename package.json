@@ -13,6 +13,11 @@
     "build": "npm run build --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
+    "briefly:dev:typecheck": "npm run -w @briefly/infra-cdk typecheck",
+    "briefly:dev:synth": "npm run -w @briefly/infra-cdk cdk:synth:dev",
+    "briefly:dev:diff": "npm run -w @briefly/infra-cdk cdk:diff:dev",
+    "briefly:dev:deploy": "npm run -w @briefly/infra-cdk cdk:deploy:dev",
+    "briefly:dev:outputs": "./scripts/briefly/dev-outputs.sh",
     "smoke:deploy": "./scripts/smoke-test.sh",
     "smoke:briefly": "./scripts/smoke/briefly-smoke.sh"
   },

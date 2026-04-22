@@ -2,19 +2,22 @@ import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedroc
 
 const client = new BedrockRuntimeClient({});
 
-export const generateMarkdown = async (input: {
+interface GenerateModelTextInput {
   modelId: string;
   prompt: string;
   temperature?: number;
-}) => {
+  maxTokens?: number;
+}
+
+export const generateModelText = async (input: GenerateModelTextInput): Promise<string> => {
   const command = new InvokeModelCommand({
     modelId: input.modelId,
     contentType: "application/json",
     accept: "application/json",
     body: JSON.stringify({
       anthropic_version: "bedrock-2023-05-31",
-      max_tokens: 1500,
-      temperature: input.temperature ?? 0.4,
+      max_tokens: input.maxTokens ?? 1800,
+      temperature: input.temperature ?? 0.2,
       messages: [{ role: "user", content: [{ type: "text", text: input.prompt }] }]
     })
   });
@@ -25,7 +28,7 @@ export const generateMarkdown = async (input: {
     content?: Array<{ type: string; text?: string }>;
   };
 
-  const text = parsed.content?.find((c) => c.type === "text")?.text;
+  const text = parsed.content?.find((chunk) => chunk.type === "text")?.text;
   if (!text) {
     throw new Error("Bedrock response missing text content");
   }

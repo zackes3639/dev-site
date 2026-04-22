@@ -2,17 +2,21 @@ import type { Context } from "aws-lambda";
 import type { DraftItem, DailyInputItem, StartGenerationWorkflowInput } from "@briefly/contracts";
 import { GetCommand, PutCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { createId, logError, logInfo } from "@briefly/shared";
-import { buildLogV1Prompt } from "../prompts/buildLogV1";
+import {
+  buildFallbackBuildLogOutput,
+  collectGuardrailIssues,
+  normalizeBuildLogOutput,
+  parseBuildLogStructuredOutput,
+  type ParsedBuildLogOutput,
+  type NormalizedBuildLogOutput
+} from "../lib/buildLogOutput";
 import { ddb } from "../lib/dynamo";
-import { generateMarkdown } from "../lib/model";
-
-const toSlug = (title: string): string =>
-  title
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .trim()
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
+import { generateModelText } from "../lib/model";
+import {
+  buildLogGuardrailRepairPrompt,
+  buildLogJsonRepairPrompt,
+  buildLogV1Prompt
+} from "../prompts/buildLogV1";
 
 const requiredEnv = () => {
   const dailyInputsTable = process.env.DAILY_INPUTS_TABLE;
@@ -24,6 +28,106 @@ const requiredEnv = () => {
   }
 
   return { dailyInputsTable, draftsTable, workflowRunsTable };
+};
+
+interface CompositionResult {
+  output: NormalizedBuildLogOutput;
+  formatRepairUsed: boolean;
+  guardrailRepairUsed: boolean;
+  deterministicFallbackUsed: boolean;
+  guardrailIssues: string[];
+}
+
+const composeBuildLogDraft = async (input: {
+  bullets: string[];
+  modelId: string;
+  targetWordCount: number;
+}): Promise<CompositionResult> => {
+  let formatRepairUsed = false;
+  let guardrailRepairUsed = false;
+  let deterministicFallbackUsed = false;
+
+  try {
+    const primaryPrompt = buildLogV1Prompt({
+      bullets: input.bullets,
+      targetWordCount: input.targetWordCount
+    });
+
+    const primaryRaw = await generateModelText({
+      modelId: input.modelId,
+      prompt: primaryPrompt,
+      temperature: 0.15,
+      maxTokens: 2200
+    });
+
+    let parsed: ParsedBuildLogOutput;
+
+    try {
+      parsed = parseBuildLogStructuredOutput(primaryRaw);
+    } catch {
+      formatRepairUsed = true;
+      const repairRaw = await generateModelText({
+        modelId: input.modelId,
+        prompt: buildLogJsonRepairPrompt(primaryRaw),
+        temperature: 0,
+        maxTokens: 2000
+      });
+      parsed = parseBuildLogStructuredOutput(repairRaw);
+    }
+
+    let normalized = normalizeBuildLogOutput(parsed, input.bullets, input.targetWordCount);
+    let guardrailIssues = collectGuardrailIssues(normalized, input.bullets);
+
+    if (guardrailIssues.length > 0) {
+      guardrailRepairUsed = true;
+      const guardrailRepairRaw = await generateModelText({
+        modelId: input.modelId,
+        prompt: buildLogGuardrailRepairPrompt({
+          draft: normalized,
+          bullets: input.bullets,
+          issues: guardrailIssues,
+          targetWordCount: input.targetWordCount
+        }),
+        temperature: 0.1,
+        maxTokens: 2200
+      });
+
+      const repairedParsed = parseBuildLogStructuredOutput(guardrailRepairRaw);
+      normalized = normalizeBuildLogOutput(repairedParsed, input.bullets, input.targetWordCount);
+      guardrailIssues = collectGuardrailIssues(normalized, input.bullets);
+
+      if (guardrailIssues.length > 0) {
+        deterministicFallbackUsed = true;
+        normalized = buildFallbackBuildLogOutput(input.bullets);
+        guardrailIssues = collectGuardrailIssues(normalized, input.bullets);
+      }
+    }
+
+    return {
+      output: normalized,
+      formatRepairUsed,
+      guardrailRepairUsed,
+      deterministicFallbackUsed,
+      guardrailIssues
+    };
+  } catch (error) {
+    deterministicFallbackUsed = true;
+    const fallbackOutput = buildFallbackBuildLogOutput(input.bullets);
+    const guardrailIssues = collectGuardrailIssues(fallbackOutput, input.bullets);
+
+    logError("draft_generation_structured_path_failed", {
+      error: String(error),
+      fallback: "deterministic"
+    });
+
+    return {
+      output: fallbackOutput,
+      formatRepairUsed,
+      guardrailRepairUsed,
+      deterministicFallbackUsed,
+      guardrailIssues
+    };
+  }
 };
 
 export const handler = async (event: StartGenerationWorkflowInput, _context: Context) => {
@@ -43,41 +147,33 @@ export const handler = async (event: StartGenerationWorkflowInput, _context: Con
 
     const dailyInput = dailyInputRecord.Item as DailyInputItem;
     const bullets = Array.isArray(dailyInput.bullets)
-      ? dailyInput.bullets.map((value) => String(value))
+      ? dailyInput.bullets.map((value) => String(value).trim())
       : [];
 
-    if (bullets.length !== 3) {
-      throw new Error("Daily input does not contain exactly 3 bullets");
+    if (bullets.length !== 3 || bullets.some((bullet) => bullet.length === 0)) {
+      throw new Error("Daily input does not contain exactly 3 non-empty bullets");
     }
 
     const modelId = process.env.BEDROCK_MODEL_ID ?? "anthropic.claude-3-5-sonnet-20240620-v1:0";
     const targetWordCount = event.target_word_count ?? 500;
-    const promptVersion = "build_log_v1.0.0";
-    const prompt = buildLogV1Prompt(bullets, targetWordCount);
+    const promptVersion = "build_log_v1.1.0";
 
-    const contentMd = await generateMarkdown({
+    const composition = await composeBuildLogDraft({
+      bullets,
       modelId,
-      prompt,
-      temperature: 0.4
+      targetWordCount
     });
 
-    const firstHeading = contentMd
-      .split("\n")
-      .find((line) => line.startsWith("# "))
-      ?.replace(/^#\s+/, "")
-      .trim();
-
-    const title = firstHeading || `Build Log - ${new Date().toISOString().slice(0, 10)}`;
     const now = new Date().toISOString();
 
     const draft: DraftItem = {
       draft_id: createId("draft"),
       input_id: event.input_id,
       run_id: event.run_id,
-      title,
-      slug_suggestion: toSlug(title),
-      summary: bullets.join(" ").slice(0, 320),
-      content_md: contentMd,
+      title: composition.output.title,
+      slug_suggestion: composition.output.slug,
+      summary: composition.output.summary,
+      content_md: composition.output.bodyMarkdown,
       status: "pending_review",
       prompt_version: promptVersion,
       model_id: modelId,
@@ -134,14 +230,25 @@ export const handler = async (event: StartGenerationWorkflowInput, _context: Con
       runId: event.run_id,
       inputId: event.input_id,
       draftId: draft.draft_id,
-      modelId
+      modelId,
+      formatRepairUsed: composition.formatRepairUsed,
+      guardrailRepairUsed: composition.guardrailRepairUsed,
+      deterministicFallbackUsed: composition.deterministicFallbackUsed,
+      remainingGuardrailIssues: composition.guardrailIssues
     });
 
     return {
       ...draft,
       quality: {
-        word_count: contentMd.split(/\s+/).filter(Boolean).length,
-        has_three_sections: (contentMd.match(/^##\s+/gm) || []).length >= 3
+        word_count: draft.content_md.split(/\s+/).filter(Boolean).length,
+        has_three_sections:
+          draft.content_md.includes("## What Changed") &&
+          draft.content_md.includes("## Technical Notes") &&
+          draft.content_md.includes("## Risks and Next Steps"),
+        format_repair_used: composition.formatRepairUsed,
+        guardrail_repair_used: composition.guardrailRepairUsed,
+        deterministic_fallback_used: composition.deterministicFallbackUsed,
+        guardrail_issues_remaining: composition.guardrailIssues
       }
     };
   } catch (error) {
