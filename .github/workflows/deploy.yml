@@ -29,6 +29,17 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Deploy site password gate
+        env:
+          SITE_ACCESS_PASSWORD: ${{ secrets.SITE_ACCESS_PASSWORD }}
+          SITE_ACCESS_SESSION_SECRET: ${{ secrets.SITE_ACCESS_SESSION_SECRET }}
+        run: |
+          if [[ -n "${SITE_ACCESS_PASSWORD}" ]]; then
+            ./scripts/deploy-site-access-gate.sh
+          else
+            echo "::warning::SITE_ACCESS_PASSWORD is not configured; skipping password gate update."
+          fi
+
       - name: Upload site files to S3
         run: |
           aws s3 sync . s3://${S3_BUCKET_NAME} \
@@ -41,6 +52,7 @@ jobs:
             --exclude "services/*" \
             --exclude "packages/*" \
             --exclude "infra/*" \
+            --exclude "edge/*" \
             --exclude "docs/*" \
             --exclude "node_modules/*" \
             --exclude "package.json" \
@@ -60,6 +72,7 @@ jobs:
           SITE_URL: https://zacksimon.dev
           PUBLIC_API_BASE: https://33o1s2l689.execute-api.us-east-2.amazonaws.com
           WRITE_API_BASE: https://tblw8hlwu0.execute-api.us-east-2.amazonaws.com
+          SITE_ACCESS_PASSWORD: ${{ secrets.SITE_ACCESS_PASSWORD }}
         run: |
           for i in 1 2 3 4 5 6; do
             if ./scripts/smoke-test.sh; then

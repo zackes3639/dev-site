@@ -5,6 +5,7 @@ SITE_URL="${SITE_URL:-https://zacksimon.dev}"
 PUBLIC_API_BASE="${PUBLIC_API_BASE:-https://33o1s2l689.execute-api.us-east-2.amazonaws.com}"
 WRITE_API_BASE="${WRITE_API_BASE:-https://tblw8hlwu0.execute-api.us-east-2.amazonaws.com}"
 ADMIN_PASSWORD="${ADMIN_PASSWORD:-}"
+SITE_ACCESS_PASSWORD="${SITE_ACCESS_PASSWORD:-}"
 
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
@@ -20,6 +21,12 @@ fail() {
 http_status() {
   local url="$1"
   curl -sS -o /dev/null -w "%{http_code}" "$url"
+}
+
+http_status_with_cookie() {
+  local url="$1"
+  local cookie_jar="$2"
+  curl -sS -b "$cookie_jar" -o /dev/null -w "%{http_code}" "$url"
 }
 
 url_encode() {
@@ -70,21 +77,106 @@ check_page_200() {
   fi
 }
 
+check_authed_page_200() {
+  local label="$1"
+  local url="$2"
+  local cookie_jar="$3"
+  local code
+  code="$(http_status_with_cookie "$url" "$cookie_jar")"
+  if [[ "$code" == "200" ]]; then
+    pass "$label returns 200 with site password session"
+  else
+    fail "$label expected 200 with site password session, got $code ($url)"
+  fi
+}
+
 echo "Running deploy smoke test..."
 echo "Site: $SITE_URL"
 echo "Public API: $PUBLIC_API_BASE"
 echo "Write API: $WRITE_API_BASE"
 
-check_page_200 "Home page" "$SITE_URL/"
-check_page_200 "Builds page" "$SITE_URL/work/"
-check_page_200 "Blog page" "$SITE_URL/blog/"
-check_page_200 "Admin page" "$SITE_URL/admin/"
+site_cookie_jar="$TMP_DIR/site.cookies"
+protected_without_password=0
 
-curl -sS "$SITE_URL/builds.html" > "$TMP_DIR/builds_redirect.html"
-if grep -q "url=/work/" "$TMP_DIR/builds_redirect.html"; then
-  pass "/builds.html points to /work/"
+if [[ -n "$SITE_ACCESS_PASSWORD" ]]; then
+  curl -sS "$SITE_URL/" > "$TMP_DIR/site_login.html"
+  if grep -q 'action="/__site-login"' "$TMP_DIR/site_login.html"; then
+    pass "Unauthenticated home page shows password login"
+  else
+    fail "Unauthenticated home page did not show password login"
+  fi
+
+  wrong_code="$(
+    curl -sS -o "$TMP_DIR/wrong_login.html" -w "%{http_code}" \
+      -H "Content-Type: application/x-www-form-urlencoded" \
+      -X POST "$SITE_URL/__site-login" \
+      --data-urlencode "password=wrong-password" \
+      --data-urlencode "returnTo=/"
+  )"
+  if [[ "$wrong_code" == "200" ]] && grep -q "That password did not work" "$TMP_DIR/wrong_login.html"; then
+    pass "Wrong site password fails"
+  else
+    fail "Wrong site password did not fail as expected"
+  fi
+
+  login_code="$(
+    curl -sS -o /dev/null -w "%{http_code}" \
+      -c "$site_cookie_jar" \
+      -H "Content-Type: application/x-www-form-urlencoded" \
+      -X POST "$SITE_URL/__site-login" \
+      --data-urlencode "password=$SITE_ACCESS_PASSWORD" \
+      --data-urlencode "returnTo=/"
+  )"
+  if [[ "$login_code" == "303" ]]; then
+    pass "Correct site password creates session"
+  else
+    fail "Correct site password expected 303, got $login_code"
+  fi
+
+  deep_link_code="$(http_status "$SITE_URL/blog/")"
+  if [[ "$deep_link_code" == "302" ]]; then
+    pass "Unauthenticated deep link is blocked"
+  else
+    fail "Unauthenticated deep link expected 302, got $deep_link_code"
+  fi
+
+  check_authed_page_200 "Home page" "$SITE_URL/" "$site_cookie_jar"
+  check_authed_page_200 "Builds page" "$SITE_URL/work/" "$site_cookie_jar"
+  check_authed_page_200 "Blog page" "$SITE_URL/blog/" "$site_cookie_jar"
+  check_authed_page_200 "Admin page" "$SITE_URL/admin/" "$site_cookie_jar"
 else
-  fail "/builds.html does not point to /work/"
+  curl -sS "$SITE_URL/" > "$TMP_DIR/site_home.html"
+  if grep -q 'action="/__site-login"' "$TMP_DIR/site_home.html"; then
+    protected_without_password=1
+    pass "Unauthenticated home page shows password login"
+
+    deep_link_code="$(http_status "$SITE_URL/blog/")"
+    if [[ "$deep_link_code" == "302" ]]; then
+      pass "Unauthenticated deep link is blocked"
+    else
+      fail "Unauthenticated deep link expected 302, got $deep_link_code"
+    fi
+  else
+    check_page_200 "Home page" "$SITE_URL/"
+    check_page_200 "Builds page" "$SITE_URL/work/"
+    check_page_200 "Blog page" "$SITE_URL/blog/"
+    check_page_200 "Admin page" "$SITE_URL/admin/"
+  fi
+fi
+
+if [[ "$protected_without_password" == "1" ]]; then
+  pass "/builds.html redirect check skipped without site password"
+elif [[ -n "$SITE_ACCESS_PASSWORD" ]]; then
+  curl -sS -b "$site_cookie_jar" "$SITE_URL/builds.html" > "$TMP_DIR/builds_redirect.html"
+else
+  curl -sS "$SITE_URL/builds.html" > "$TMP_DIR/builds_redirect.html"
+fi
+if [[ "$protected_without_password" != "1" ]]; then
+  if grep -q "url=/work/" "$TMP_DIR/builds_redirect.html"; then
+    pass "/builds.html points to /work/"
+  else
+    fail "/builds.html does not point to /work/"
+  fi
 fi
 
 curl -sS -D "$TMP_DIR/posts.headers" -o "$TMP_DIR/posts.json" \
@@ -121,7 +213,13 @@ fi
 
 slug="$(extract_first_slug "$TMP_DIR/posts.json")"
 if [[ -n "$slug" ]]; then
-  check_page_200 "Post detail page" "$SITE_URL/blog/post/?slug=$slug"
+  if [[ "$protected_without_password" == "1" ]]; then
+    pass "Post detail page check skipped without site password"
+  elif [[ -n "$SITE_ACCESS_PASSWORD" ]]; then
+    check_authed_page_200 "Post detail page" "$SITE_URL/blog/post/?slug=$slug" "$site_cookie_jar"
+  else
+    check_page_200 "Post detail page" "$SITE_URL/blog/post/?slug=$slug"
+  fi
 else
   echo "WARN: No post slug found, skipping detail page smoke check."
 fi
