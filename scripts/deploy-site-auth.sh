@@ -233,13 +233,24 @@ ensure_function_url() {
       --function-name "$FUNCTION_NAME" \
       --auth-type NONE \
       --region "$AWS_REGION" >/dev/null
+  fi
 
+  if ! aws lambda get-policy --function-name "$FUNCTION_NAME" --region "$AWS_REGION" 2>/dev/null | grep -q "FunctionUrlInvoke"; then
     aws lambda add-permission \
       --function-name "$FUNCTION_NAME" \
       --statement-id FunctionUrlInvoke \
       --action lambda:InvokeFunctionUrl \
       --principal "*" \
       --function-url-auth-type NONE \
+      --region "$AWS_REGION" >/dev/null
+  fi
+
+  if ! aws lambda get-policy --function-name "$FUNCTION_NAME" --region "$AWS_REGION" 2>/dev/null | grep -q "PublicInvokeFunctionForUrl"; then
+    aws lambda add-permission \
+      --function-name "$FUNCTION_NAME" \
+      --statement-id PublicInvokeFunctionForUrl \
+      --action lambda:InvokeFunction \
+      --principal "*" \
       --region "$AWS_REGION" >/dev/null
   fi
 
