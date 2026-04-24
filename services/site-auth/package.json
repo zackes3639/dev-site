@@ -1,0 +1,12 @@
+{
+  "name": "@briefly/site-auth",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "echo 'site-auth is plain Node.js; no build step.'",
+    "typecheck": "node --check src/handler.js && node --check src/rotateGuestPassword.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-ssm": "^3.1036.0"
+  }
+}

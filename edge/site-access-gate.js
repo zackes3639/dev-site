@@ -1,18 +1,21 @@
 const crypto = require("crypto");
+const https = require("https");
 const querystring = require("querystring");
 
 const PASSWORD_SALT = "__SITE_ACCESS_PASSWORD_SALT__";
 const PASSWORD_HASH = "__SITE_ACCESS_PASSWORD_HASH__";
 const SESSION_SECRET = "__SITE_ACCESS_SESSION_SECRET__";
+const AUTH_ENDPOINT = "__SITE_AUTH_ENDPOINT__";
+const AUTH_SHARED_SECRET = "__SITE_AUTH_SHARED_SECRET__";
 const COOKIE_NAME = "site_access";
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7;
 
-function handler(event, _context, callback) {
+async function handler(event, _context, callback) {
   const request = event.Records[0].cf.request;
   const originalTarget = request.uri + (request.querystring ? `?${request.querystring}` : "");
 
   if (request.method === "POST" && request.uri === "/__site-login") {
-    return callback(null, handleLogin(request));
+    return callback(null, await handleLogin(request));
   }
 
   if (request.method !== "GET" && request.method !== "HEAD") {
@@ -31,12 +34,12 @@ function handler(event, _context, callback) {
   return callback(null, request);
 }
 
-function handleLogin(request) {
+async function handleLogin(request) {
   const body = parseBody(request);
   const returnTo = safeReturnTo(body.returnTo || "/");
   const password = typeof body.password === "string" ? body.password : "";
 
-  if (!isCorrectPassword(password)) {
+  if (!(await isCorrectPassword(password))) {
     return loginPage(returnTo, true);
   }
 
@@ -67,9 +70,62 @@ function parseBody(request) {
   return querystring.parse(raw);
 }
 
-function isCorrectPassword(password) {
+async function isCorrectPassword(password) {
+  if (AUTH_ENDPOINT) {
+    return validatePasswordWithAuthService(password);
+  }
+
   const attemptedHash = crypto.createHash("sha256").update(`${PASSWORD_SALT}:${password}`).digest("hex");
   return timingSafeEqual(attemptedHash, PASSWORD_HASH);
+}
+
+function validatePasswordWithAuthService(password) {
+  const payload = JSON.stringify({ password });
+  const url = new URL(AUTH_ENDPOINT);
+
+  return new Promise((resolve) => {
+    const request = https.request(
+      {
+        method: "POST",
+        hostname: url.hostname,
+        path: `${url.pathname}${url.search}`,
+        port: url.port || 443,
+        headers: {
+          "content-type": "application/json",
+          "content-length": Buffer.byteLength(payload),
+          "x-site-auth-secret": AUTH_SHARED_SECRET
+        },
+        timeout: 3000
+      },
+      (response) => {
+        let raw = "";
+        response.setEncoding("utf8");
+        response.on("data", (chunk) => {
+          raw += chunk;
+        });
+        response.on("end", () => {
+          if (response.statusCode !== 200) {
+            resolve(false);
+            return;
+          }
+
+          try {
+            resolve(JSON.parse(raw).ok === true);
+          } catch (_error) {
+            resolve(false);
+          }
+        });
+      }
+    );
+
+    request.on("timeout", () => {
+      request.destroy();
+      resolve(false);
+    });
+    request.on("error", () => resolve(false));
+    request.write(payload);
+    request.end();
+  });
 }
 
 function hasValidSession(request) {

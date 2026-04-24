@@ -12,8 +12,13 @@ TMP_DIR="$(mktemp -d)"
 
 trap 'rm -rf "$TMP_DIR"' EXIT
 
-if [[ -z "${SITE_ACCESS_PASSWORD:-}" ]]; then
-  echo "SITE_ACCESS_PASSWORD is required." >&2
+if [[ -z "${SITE_ACCESS_PASSWORD:-}" && -z "${SITE_AUTH_ENDPOINT:-}" ]]; then
+  echo "SITE_ACCESS_PASSWORD or SITE_AUTH_ENDPOINT is required." >&2
+  exit 1
+fi
+
+if [[ -n "${SITE_AUTH_ENDPOINT:-}" && -z "${SITE_AUTH_SHARED_SECRET:-}" ]]; then
+  echo "SITE_AUTH_SHARED_SECRET is required when SITE_AUTH_ENDPOINT is set." >&2
   exit 1
 fi
 

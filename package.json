@@ -14,7 +14,9 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "smoke:deploy": "./scripts/smoke-test.sh",
-    "smoke:briefly": "./scripts/smoke/briefly-smoke.sh"
+    "smoke:briefly": "./scripts/smoke/briefly-smoke.sh",
+    "guest-password:rotate": "node scripts/guest-password.mjs rotate",
+    "guest-password:show": "node scripts/guest-password.mjs show"
   },
   "devDependencies": {
     "@types/node": "^22.15.12",
