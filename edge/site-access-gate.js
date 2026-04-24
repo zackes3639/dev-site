@@ -15,6 +15,10 @@ function handler(event, _context, callback) {
     return callback(null, handleLogin(request));
   }
 
+  if (request.method !== "GET" && request.method !== "HEAD") {
+    return callback(null, methodNotAllowed());
+  }
+
   if (!hasValidSession(request)) {
     if (request.uri === "/" || request.uri === "/index.html") {
       return callback(null, loginPage(getReturnTo(request) || "/", false));
@@ -160,6 +164,18 @@ function redirect(location, status, extraHeaders) {
       "cache-control": [{ key: "Cache-Control", value: "no-store" }],
       ...(extraHeaders || {})
     }
+  };
+}
+
+function methodNotAllowed() {
+  return {
+    status: "405",
+    statusDescription: "Method Not Allowed",
+    headers: {
+      allow: [{ key: "Allow", value: "GET, HEAD, POST" }],
+      "cache-control": [{ key: "Cache-Control", value: "no-store" }]
+    },
+    body: "Method Not Allowed"
   };
 }
 

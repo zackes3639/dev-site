@@ -77,6 +77,9 @@ const wrongPassword = await invoke(
 assert.equal(wrongPassword.status, "200");
 assert.match(wrongPassword.body, /That password did not work/);
 
+const unsupportedMethod = await invoke(event({ method: "POST", uri: "/blog/" }));
+assert.equal(unsupportedMethod.status, "405");
+
 const correctPassword = await invoke(
   event({
     method: "POST",

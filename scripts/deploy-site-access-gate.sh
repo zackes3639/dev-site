@@ -112,6 +112,14 @@ associate_lambda() {
           }
         ]
       }
+    | .DefaultCacheBehavior.AllowedMethods = {
+        Quantity: 7,
+        Items: ["GET", "HEAD", "OPTIONS", "PUT", "PATCH", "POST", "DELETE"],
+        CachedMethods: {
+          Quantity: 2,
+          Items: ["GET", "HEAD"]
+        }
+      }
   ' "$TMP_DIR/distribution.json" > "$TMP_DIR/distribution-config.json"
 
   aws cloudfront update-distribution \
