@@ -12,13 +12,22 @@ https://zacksimon.dev/admin/briefly/
 
 ## Current state
 
-- Working branch: `codex/briefly-hosted-admin-launch`
-- Commit created: `fed8654 feat: host Briefly admin workflow`
-- Local `briefly-dev` was moved to `fed8654`.
-- Previous divergent `briefly-dev` history was preserved at:
-  - `codex/preserve-briefly-dev-20260625`
-- `main` was not merged or pushed.
-- `origin/briefly-dev` was not force-pushed.
+- Current checkout when this handoff was written: `main`.
+- Local `main` has a handoff-only commit on top of `origin/main`:
+  - `56b8161 docs: add Briefly launch handoff`
+- `origin/main` already contains the Briefly hosted-admin launch commit:
+  - `fed8654 feat: host Briefly admin workflow`
+- `origin/main` also contains a newer public-site redesign commit after the Briefly launch:
+  - `51c84f7 feat(site): Workbench Clean redesign — nav drawer, type scale, newsletter`
+- Earlier launch-session branches may not exist in this checkout anymore. The launch commit is reachable through `origin/main`.
+- There are local uncommitted documentation edits about a main-only GitHub workflow in this workspace:
+  - `AGENTS.md`
+  - `CHANGELOG.md`
+  - `CLAUDE.md`
+  - `README.md`
+  - `TECHSTACK.md`
+  - `docs/dev-workflow.md`
+- Those uncommitted docs are not required to finish the Briefly operational launch unless Zack wants to keep the main-only workflow policy update.
 
 ## What changed
 
@@ -223,19 +232,22 @@ Test:
 - verify returned `/blog/post/?slug=...`,
 - verify the post appears in The Build Log listing.
 
-6. Promote only after authenticated workflow passes.
+6. Promote source after authenticated workflow passes.
 
-Recommended:
+Current repo reality: `origin/main` already includes the Briefly launch code at `fed8654`. The remaining source promotion question is whether to push the handoff commit and any intentional docs-policy edits.
+
+If the next context is continuing from this exact checkout, first inspect:
 
 ```bash
-git push -u origin codex/briefly-hosted-admin-launch
+git status --short --branch
+git log --oneline --decorate --graph -n 10
 ```
 
-Then merge to `main` only after the authenticated workflow and deliberate publish check pass.
+After authenticated workflow and deliberate publish check pass, push only the intended commits/edits to `origin/main`.
 
 ## Important risks and constraints
 
-- Do not merge the old divergent `origin/briefly-dev` wholesale.
+- Do not resurrect or merge the old divergent `briefly-dev` line wholesale.
 - Do not remove site password gate files or behavior.
 - Do not remove Briefly live Build Log publish integration.
 - Do not remove `briefly_post_slugs` slug-lock behavior.
@@ -255,4 +267,4 @@ AWS deployment is not fully complete operationally:
 - Cognito admin user creation is pending.
 - Authenticated Briefly smoke is pending.
 - End-to-end hosted browser workflow is pending.
-- Merge/push to `main` is pending.
+- Final source push/cleanup is pending for the handoff commit and any intentional docs-policy edits.
