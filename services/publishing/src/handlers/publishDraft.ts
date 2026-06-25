@@ -1,6 +1,7 @@
 import {
   QueryCommand,
   GetCommand,
+  ScanCommand,
   TransactWriteCommand,
   type QueryCommandOutput
 } from "@aws-sdk/lib-dynamodb";
@@ -18,10 +19,12 @@ const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const requiredEnv = () => {
   const draftsTable = process.env.DRAFTS_TABLE;
   const postsTable = process.env.POSTS_TABLE;
-  if (!draftsTable || !postsTable) {
-    throw new Error("Missing DRAFTS_TABLE or POSTS_TABLE");
+  const postSlugsTable = process.env.POST_SLUGS_TABLE;
+  const legacyBlogPostsTable = process.env.LEGACY_BLOG_POSTS_TABLE;
+  if (!draftsTable || !postsTable || !postSlugsTable || !legacyBlogPostsTable) {
+    throw new Error("Missing DRAFTS_TABLE, POSTS_TABLE, POST_SLUGS_TABLE, or LEGACY_BLOG_POSTS_TABLE");
   }
-  return { draftsTable, postsTable };
+  return { draftsTable, postsTable, postSlugsTable, legacyBlogPostsTable };
 };
 
 const isObject = (value: unknown): value is Record<string, unknown> => {
@@ -98,11 +101,76 @@ const querySlug = async (postsTable: string, slug: string): Promise<QueryCommand
   );
 };
 
-const findSuggestedSlug = async (postsTable: string, baseSlug: string): Promise<string> => {
+const slugLockExists = async (postSlugsTable: string, slug: string): Promise<boolean> => {
+  const result = await ddb.send(
+    new GetCommand({
+      TableName: postSlugsTable,
+      Key: { slug }
+    })
+  );
+
+  return Boolean(result.Item);
+};
+
+const legacySlugExists = async (legacyBlogPostsTable: string, slug: string): Promise<boolean> => {
+  let exclusiveStartKey: Record<string, unknown> | undefined;
+
+  do {
+    const scanInput = {
+      TableName: legacyBlogPostsTable,
+      FilterExpression: "slug = :slug",
+      ProjectionExpression: "post_id",
+      ExpressionAttributeValues: {
+        ":slug": slug
+      },
+      ...(exclusiveStartKey ? { ExclusiveStartKey: exclusiveStartKey } : {})
+    };
+
+    const result = await ddb.send(
+      new ScanCommand(scanInput)
+    );
+
+    if ((result.Items ?? []).length > 0) {
+      return true;
+    }
+
+    exclusiveStartKey = result.LastEvaluatedKey;
+  } while (exclusiveStartKey);
+
+  return false;
+};
+
+const slugConflicts = async (
+  postsTable: string,
+  postSlugsTable: string,
+  legacyBlogPostsTable: string,
+  slug: string,
+  sourceDraftId?: string
+): Promise<boolean> => {
+  const [slugResult, reserved, legacyCollision] = await Promise.all([
+    querySlug(postsTable, slug),
+    slugLockExists(postSlugsTable, slug),
+    legacySlugExists(legacyBlogPostsTable, slug)
+  ]);
+
+  const brieflyCollision = (slugResult.Items ?? []).some((item) => {
+    const post = item as PostItem;
+    return !sourceDraftId || post.source_draft_id !== sourceDraftId;
+  });
+
+  return brieflyCollision || reserved || legacyCollision;
+};
+
+const findSuggestedSlug = async (
+  postsTable: string,
+  postSlugsTable: string,
+  legacyBlogPostsTable: string,
+  baseSlug: string
+): Promise<string> => {
   for (let i = 2; i <= 100; i += 1) {
     const candidate = `${baseSlug}-${i}`;
-    const result = await querySlug(postsTable, candidate);
-    if ((result.Items ?? []).length === 0) {
+    const hasConflict = await slugConflicts(postsTable, postSlugsTable, legacyBlogPostsTable, candidate);
+    if (!hasConflict) {
       return candidate;
     }
   }
@@ -162,13 +230,21 @@ export const handler = async (event: unknown) => {
       });
     }
 
-    const slugResult = await querySlug(cfg.postsTable, payload.slug);
-    const collision = (slugResult.Items ?? []).find(
-      (item) => (item as PostItem).source_draft_id !== payload.draft_id
+    const collision = await slugConflicts(
+      cfg.postsTable,
+      cfg.postSlugsTable,
+      cfg.legacyBlogPostsTable,
+      payload.slug,
+      payload.draft_id
     );
 
     if (collision) {
-      const suggestedSlug = await findSuggestedSlug(cfg.postsTable, payload.slug);
+      const suggestedSlug = await findSuggestedSlug(
+        cfg.postsTable,
+        cfg.postSlugsTable,
+        cfg.legacyBlogPostsTable,
+        payload.slug
+      );
       return json(409, {
         code: "slug_conflict",
         message: "Slug already exists",
@@ -198,13 +274,44 @@ export const handler = async (event: unknown) => {
       updated_at: now
     };
 
+    const legacyPostItem = {
+      post_id: postId,
+      slug: payload.slug,
+      title: payload.edited_title,
+      summary: payload.edited_summary,
+      content: payload.edited_content_md,
+      published: true,
+      created_at: now
+    };
+
+    const slugItem = {
+      slug: payload.slug,
+      post_id: postId,
+      source_draft_id: payload.draft_id,
+      created_at: now
+    };
+
     await ddb.send(
       new TransactWriteCommand({
         TransactItems: [
           {
             Put: {
+              TableName: cfg.postSlugsTable,
+              Item: slugItem,
+              ConditionExpression: "attribute_not_exists(slug)"
+            }
+          },
+          {
+            Put: {
               TableName: cfg.postsTable,
               Item: postItem,
+              ConditionExpression: "attribute_not_exists(post_id)"
+            }
+          },
+          {
+            Put: {
+              TableName: cfg.legacyBlogPostsTable,
+              Item: legacyPostItem,
               ConditionExpression: "attribute_not_exists(post_id)"
             }
           },
@@ -237,7 +344,7 @@ export const handler = async (event: unknown) => {
       post_id: postId,
       slug: payload.slug,
       published_at: now,
-      url: `/build-log/${payload.slug}`
+      url: `/blog/post/?slug=${encodeURIComponent(payload.slug)}`
     };
 
     logInfo("draft_published", {

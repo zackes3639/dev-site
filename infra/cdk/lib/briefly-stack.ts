@@ -78,6 +78,16 @@ export class BrieflyStack extends cdk.Stack {
       sortKey: { name: "published_at", type: dynamodb.AttributeType.STRING }
     });
 
+    const postSlugs = new dynamodb.Table(this, "PostSlugsTable", {
+      tableName: "briefly_post_slugs",
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      partitionKey: { name: "slug", type: dynamodb.AttributeType.STRING },
+      pointInTimeRecovery: true,
+      removalPolicy: cdk.RemovalPolicy.RETAIN
+    });
+
+    const legacyBlogPosts = dynamodb.Table.fromTableName(this, "LegacyBlogPostsTable", "ZS_DEV_BLOG_POSTS");
+
     const workflowRuns = new dynamodb.Table(this, "WorkflowRunsTable", {
       tableName: "briefly_workflow_runs",
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
@@ -172,17 +182,22 @@ export class BrieflyStack extends cdk.Stack {
       "services/publishing/src/handlers/publishDraft.ts",
       {
         DRAFTS_TABLE: drafts.tableName,
-        POSTS_TABLE: posts.tableName
+        POSTS_TABLE: posts.tableName,
+        POST_SLUGS_TABLE: postSlugs.tableName,
+        LEGACY_BLOG_POSTS_TABLE: legacyBlogPosts.tableName
       }
     );
 
     drafts.grantReadWriteData(publishingLambda);
     posts.grantReadWriteData(publishingLambda);
+    postSlugs.grantReadWriteData(publishingLambda);
+    legacyBlogPosts.grantReadWriteData(publishingLambda);
 
     const apiEnv = {
       DAILY_INPUTS_TABLE: dailyInputs.tableName,
       DRAFTS_TABLE: drafts.tableName,
       POSTS_TABLE: posts.tableName,
+      POST_SLUGS_TABLE: postSlugs.tableName,
       WORKFLOW_RUNS_TABLE: workflowRuns.tableName,
       GENERATION_STATE_MACHINE_ARN: generationWorkflow.stateMachineArn,
       PUBLISH_FUNCTION_NAME: publishingLambda.functionName
@@ -243,7 +258,18 @@ export class BrieflyStack extends cdk.Stack {
     publishingLambda.grantInvoke(publishDraftLambda);
 
     const api = new apigwv2.HttpApi(this, "BrieflyApi", {
-      apiName: "briefly-v1"
+      apiName: "briefly-v1",
+      corsPreflight: {
+        allowOrigins: ["https://zacksimon.dev", "http://localhost:5173", "http://localhost:4173"],
+        allowMethods: [
+          apigwv2.CorsHttpMethod.GET,
+          apigwv2.CorsHttpMethod.POST,
+          apigwv2.CorsHttpMethod.PUT,
+          apigwv2.CorsHttpMethod.OPTIONS
+        ],
+        allowHeaders: ["authorization", "content-type"],
+        maxAge: cdk.Duration.days(1)
+      }
     });
 
     const auth = new apigwv2.CfnAuthorizer(this, "BrieflyJwtAuthorizer", {

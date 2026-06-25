@@ -5,7 +5,6 @@ import { createId, json, logError, logInfo } from "@briefly/shared";
 import { requireIdentity } from "../lib/auth";
 import { parseJsonBody } from "../lib/body";
 import { loadConfig } from "../lib/config";
-import { ConflictError, NotFoundError } from "../lib/errors";
 import { toErrorResponse } from "../lib/errorResponse";
 import { validateIdPathParam, validateStartGeneration } from "../lib/validators";
 import { DailyInputsRepository } from "../repositories/dailyInputsRepository";
@@ -24,41 +23,22 @@ export const handler = async (event: APIGatewayProxyEventV2) => {
     const dailyInputsRepository = new DailyInputsRepository(cfg.dailyInputsTable);
     const workflowRunsRepository = new WorkflowRunsRepository(cfg.workflowRunsTable);
 
-    const dailyInput = await dailyInputsRepository.getById(inputId);
-    if (!dailyInput) {
-      throw new NotFoundError("Daily input not found", { input_id: inputId });
-    }
-
-    if (dailyInput.status === "running") {
-      throw new ConflictError("Daily input already has a generation run in progress", {
-        input_id: inputId,
-        latest_run_id: dailyInput.latest_run_id
-      });
-    }
-
-    if (dailyInput.status === "pending_review") {
-      throw new ConflictError("Daily input already has a draft pending review", {
-        input_id: inputId,
-        latest_run_id: dailyInput.latest_run_id
-      });
-    }
-
     const runId = createId("run");
     const startedAt = new Date().toISOString();
 
-    await createGenerationWorkflowRun(workflowRunsRepository, {
-      run_id: runId,
-      input_id: inputId,
-      started_at: startedAt,
-      request: {
-        style_preset: payload.style_preset,
-        target_word_count: payload.target_word_count
-      }
-    });
-
-    await dailyInputsRepository.updateStatus(inputId, "running", startedAt, runId);
+    await dailyInputsRepository.transitionToRunningForGeneration(inputId, startedAt, runId);
 
     try {
+      await createGenerationWorkflowRun(workflowRunsRepository, {
+        run_id: runId,
+        input_id: inputId,
+        started_at: startedAt,
+        request: {
+          style_preset: payload.style_preset,
+          target_word_count: payload.target_word_count
+        }
+      });
+
       await sfn.send(
         new StartExecutionCommand({
           stateMachineArn: cfg.generationStateMachineArn,

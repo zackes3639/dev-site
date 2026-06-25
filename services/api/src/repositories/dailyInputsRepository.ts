@@ -25,11 +25,12 @@ export class DailyInputsRepository {
     }
   }
 
-  async getById(inputId: string): Promise<DailyInputItem | null> {
+  async getById(inputId: string, consistentRead = false): Promise<DailyInputItem | null> {
     const result = await ddb.send(
       new GetCommand({
         TableName: this.tableName,
-        Key: { input_id: inputId }
+        Key: { input_id: inputId },
+        ConsistentRead: consistentRead
       })
     );
 
@@ -38,6 +39,35 @@ export class DailyInputsRepository {
     }
 
     return result.Item as DailyInputItem;
+  }
+
+  async transitionToRunningForGeneration(inputId: string, updatedAt: string, latestRunId: string): Promise<void> {
+    try {
+      await ddb.send(
+        new UpdateCommand({
+          TableName: this.tableName,
+          Key: { input_id: inputId },
+          UpdateExpression: "SET #status = :running, latest_run_id = :latestRunId, updated_at = :updatedAt",
+          ExpressionAttributeNames: {
+            "#status": "status"
+          },
+          ExpressionAttributeValues: {
+            ":running": "running",
+            ":latestRunId": latestRunId,
+            ":updatedAt": updatedAt,
+            ":submitted": "submitted",
+            ":failed": "failed"
+          },
+          ConditionExpression: "attribute_exists(input_id) AND (#status = :submitted OR #status = :failed)"
+        })
+      );
+    } catch (error) {
+      if (isConditionalCheckFailedError(error)) {
+        await this.throwGenerationStartConflict(inputId);
+      }
+
+      throw error;
+    }
   }
 
   async updateStatus(inputId: string, status: DailyInputStatus, updatedAt: string, latestRunId?: string): Promise<void> {
@@ -65,5 +95,32 @@ export class DailyInputsRepository {
 
       throw error;
     }
+  }
+
+  private async throwGenerationStartConflict(inputId: string): Promise<never> {
+    const dailyInput = await this.getById(inputId, true);
+    if (!dailyInput) {
+      throw new NotFoundError("Daily input not found", { input_id: inputId });
+    }
+
+    if (dailyInput.status === "running") {
+      throw new ConflictError("Daily input already has a generation run in progress", {
+        input_id: inputId,
+        latest_run_id: dailyInput.latest_run_id
+      });
+    }
+
+    if (dailyInput.status === "pending_review") {
+      throw new ConflictError("Daily input already has a draft pending review", {
+        input_id: inputId,
+        latest_run_id: dailyInput.latest_run_id
+      });
+    }
+
+    throw new ConflictError("Daily input is not eligible to start generation", {
+      input_id: inputId,
+      status: dailyInput.status,
+      latest_run_id: dailyInput.latest_run_id
+    });
   }
 }
