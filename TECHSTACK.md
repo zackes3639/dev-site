@@ -43,7 +43,11 @@ Current technical facts for future agents.
   - `briefly_daily_inputs`
   - `briefly_drafts`
   - `briefly_posts`
+  - `briefly_post_slugs`
   - `briefly_workflow_runs`
+- Briefly publish writes approved posts to both `briefly_posts` and the legacy live blog table (`ZS_DEV_BLOG_POSTS`) so published drafts appear in the current Build Log.
+- Briefly publish uses `briefly_post_slugs` as the transactional slug uniqueness lock.
+- Legacy admin blog writes still use legacy-table scans and do not yet share the Briefly slug-lock table.
 
 ## Commands
 
@@ -72,6 +76,6 @@ npm run smoke:briefly
 ## Integration boundaries
 
 - Current public blog reads from the legacy posts API in `assets/js/blog.js`.
-- Briefly publish currently writes to the separate `briefly_posts` table, not the live blog API.
-- Do not assume a Briefly-published draft appears on the public site until that integration is explicitly implemented.
+- Briefly publish writes a legacy-compatible public post item with `content`, `created_at`, and `published` fields.
+- Briefly publish returns the current public route shape: `/blog/post/?slug=...`.
 - Do not change live-site deployment behavior without explicit user approval.
