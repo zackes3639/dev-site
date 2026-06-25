@@ -153,7 +153,7 @@ export class BrieflyStack extends cdk.Stack {
       "BrieflyGenerationLambda",
       "services/generation/src/handlers/generateDraft.ts",
       {
-        BEDROCK_MODEL_ID: "anthropic.claude-3-5-sonnet-20240620-v1:0",
+        BEDROCK_MODEL_ID: "us.amazon.nova-pro-v1:0",
         DAILY_INPUTS_TABLE: dailyInputs.tableName,
         DRAFTS_TABLE: drafts.tableName,
         WORKFLOW_RUNS_TABLE: workflowRuns.tableName

@@ -2,67 +2,24 @@
 
 Date: 2026-06-25
 
-## Goal
+## Current state
 
-Finish making Briefly fully operational as a private hosted admin workflow at:
+Briefly is operational as a private hosted admin workflow at:
 
 ```text
 https://zacksimon.dev/admin/briefly/
 ```
 
-## Current state
-
-- Current checkout when this handoff was written: `main`.
-- Local `main` has a handoff-only commit on top of `origin/main`:
-  - `56b8161 docs: add Briefly launch handoff`
-- `origin/main` already contains the Briefly hosted-admin launch commit:
-  - `fed8654 feat: host Briefly admin workflow`
-- `origin/main` also contains a newer public-site redesign commit after the Briefly launch:
-  - `51c84f7 feat(site): Workbench Clean redesign — nav drawer, type scale, newsletter`
-- Earlier launch-session branches may not exist in this checkout anymore. The launch commit is reachable through `origin/main`.
-- There are local uncommitted documentation edits about a main-only GitHub workflow in this workspace:
-  - `AGENTS.md`
-  - `CHANGELOG.md`
-  - `CLAUDE.md`
-  - `README.md`
-  - `TECHSTACK.md`
-  - `docs/dev-workflow.md`
-- Those uncommitted docs are not required to finish the Briefly operational launch unless Zack wants to keep the main-only workflow policy update.
-
-## What changed
-
-- Hosted Briefly admin build now uses Vite base `/admin/briefly/`.
-- Local admin dev server now uses `localhost:5173`; preview uses `4173`.
-- Hosted admin no longer supports baked bearer-token env vars.
-- Cognito app client now explicitly supports password-based token minting.
-- GitHub Actions now:
-  - installs npm dependencies,
-  - builds `@briefly/admin-briefly`,
-  - keeps root static sync behavior,
-  - syncs `apps/admin-briefly/dist` to `s3://$S3_BUCKET_NAME/admin/briefly/`.
-- Added `scripts/briefly-admin-auth.sh`.
-- Added npm scripts:
-  - `npm run briefly:admin:ensure-user`
-  - `npm run briefly:admin:token`
-- Deploy smoke now checks:
-  - unauthenticated `/admin/briefly/` is blocked,
-  - authenticated `/admin/briefly/` returns 200,
-  - JS/CSS load from `/admin/briefly/assets/`.
-- Docs were updated:
-  - `AGENTS.md`
-  - `BRAND.md`
-  - `CHANGELOG.md`
-  - `CLAUDE.md`
-  - `PLANS.md`
-  - `README.md`
-  - `TECHSTACK.md`
-  - `apps/admin-briefly/README.md`
-  - `docs/briefly-v1-architecture.md`
-  - `docs/dev-workflow.md`
+- Current branch: `main`.
+- `origin/main` already contains the hosted-admin launch and main-only workflow docs.
+- This workspace currently has source/docs edits for the final operational fix and launch record.
+- The Cognito admin user `ticketsfortampakids@gmail.com` exists and is `CONFIRMED`.
+- A policy-compliant admin password was generated for this launch session and kept out of repo/docs. Reset it with `npm run briefly:admin:ensure-user` whenever a durable user-owned password is needed.
+- Cognito ID tokens are minted with `npm run -s briefly:admin:token` and pasted into the hosted UI as raw ID tokens. Do not paste `Bearer ...`; the client adds the `Bearer` prefix.
 
 ## AWS state
 
-`BrieflyV1Stack` was deployed successfully.
+`BrieflyV1Stack` is deployed in `us-east-2`.
 
 Confirmed CloudFormation outputs:
 
@@ -83,188 +40,97 @@ ALLOW_USER_PASSWORD_AUTH
 ALLOW_USER_SRP_AUTH
 ```
 
-Hosted admin assets were manually uploaded to:
+Briefly generation now uses Bedrock Converse with:
 
 ```text
-s3://dev-site-647932856401-us-east-2-an/admin/briefly/
+BEDROCK_MODEL_ID = us.amazon.nova-pro-v1:0
 ```
 
-CloudFront distribution invalidated:
+Why this changed: the previous Claude 3.5 Sonnet model reached end of life, and Claude Sonnet 4.6 requires the Anthropic Bedrock use-case form to be submitted for this AWS account. Nova Pro works through the existing account without adding that approval dependency.
+
+## Launch validation
+
+Passed in the hosted workflow:
+
+- Site password gate showed before `/admin/briefly/`.
+- Correct site password opened the hosted Briefly admin.
+- Hosted admin loaded with no browser console warnings/errors.
+- Raw Cognito ID token was saved in the UI.
+- Daily input was created.
+- Generation started, completed, and auto-loaded a draft.
+- Draft was edited, approved, and saved.
+- A deliberate approved draft was published.
+- Returned URL was verified:
+  - `/blog/post/?slug=briefly-hosted-admin-launch-verification-2026-06-25`
+- The published post appeared on The Build Log listing.
+
+Published verification post:
 
 ```text
-E1VYG8DDDLSYLP
+https://zacksimon.dev/blog/post/?slug=briefly-hosted-admin-launch-verification-2026-06-25
 ```
 
-## Validation already run
-
-Passed:
-
-```bash
-npm run typecheck
-npm run build
-npm run cdk:synth --workspace @briefly/infra-cdk
-npm test
-bash -n scripts/smoke-test.sh scripts/briefly-admin-auth.sh scripts/smoke/briefly-smoke.sh
-git diff --check
-```
-
-Passed hosted-style admin build check:
-
-```bash
-VITE_BRIEFLY_API_BASE=https://yp2u8kczt9.execute-api.us-east-2.amazonaws.com \
-npm run build --workspace @briefly/admin-briefly
-```
-
-Confirmed built `index.html` references:
-
-```text
-/admin/briefly/assets/*.js
-/admin/briefly/assets/*.css
-```
-
-Passed deploy smoke with site owner password from SSM:
-
-```bash
-SITE_ACCESS_PASSWORD="$(aws ssm get-parameter \
-  --name /zacksimon/site/owner-password \
-  --with-decryption \
-  --region us-east-2 \
-  --query 'Parameter.Value' \
-  --output text)" \
-npm run smoke:deploy
-```
-
-This confirmed:
-
-- site password gate works,
-- unauthenticated `/admin/briefly/` is blocked,
-- authenticated `/admin/briefly/` returns 200,
-- hosted admin JS/CSS load,
-- existing public site smoke checks still pass.
-
-Passed health-only Briefly smoke:
-
-```bash
-API_BASE=https://yp2u8kczt9.execute-api.us-east-2.amazonaws.com \
-npm run smoke:briefly
-```
-
-Authenticated Briefly smoke was skipped because `ADMIN_BEARER_TOKEN` was not available.
-
-Browser QA passed for local hosted-path preview:
-
-```bash
-npm run preview --workspace @briefly/admin-briefly -- --host 127.0.0.1
-```
-
-Checked:
-
-- `http://127.0.0.1:4173/admin/briefly/`
-- desktop render
-- mobile render
-- API base prefilled
-- connection form saves dummy token
-- no console warnings/errors
-
-## Remaining blocker
-
-The Cognito admin user has not been created yet because no `BRIEFLY_ADMIN_PASSWORD` was available in the shell.
-
-Current AWS check showed:
-
-```text
-ticketsfortampakids@gmail.com does not exist in user pool us-east-2_0hhgJcr4h
-```
-
-## Next steps
-
-1. Pick a policy-compliant admin password.
-
-CDK password policy:
-
-- minimum 14 characters,
-- at least one digit,
-- at least one symbol,
-- at least one uppercase letter,
-- at least one lowercase letter.
-
-2. Create or reset the Cognito admin user.
+Also passed before final validation:
 
 ```bash
 BRIEFLY_ADMIN_EMAIL=ticketsfortampakids@gmail.com \
-BRIEFLY_ADMIN_PASSWORD='set-a-policy-compliant-password' \
+BRIEFLY_ADMIN_PASSWORD='session-generated-password' \
 npm run briefly:admin:ensure-user
-```
 
-3. Mint a Cognito ID token.
-
-```bash
 BRIEFLY_ADMIN_EMAIL=ticketsfortampakids@gmail.com \
-BRIEFLY_ADMIN_PASSWORD='set-a-policy-compliant-password' \
+BRIEFLY_ADMIN_PASSWORD='session-generated-password' \
 npm run -s briefly:admin:token
-```
 
-4. Run authenticated Briefly smoke.
-
-```bash
 API_BASE=https://yp2u8kczt9.execute-api.us-east-2.amazonaws.com \
 ADMIN_BEARER_TOKEN='<jwt>' \
 npm run smoke:briefly
+
+npm run typecheck --workspace @briefly/generation
+npm run typecheck --workspace @briefly/infra-cdk
+npm run cdk:synth --workspace @briefly/infra-cdk
+npm run cdk:deploy --workspace @briefly/infra-cdk -- --require-approval never
 ```
 
-5. Browser-test the real hosted workflow.
-
-Open:
-
-```text
-https://zacksimon.dev/admin/briefly/
-```
-
-Test:
-
-- site password gate,
-- paste Cognito ID token,
-- create daily input,
-- start generation,
-- poll/load draft,
-- edit and save draft,
-- publish only a deliberate approved draft,
-- verify returned `/blog/post/?slug=...`,
-- verify the post appears in The Build Log listing.
-
-6. Promote source after authenticated workflow passes.
-
-Current repo reality: `origin/main` already includes the Briefly launch code at `fed8654`. The remaining source promotion question is whether to push the handoff commit and any intentional docs-policy edits.
-
-If the next context is continuing from this exact checkout, first inspect:
+Final validation passed:
 
 ```bash
-git status --short --branch
-git log --oneline --decorate --graph -n 10
+npm run typecheck
+VITE_BRIEFLY_API_BASE=https://yp2u8kczt9.execute-api.us-east-2.amazonaws.com npm run build
+API_BASE=https://yp2u8kczt9.execute-api.us-east-2.amazonaws.com ADMIN_BEARER_TOKEN='<jwt>' npm run smoke:briefly
+SITE_ACCESS_PASSWORD='<from-ssm>' npm run smoke:deploy
+npm test
+git diff --check
 ```
 
-After authenticated workflow and deliberate publish check pass, push only the intended commits/edits to `origin/main`.
+Hosted admin static asset sync passed:
 
-## Important risks and constraints
+```bash
+aws s3 sync apps/admin-briefly/dist s3://dev-site-647932856401-us-east-2-an/admin/briefly/ --delete
+aws cloudfront create-invalidation --distribution-id E1VYG8DDDLSYLP --paths '/admin/briefly/*' '/admin/briefly/'
+aws cloudfront wait invalidation-completed --distribution-id E1VYG8DDDLSYLP --id I2FCAL6FF2ABTBTDRA7CYQEVMK
+```
 
-- Do not resurrect or merge the old divergent `briefly-dev` line wholesale.
-- Do not remove site password gate files or behavior.
-- Do not remove Briefly live Build Log publish integration.
+## Still important
+
+- Do not remove or weaken the site password gate.
+- Do not bake Cognito bearer tokens into the Vite build.
+- Do not remove Briefly publish integration with the live Build Log.
 - Do not remove `briefly_post_slugs` slug-lock behavior.
-- Do not bake Cognito bearer tokens into hosted Vite builds.
+- Do not resurrect or merge old divergent `briefly-dev` history.
 - The remaining cross-writer slug race between legacy admin writes and Briefly publishes is still open in `OPEN_BUGS.md`.
+
+## Next operator notes
+
+- If Zack needs a durable admin password, reset the Cognito user with a password he owns.
+- If switching back to Anthropic on Bedrock, first submit the Anthropic use-case form in AWS Bedrock and then test from the Lambda role, not only from local AWS credentials.
+- The corrected token label is already live from the manual admin static sync; pushing these local edits to `origin/main` will make source match the deployed state.
 
 ## Deployment status
 
 AWS deployment was run:
 
-- `BrieflyV1Stack` was deployed.
-- Hosted admin assets were uploaded manually to S3.
-- CloudFront invalidation completed.
+- `BrieflyV1Stack` was deployed with Bedrock Converse/Nova generation.
+- Hosted admin static assets were synced to S3 and CloudFront invalidation `I2FCAL6FF2ABTBTDRA7CYQEVMK` completed.
+- Hosted browser publish was verified against the live site.
 
-AWS deployment is not fully complete operationally:
-
-- Cognito admin user creation is pending.
-- Authenticated Briefly smoke is pending.
-- End-to-end hosted browser workflow is pending.
-- Final source push/cleanup is pending for the handoff commit and any intentional docs-policy edits.
+Source has not been committed or pushed in this workspace.

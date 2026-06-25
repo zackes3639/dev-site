@@ -104,7 +104,7 @@ The **deployed** create-post Lambda is `lambda/create-post.js` (Node); `lambda/c
 
 ## Briefly backend and admin
 
-Defined in `infra/cdk/lib/briefly-stack.ts`: API Gateway HTTP API + Cognito JWT admin auth + Lambda + Step Functions + DynamoDB + Bedrock generation. Human review required before publish (no auto-publish). The Vite admin is built with `VITE_BRIEFLY_API_BASE` and hosted privately at `/admin/briefly/`; Cognito tokens are pasted into the UI and are not baked into static assets.
+Defined in `infra/cdk/lib/briefly-stack.ts`: API Gateway HTTP API + Cognito JWT admin auth + Lambda + Step Functions + DynamoDB + Bedrock generation. Human review required before publish (no auto-publish). The Vite admin is built with `VITE_BRIEFLY_API_BASE` and hosted privately at `/admin/briefly/`; raw Cognito ID tokens are pasted into the UI and are not baked into static assets.
 
 Briefly tables: `briefly_daily_inputs`, `briefly_drafts`, `briefly_posts`, `briefly_post_slugs`, `briefly_workflow_runs`.
 

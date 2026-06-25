@@ -50,7 +50,7 @@ export const handler = async (event: StartGenerationWorkflowInput, _context: Con
       throw new Error("Daily input does not contain exactly 3 bullets");
     }
 
-    const modelId = process.env.BEDROCK_MODEL_ID ?? "anthropic.claude-3-5-sonnet-20240620-v1:0";
+    const modelId = process.env.BEDROCK_MODEL_ID ?? "us.amazon.nova-pro-v1:0";
     const targetWordCount = event.target_word_count ?? 500;
     const promptVersion = "build_log_v1.0.0";
     const prompt = buildLogV1Prompt(bullets, targetWordCount);

@@ -27,7 +27,7 @@ Private hosted admin:
 https://zacksimon.dev/admin/briefly/
 ```
 
-The page is protected first by the site password gate. Inside the UI, paste a Cognito ID token for Briefly API calls.
+The page is protected first by the site password gate. Inside the UI, paste a raw Cognito ID token for Briefly API calls.
 
 ## Hosted build
 
@@ -61,6 +61,8 @@ BRIEFLY_ADMIN_EMAIL=ticketsfortampakids@gmail.com \
 BRIEFLY_ADMIN_PASSWORD='set-a-policy-compliant-password' \
 npm run -s briefly:admin:token
 ```
+
+Paste the raw token output into the UI. Do not prefix it with `Bearer`; the client adds that prefix.
 
 Run API smoke checks with that token:
 

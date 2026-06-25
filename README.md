@@ -74,6 +74,8 @@ BRIEFLY_ADMIN_PASSWORD='set-a-policy-compliant-password' \
 npm run -s briefly:admin:token
 ```
 
+Paste the raw token output into `/admin/briefly/`; the admin client adds the `Bearer` prefix for API calls.
+
 ## Existing production deploy
 
 Site deploy syncs root static files to S3 + CloudFront invalidation via `.github/workflows/deploy.yml`. The same workflow builds `@briefly/admin-briefly` and syncs its `dist` output to `admin/briefly/`.

@@ -36,6 +36,9 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
   forms to the shared 8px-radius token system across the public pages.
 - Changed the Briefly admin Vite build to emit `/admin/briefly/` asset URLs and use local dev port `5173`.
 - Changed the Briefly Cognito app client to allow password-based token minting.
+- Changed Briefly generation to use Bedrock Converse with Amazon Nova Pro (`us.amazon.nova-pro-v1:0`) after the previous Claude 3.5 Sonnet model reached end of life.
+- Changed the hosted Briefly admin token field copy to ask for the raw Cognito ID token.
+- Completed hosted Briefly admin launch validation: Cognito admin user, authenticated smoke, browser generation/edit/save/publish, live post detail, and Build Log listing.
 - Documented hosted Briefly admin launch operations, acceptance checks, and current deployment state.
 - Deployed the Briefly Cognito auth-flow update and hosted admin assets to AWS.
 - Updated `AGENTS.md` to require task-relevant sub-instruction docs and changelog/open-bugs maintenance.

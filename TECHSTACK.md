@@ -35,7 +35,7 @@ Current technical facts for future agents.
 
 ## Briefly stack
 
-- Briefly is in progress and deployed to AWS as `BrieflyV1Stack` as of 2026-06-25.
+- Briefly v1 is operational as a private hosted admin workflow and deployed to AWS as `BrieflyV1Stack` as of 2026-06-25.
 - Briefly API URL: `https://yp2u8kczt9.execute-api.us-east-2.amazonaws.com/`.
 - Briefly private admin URL: `https://zacksimon.dev/admin/briefly/`.
 - Briefly Cognito user pool: `us-east-2_0hhgJcr4h`.
@@ -56,7 +56,8 @@ Current technical facts for future agents.
 - Briefly publish writes approved posts to both `briefly_posts` and the legacy live blog table (`ZS_DEV_BLOG_POSTS`) so published drafts appear in the current Build Log.
 - Briefly publish uses `briefly_post_slugs` as the transactional slug uniqueness lock.
 - Legacy admin blog writes still use legacy-table scans and do not yet share the Briefly slug-lock table.
-- The hosted admin build uses `VITE_BRIEFLY_API_BASE` for the API base only. Cognito bearer tokens are pasted into the UI and stored in localStorage; they are not baked into the static build.
+- Briefly generation uses Bedrock Converse with Amazon Nova Pro via `BEDROCK_MODEL_ID=us.amazon.nova-pro-v1:0`.
+- The hosted admin build uses `VITE_BRIEFLY_API_BASE` for the API base only. Raw Cognito ID tokens are pasted into the UI and stored in localStorage; they are not baked into the static build.
 - Briefly API CORS allows `https://zacksimon.dev`, `http://localhost:5173`, and `http://localhost:4173`.
 
 ## Commands
@@ -98,6 +99,8 @@ BRIEFLY_ADMIN_EMAIL=ticketsfortampakids@gmail.com \
 BRIEFLY_ADMIN_PASSWORD='set-a-policy-compliant-password' \
 npm run -s briefly:admin:token
 ```
+
+Paste the raw token output into the hosted admin. Do not prefix it with `Bearer`; the client adds that prefix.
 
 ## Integration boundaries
 
