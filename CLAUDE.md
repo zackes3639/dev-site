@@ -19,7 +19,7 @@ Documentation discipline (from `AGENTS.md`): when a change touches design/brand/
 This is a monorepo holding two things:
 
 1. **The live site (`zacksimon.dev`)** — pure static HTML/CSS/JS at the repo root, deployed directly to S3/CloudFront. No build step. Its Python/Node Lambdas live in `lambda/`.
-2. **Briefly** — an in-progress TypeScript app (admin UI + serverless backend) that generates and publishes Build Log posts. **Not yet deployed to AWS.** Lives in npm workspaces:
+2. **Briefly** — an in-progress TypeScript app (admin UI + serverless backend) that generates and publishes Build Log posts. The backend is deployed as `BrieflyV1Stack`; the private admin is hosted at `/admin/briefly/` by the main deploy workflow. Lives in npm workspaces:
 
 ```text
 apps/admin-briefly/   # Briefly admin frontend (Vite + TS)
@@ -102,9 +102,9 @@ The **deployed** create-post Lambda is `lambda/create-post.js` (Node); `lambda/c
 - **Admin write auth:** password-only. The `password` body field (writes) or `X-Admin-Password` header (admin draft listing) is checked against the `ADMIN_PASSWORD` Lambda env var. No sessions/tokens. Admin page: `/admin/`.
 - **Site-access gate:** `services/site-auth` + `edge/site-access-gate.js` password-protect the site. Owner/guest passwords live in SSM (`/zacksimon/site/owner-password`, `/zacksimon/site/guest-password`). Rotate the guest password with `npm run guest-password:rotate` (show: `guest-password:show`).
 
-## Briefly backend (in progress, not deployed)
+## Briefly backend and admin
 
-Defined in `infra/cdk/lib/briefly-stack.ts`: API Gateway HTTP API + Cognito JWT admin auth + Lambda + Step Functions + DynamoDB + Bedrock generation. Human review required before publish (no auto-publish).
+Defined in `infra/cdk/lib/briefly-stack.ts`: API Gateway HTTP API + Cognito JWT admin auth + Lambda + Step Functions + DynamoDB + Bedrock generation. Human review required before publish (no auto-publish). The Vite admin is built with `VITE_BRIEFLY_API_BASE` and hosted privately at `/admin/briefly/`; Cognito tokens are pasted into the UI and are not baked into static assets.
 
 Briefly tables: `briefly_daily_inputs`, `briefly_drafts`, `briefly_posts`, `briefly_post_slugs`, `briefly_workflow_runs`.
 

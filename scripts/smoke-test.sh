@@ -29,6 +29,18 @@ http_status_with_cookie() {
   curl -sS -b "$cookie_jar" -o /dev/null -w "%{http_code}" "$url"
 }
 
+fetch_with_optional_cookie() {
+  local url="$1"
+  local output="$2"
+  local cookie_jar="${3:-}"
+
+  if [[ -n "$cookie_jar" ]]; then
+    curl -sS -b "$cookie_jar" -o "$output" "$url"
+  else
+    curl -sS -o "$output" "$url"
+  fi
+}
+
 is_json_array() {
   local file="$1"
   if command -v jq >/dev/null 2>&1; then
@@ -70,6 +82,51 @@ check_authed_page_200() {
   else
     fail "$label expected 200 with site password session, got $code ($url)"
   fi
+}
+
+check_briefly_admin_assets() {
+  local cookie_jar="${1:-}"
+  local site_origin="${SITE_URL%/}"
+  local html_file="$TMP_DIR/briefly-admin.html"
+  local code
+
+  if [[ -n "$cookie_jar" ]]; then
+    code="$(http_status_with_cookie "$site_origin/admin/briefly/" "$cookie_jar")"
+  else
+    code="$(http_status "$site_origin/admin/briefly/")"
+  fi
+
+  if [[ "$code" == "200" ]]; then
+    pass "Briefly admin page returns 200"
+  else
+    fail "Briefly admin page expected 200, got $code ($site_origin/admin/briefly/)"
+    return
+  fi
+
+  fetch_with_optional_cookie "$site_origin/admin/briefly/" "$html_file" "$cookie_jar"
+  briefly_assets=()
+  while IFS= read -r asset_path; do
+    briefly_assets+=("$asset_path")
+  done < <(grep -Eo '/admin/briefly/assets/[^"]+\.(js|css)' "$html_file" | sort -u)
+
+  if ((${#briefly_assets[@]} == 0)); then
+    fail "Briefly admin page did not reference /admin/briefly/assets/ JS/CSS"
+    return
+  fi
+
+  for asset_path in "${briefly_assets[@]}"; do
+    if [[ -n "$cookie_jar" ]]; then
+      code="$(http_status_with_cookie "$site_origin$asset_path" "$cookie_jar")"
+    else
+      code="$(http_status "$site_origin$asset_path")"
+    fi
+
+    if [[ "$code" == "200" ]]; then
+      pass "Briefly admin asset loads: $asset_path"
+    else
+      fail "Briefly admin asset expected 200, got $code ($asset_path)"
+    fi
+  done
 }
 
 echo "Running deploy smoke test..."
@@ -122,10 +179,18 @@ if [[ -n "$SITE_ACCESS_PASSWORD" ]]; then
     fail "Unauthenticated deep link expected 302, got $deep_link_code"
   fi
 
+  briefly_link_code="$(http_status "${SITE_URL%/}/admin/briefly/")"
+  if [[ "$briefly_link_code" == "302" ]]; then
+    pass "Unauthenticated Briefly admin is blocked"
+  else
+    fail "Unauthenticated Briefly admin expected 302, got $briefly_link_code"
+  fi
+
   check_authed_page_200 "Home page" "$SITE_URL/" "$site_cookie_jar"
   check_authed_page_200 "Builds page" "$SITE_URL/work/" "$site_cookie_jar"
   check_authed_page_200 "Blog page" "$SITE_URL/blog/" "$site_cookie_jar"
   check_authed_page_200 "Admin page" "$SITE_URL/admin/" "$site_cookie_jar"
+  check_briefly_admin_assets "$site_cookie_jar"
 else
   curl -sS "$SITE_URL/" > "$TMP_DIR/site_home.html"
   if grep -q 'action="/__site-login"' "$TMP_DIR/site_home.html"; then
@@ -138,11 +203,19 @@ else
     else
       fail "Unauthenticated deep link expected 302, got $deep_link_code"
     fi
+
+    briefly_link_code="$(http_status "${SITE_URL%/}/admin/briefly/")"
+    if [[ "$briefly_link_code" == "302" ]]; then
+      pass "Unauthenticated Briefly admin is blocked"
+    else
+      fail "Unauthenticated Briefly admin expected 302, got $briefly_link_code"
+    fi
   else
     check_page_200 "Home page" "$SITE_URL/"
     check_page_200 "Builds page" "$SITE_URL/work/"
     check_page_200 "Blog page" "$SITE_URL/blog/"
     check_page_200 "Admin page" "$SITE_URL/admin/"
+    check_briefly_admin_assets
   fi
 fi
 

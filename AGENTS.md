@@ -24,7 +24,7 @@ Default rule: for code changes, read `TECHSTACK.md` and `OPEN_BUGS.md`; for UI/c
 ## Repo context
 
 - This repo contains both the live site (`zacksimon.dev`) and in-progress Briefly work.
-- Briefly is currently implemented in-progress and not yet deployed to AWS.
+- Briefly backend is deployed to AWS; hosted admin launch state and current outputs are tracked in `TECHSTACK.md`.
 - Default posture: protect live-site stability while iterating quickly on Briefly.
 - Sub-instruction docs listed above are part of this contract, not optional background reading.
 

@@ -29,7 +29,7 @@ Brand guidance for `zacksimon.dev`, The Build Log, and Briefly.
 ## Boundaries
 
 - Do not make the site feel like a generic SaaS landing page unless the task is specifically about a product page.
-- Do not overstate Briefly as deployed or production-ready until AWS deployment and public integration are actually complete.
+- Do not overstate Briefly as production-ready; admin hosting and launch state must match `TECHSTACK.md`.
 - Do not blur the current live Build Log with Briefly's in-progress publishing path; they are not fully integrated yet.
 - Do not introduce unrelated visual mascots, slogans, or brand systems.
 

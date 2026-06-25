@@ -127,7 +127,12 @@ export class BrieflyStack extends cdk.Stack {
 
     const userPoolClient = new cognito.UserPoolClient(this, "BrieflyAdminClient", {
       userPool,
-      generateSecret: false
+      generateSecret: false,
+      authFlows: {
+        custom: true,
+        userPassword: true,
+        userSrp: true
+      }
     });
 
     const createNodeLambda = (id: string, entry: string, environment: Record<string, string>, timeout = 30) => {

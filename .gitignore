@@ -1,5 +1,7 @@
 .claude/worktrees/
 .DS_Store
+.env*
+!.env.example
 lambda/*.zip
 node_modules/
 dist/

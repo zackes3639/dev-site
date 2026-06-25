@@ -15,6 +15,8 @@
     "test": "npm run test --workspaces --if-present",
     "smoke:deploy": "./scripts/smoke-test.sh",
     "smoke:briefly": "./scripts/smoke/briefly-smoke.sh",
+    "briefly:admin:ensure-user": "./scripts/briefly-admin-auth.sh ensure-user",
+    "briefly:admin:token": "./scripts/briefly-admin-auth.sh token",
     "guest-password:rotate": "node scripts/guest-password.mjs rotate",
     "guest-password:show": "node scripts/guest-password.mjs show"
   },

@@ -52,6 +52,18 @@ npm run typecheck
 npm run build
 ```
 
+For hosted Briefly admin launches, also run:
+
+```bash
+npm run cdk:synth --workspace @briefly/infra-cdk
+API_BASE=https://yp2u8kczt9.execute-api.us-east-2.amazonaws.com \
+ADMIN_BEARER_TOKEN=<jwt> \
+npm run smoke:briefly
+SITE_ACCESS_PASSWORD=<site-password> npm run smoke:deploy
+```
+
+Browser-check `/admin/briefly/`: site password gate, JS/CSS under `/admin/briefly/assets/`, create input, start generation, poll/load draft, edit/save draft, and only publish a deliberately approved draft.
+
 In final handoff notes, always include:
 
 - File-by-file changes

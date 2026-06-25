@@ -17,7 +17,6 @@ interface AdminSettings {
 
 const SETTINGS_KEY = "briefly_admin_settings_v1";
 const DEFAULT_API_BASE = import.meta.env.VITE_BRIEFLY_API_BASE ?? "";
-const DEFAULT_TOKEN = import.meta.env.VITE_ADMIN_BEARER_TOKEN ?? "";
 
 type NoticeTone = "neutral" | "success" | "error" | "warning";
 const DRAFT_REVIEW_STATUSES: DraftReviewStatus[] = ["pending_review", "approved", "rejected"];
@@ -201,7 +200,7 @@ const init = (): void => {
   const apiBaseInput = byId<HTMLInputElement>("api-base");
   const tokenInput = byId<HTMLInputElement>("admin-token");
   apiBaseInput.value = storedSettings?.apiBase ?? DEFAULT_API_BASE;
-  tokenInput.value = storedSettings?.token ?? DEFAULT_TOKEN;
+  tokenInput.value = storedSettings?.token ?? "";
 
   byId<HTMLInputElement>("input-date").value = new Date().toISOString().slice(0, 10);
   byId<HTMLInputElement>("target-word-count").value = "500";
@@ -221,7 +220,7 @@ const init = (): void => {
     byId<HTMLInputElement>("generation-run-id").value = runIdFromQuery;
   }
 
-  setStatus(byId("connection-state"), "Configure API base and token once. Stored locally in this browser.", "neutral");
+  setStatus(byId("connection-state"), "Configure API base and paste a Cognito ID token. Stored locally in this browser.", "neutral");
   setStatus(byId("create-input-state"), "", "neutral");
   setStatus(byId("generation-state"), "", "neutral");
   setStatus(byId("draft-state"), "Load a draft to edit and publish.", "neutral");

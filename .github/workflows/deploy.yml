@@ -23,6 +23,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Briefly admin
+        env:
+          VITE_BRIEFLY_API_BASE: https://yp2u8kczt9.execute-api.us-east-2.amazonaws.com
+        run: npm run build --workspace @briefly/admin-briefly
+
       - name: Configure AWS credentials from GitHub OIDC
         uses: aws-actions/configure-aws-credentials@v6
         with:
@@ -56,11 +70,17 @@ jobs:
             --exclude "edge/*" \
             --exclude "docs/*" \
             --exclude "node_modules/*" \
+            --exclude "admin/briefly/*" \
             --exclude "package.json" \
             --exclude "package-lock.json" \
             --exclude "tsconfig*.json" \
             --exclude "CLAUDE.md" \
             --exclude "memory/*"
+
+      - name: Upload Briefly admin to S3
+        run: |
+          aws s3 sync apps/admin-briefly/dist s3://${S3_BUCKET_NAME}/admin/briefly/ \
+            --delete
 
       - name: Invalidate CloudFront cache
         run: |
