@@ -72,6 +72,14 @@ ADMIN_BEARER_TOKEN=<jwt-token> \
 npm run smoke:briefly
 ```
 
+Run the full publish e2e smoke with cleanup:
+
+```bash
+API_BASE=https://yp2u8kczt9.execute-api.us-east-2.amazonaws.com \
+ADMIN_BEARER_TOKEN=<jwt-token> \
+npm run smoke:briefly:e2e
+```
+
 Connection values saved in the UI are stored in localStorage for this browser profile.
 
 ## Hosted launch checklist

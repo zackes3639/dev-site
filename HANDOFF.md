@@ -12,7 +12,7 @@ https://zacksimon.dev/admin/briefly/
 
 - Current branch: `main`.
 - `origin/main` already contains the hosted-admin launch and main-only workflow docs.
-- This workspace currently has source/docs edits for the final operational fix and launch record.
+- This workspace is continuing post-launch hardening: deploy workflow SSM secret handling, Briefly e2e publish smoke, and shared legacy/Briefly slug locking.
 - The Cognito admin user `ticketsfortampakids@gmail.com` exists and is `CONFIRMED`.
 - A policy-compliant admin password was generated for this launch session and kept out of repo/docs. Reset it with `npm run briefly:admin:ensure-user` whenever a durable user-owned password is needed.
 - Cognito ID tokens are minted with `npm run -s briefly:admin:token` and pasted into the hosted UI as raw ID tokens. Do not paste `Bearer ...`; the client adds the `Bearer` prefix.
@@ -117,13 +117,15 @@ aws cloudfront wait invalidation-completed --distribution-id E1VYG8DDDLSYLP --id
 - Do not remove Briefly publish integration with the live Build Log.
 - Do not remove `briefly_post_slugs` slug-lock behavior.
 - Do not resurrect or merge old divergent `briefly-dev` history.
-- The remaining cross-writer slug race between legacy admin writes and Briefly publishes is still open in `OPEN_BUGS.md`.
+- Legacy admin writes and Briefly publishes now share the `briefly_post_slugs` slug lock.
 
 ## Next operator notes
 
 - If Zack needs a durable admin password, reset the Cognito user with a password he owns.
 - If switching back to Anthropic on Bedrock, first submit the Anthropic use-case form in AWS Bedrock and then test from the Lambda role, not only from local AWS credentials.
 - The corrected token label is already live from the manual admin static sync; pushing these local edits to `origin/main` will make source match the deployed state.
+- `smoke:briefly:e2e` publishes a test-prefixed post, verifies public integration, and cleans it up from `briefly_posts`, `briefly_post_slugs`, and `ZS_DEV_BLOG_POSTS`.
+- The GitHub Actions deploy workflow now reads `/zacksimon/site/owner-password` from SSM after OIDC auth instead of requiring a duplicate GitHub secret.
 
 ## Deployment status
 
@@ -133,4 +135,4 @@ AWS deployment was run:
 - Hosted admin static assets were synced to S3 and CloudFront invalidation `I2FCAL6FF2ABTBTDRA7CYQEVMK` completed.
 - Hosted browser publish was verified against the live site.
 
-Source has not been committed or pushed in this workspace.
+Post-launch hardening source changes have not been committed, pushed, or deployed from this workspace yet.

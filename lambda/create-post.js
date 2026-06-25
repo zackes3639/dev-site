@@ -1,9 +1,11 @@
-const { DynamoDBClient, PutItemCommand, ScanCommand } = require('@aws-sdk/client-dynamodb');
+const { DynamoDBClient, GetItemCommand, ScanCommand, TransactWriteItemsCommand } = require('@aws-sdk/client-dynamodb');
 const { marshall } = require('@aws-sdk/util-dynamodb');
 const { randomUUID } = require('crypto');
 
 const client = new DynamoDBClient({});
 const TABLE  = 'ZS_DEV_BLOG_POSTS';
+const POST_SLUGS_TABLE = process.env.POST_SLUGS_TABLE || 'briefly_post_slugs';
+const LEGACY_SLUG_SOURCE = 'legacy_blog';
 
 const HEADERS = {
   'Access-Control-Allow-Origin':  '*',
@@ -42,6 +44,16 @@ async function slugExists(slug) {
   } while (exclusiveStartKey);
 
   return false;
+}
+
+async function slugLockExists(slug) {
+  const result = await client.send(new GetItemCommand({
+    TableName: POST_SLUGS_TABLE,
+    Key: { slug: { S: slug } },
+    ProjectionExpression: 'slug',
+  }));
+
+  return Boolean(result.Item);
 }
 
 exports.handler = async (event) => {
@@ -83,7 +95,7 @@ exports.handler = async (event) => {
     return { statusCode: 400, headers: HEADERS, body: JSON.stringify({ error: 'Could not generate a valid slug from title' }) };
   }
 
-  if (await slugExists(slug)) {
+  if ((await slugExists(slug)) || (await slugLockExists(slug))) {
     return { statusCode: 409, headers: HEADERS, body: JSON.stringify({ error: 'Slug already exists' }) };
   }
 
@@ -94,10 +106,37 @@ exports.handler = async (event) => {
   const item = { post_id, slug, title, summary, content, published, created_at };
   if (tag) item.tag = tag;
 
-  await client.send(new PutItemCommand({
-    TableName: TABLE,
-    Item: marshall(item),
-  }));
+  try {
+    await client.send(new TransactWriteItemsCommand({
+      TransactItems: [
+        {
+          Put: {
+            TableName: POST_SLUGS_TABLE,
+            Item: marshall({
+              slug,
+              post_id,
+              source: LEGACY_SLUG_SOURCE,
+              created_at,
+            }),
+            ConditionExpression: 'attribute_not_exists(slug)',
+          },
+        },
+        {
+          Put: {
+            TableName: TABLE,
+            Item: marshall(item),
+            ConditionExpression: 'attribute_not_exists(post_id)',
+          },
+        },
+      ],
+    }));
+  } catch (error) {
+    if (error && error.name === 'TransactionCanceledException') {
+      return { statusCode: 409, headers: HEADERS, body: JSON.stringify({ error: 'Slug already exists' }) };
+    }
+
+    throw error;
+  }
 
   return {
     statusCode: 200,

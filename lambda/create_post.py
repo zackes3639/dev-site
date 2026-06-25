@@ -5,9 +5,14 @@ import os
 import re
 from datetime import datetime, timezone
 from boto3.dynamodb.conditions import Attr
+from boto3.dynamodb.types import TypeSerializer
+from botocore.exceptions import ClientError
 
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table('ZS_DEV_BLOG_POSTS')
+post_slugs_table_name = os.environ.get('POST_SLUGS_TABLE', 'briefly_post_slugs')
+serializer = TypeSerializer()
+LEGACY_SLUG_SOURCE = 'legacy_blog'
 
 HEADERS = {
     'Access-Control-Allow-Origin': '*',
@@ -39,6 +44,17 @@ def slug_exists(slug):
             return False
 
         scan_kwargs['ExclusiveStartKey'] = last_evaluated_key
+
+def slug_lock_exists(slug):
+    response = dynamodb.meta.client.get_item(
+        TableName=post_slugs_table_name,
+        Key={'slug': {'S': slug}},
+        ProjectionExpression='slug'
+    )
+    return 'Item' in response
+
+def marshal_item(item):
+    return {key: serializer.serialize(value) for key, value in item.items()}
 
 def lambda_handler(event, context):
     method = (
@@ -74,7 +90,7 @@ def lambda_handler(event, context):
     if not slug:
         return {'statusCode': 400, 'headers': HEADERS, 'body': json.dumps({'error': 'Could not generate a valid slug from title'})}
 
-    if slug_exists(slug):
+    if slug_exists(slug) or slug_lock_exists(slug):
         return {'statusCode': 409, 'headers': HEADERS, 'body': json.dumps({'error': 'Slug already exists'})}
 
     post_id    = str(uuid.uuid4())
@@ -94,7 +110,36 @@ def lambda_handler(event, context):
     if tag:
         item['tag'] = tag
 
-    table.put_item(Item=item)
+    slug_item = {
+        'slug': slug,
+        'post_id': post_id,
+        'source': LEGACY_SLUG_SOURCE,
+        'created_at': created_at
+    }
+
+    try:
+        dynamodb.meta.client.transact_write_items(
+            TransactItems=[
+                {
+                    'Put': {
+                        'TableName': post_slugs_table_name,
+                        'Item': marshal_item(slug_item),
+                        'ConditionExpression': 'attribute_not_exists(slug)'
+                    }
+                },
+                {
+                    'Put': {
+                        'TableName': table.name,
+                        'Item': marshal_item(item),
+                        'ConditionExpression': 'attribute_not_exists(post_id)'
+                    }
+                }
+            ]
+        )
+    except ClientError as e:
+        if e.response.get('Error', {}).get('Code') == 'TransactionCanceledException':
+            return {'statusCode': 409, 'headers': HEADERS, 'body': json.dumps({'error': 'Slug already exists'})}
+        raise
 
     return {
         'statusCode': 200,

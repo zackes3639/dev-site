@@ -45,14 +45,15 @@ jobs:
 
       - name: Deploy site password gate
         env:
-          SITE_ACCESS_PASSWORD: ${{ secrets.SITE_ACCESS_PASSWORD }}
-          SITE_ACCESS_SESSION_SECRET: ${{ secrets.SITE_ACCESS_SESSION_SECRET }}
+          SITE_ACCESS_PASSWORD_PARAMETER: /zacksimon/site/owner-password
         run: |
-          if [[ -n "${SITE_ACCESS_PASSWORD}" ]]; then
-            ./scripts/deploy-site-access-gate.sh
-          else
-            echo "::warning::SITE_ACCESS_PASSWORD is not configured; skipping password gate update."
-          fi
+          SITE_ACCESS_PASSWORD="$(aws ssm get-parameter \
+            --name "${SITE_ACCESS_PASSWORD_PARAMETER}" \
+            --with-decryption \
+            --query 'Parameter.Value' \
+            --output text)"
+          export SITE_ACCESS_PASSWORD
+          ./scripts/deploy-site-access-gate.sh
 
       - name: Upload site files to S3
         run: |

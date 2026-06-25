@@ -32,4 +32,4 @@ This document captures the v1 Briefly stack on top of zacksimon.dev.
 - Briefly publish writes to `briefly_posts`.
 - Briefly publish also writes a legacy-compatible item to `ZS_DEV_BLOG_POSTS`.
 - Public URLs keep the current shape: `/blog/post/?slug=...`.
-- Slug uniqueness for Briefly publishes is locked through `briefly_post_slugs`.
+- Slug uniqueness for Briefly publishes and legacy blog writers is locked through `briefly_post_slugs`.

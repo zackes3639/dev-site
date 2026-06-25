@@ -111,7 +111,7 @@ Briefly tables: `briefly_daily_inputs`, `briefly_drafts`, `briefly_posts`, `brie
 Key integration behaviors:
 
 - **Publish writes to two tables:** `services/publishing` writes approved posts to both `briefly_posts` and the legacy `ZS_DEV_BLOG_POSTS` (with legacy-compatible `content`/`created_at`/`published`) so published drafts appear in the live Build Log. It returns the current public route shape `/blog/post/?slug=...`.
-- **Slug uniqueness:** Briefly publish uses `briefly_post_slugs` as a transactional slug lock. Legacy admin write Lambdas do **not** yet share that lock (see `OPEN_BUGS.md` — rare cross-writer duplicate-slug race remains).
+- **Slug uniqueness:** Briefly publish and legacy admin write Lambdas share `briefly_post_slugs` as the slug lock. Legacy-owned locks are marked `source=legacy_blog`; legacy delete/update paths only release those legacy-owned locks.
 
 ## Page structure (live site)
 

@@ -26,6 +26,7 @@ infra/
   cdk/                  # AWS CDK stack for Briefly v1
 scripts/
   smoke/briefly-smoke.sh
+  smoke/briefly-publish-smoke.sh
 ```
 
 ## Briefly v1 architecture choices
@@ -65,6 +66,16 @@ API_BASE=https://yp2u8kczt9.execute-api.us-east-2.amazonaws.com \
 ADMIN_BEARER_TOKEN=<jwt> \
 npm run smoke:briefly
 ```
+
+Run the full Briefly publish e2e smoke:
+
+```bash
+API_BASE=https://yp2u8kczt9.execute-api.us-east-2.amazonaws.com \
+ADMIN_BEARER_TOKEN=<jwt> \
+npm run smoke:briefly:e2e
+```
+
+The e2e smoke publishes a test-prefixed post, verifies the public integration, and removes the test post from the Briefly/legacy post tables and slug-lock table.
 
 Mint a Briefly Cognito ID token:
 
