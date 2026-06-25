@@ -7,7 +7,7 @@ Known open issues and review findings. Update this file when issues are found, f
 ### P2 - Live blog slug uniqueness is not enforced across all writers
 
 - Area: Live blog write paths / Briefly publishing integration
-- Files: `lambda/create_post.py`, `lambda/update_post.py`, `lambda/delete_post.py`, `services/publishing/src/handlers/publishDraft.ts`
+- Files: `lambda/create-post.js`, `lambda/create_post.py`, `lambda/update_post.py`, `lambda/delete_post.py`, `services/publishing/src/handlers/publishDraft.ts`
 - Problem: The original legacy slug scan bug is fixed, and Briefly publishes now use a transactional slug lock, but the legacy admin write Lambdas do not yet participate in the same slug-lock mechanism.
 - Impact: A rare concurrent write split between legacy admin and Briefly publish could still create duplicate live-blog slugs.
 

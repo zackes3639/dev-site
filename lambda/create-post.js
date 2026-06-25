@@ -21,6 +21,29 @@ function slugify(title) {
     .replace(/-+/g, '-');
 }
 
+async function slugExists(slug) {
+  let exclusiveStartKey;
+
+  do {
+    const input = {
+      TableName: TABLE,
+      FilterExpression: 'slug = :slug',
+      ExpressionAttributeValues: { ':slug': { S: slug } },
+      ProjectionExpression: 'post_id',
+      ...(exclusiveStartKey ? { ExclusiveStartKey: exclusiveStartKey } : {}),
+    };
+
+    const result = await client.send(new ScanCommand(input));
+    if ((result.Count || 0) > 0) {
+      return true;
+    }
+
+    exclusiveStartKey = result.LastEvaluatedKey;
+  } while (exclusiveStartKey);
+
+  return false;
+}
+
 exports.handler = async (event) => {
   if (event.requestContext?.http?.method === 'OPTIONS') {
     return { statusCode: 200, headers: HEADERS, body: '' };
@@ -60,15 +83,7 @@ exports.handler = async (event) => {
     return { statusCode: 400, headers: HEADERS, body: JSON.stringify({ error: 'Could not generate a valid slug from title' }) };
   }
 
-  const existing = await client.send(new ScanCommand({
-    TableName: TABLE,
-    FilterExpression: 'slug = :slug',
-    ExpressionAttributeValues: { ':slug': { S: slug } },
-    ProjectionExpression: 'post_id',
-    Limit: 1,
-  }));
-
-  if (existing.Count > 0) {
+  if (await slugExists(slug)) {
     return { statusCode: 409, headers: HEADERS, body: JSON.stringify({ error: 'Slug already exists' }) };
   }
 

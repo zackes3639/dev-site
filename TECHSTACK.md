@@ -18,6 +18,7 @@ Current technical facts for future agents.
 - Shared public CSS: `assets/css/style.css`.
 - Existing public backend: API Gateway + Python/Node Lambda + DynamoDB.
 - Blog/build Lambda source is under `lambda/`.
+- The deployed live create-post Lambda currently uses `lambda/create-post.js`; `lambda/create_post.py` is a Python variant kept in the repo.
 - Live site deploy syncs root static files to S3 and invalidates CloudFront.
 
 ## CI/CD and AWS
@@ -27,7 +28,6 @@ Current technical facts for future agents.
 - Pushes to `main` trigger static-site deploy to S3 + CloudFront invalidation.
 - Workflow uses GitHub OIDC via `aws-actions/configure-aws-credentials`.
 - Lambda deploys are manual unless a task explicitly adds automation.
-- Do not deploy unless explicitly instructed.
 
 ## Briefly stack
 

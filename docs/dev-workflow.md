@@ -39,7 +39,6 @@ git pull origin briefly-dev
 
 ## Safety guardrails
 
-- No deploys unless explicitly requested.
 - No AWS resource changes unless explicitly requested.
 - Do not alter live-site deploy behavior by default.
 - Do not refactor public site layout unless explicitly requested.

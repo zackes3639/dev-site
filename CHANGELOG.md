@@ -18,5 +18,7 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
 - Changed legacy admin draft listing to send the admin password in `X-Admin-Password` instead of the URL query string.
 - Changed Briefly generation start to use an atomic conditional transition to `running`.
 - Changed legacy blog slug checks to scan all pages before accepting a slug.
+- Changed the deployed Node create-post Lambda source to scan all pages before accepting a slug.
 - Changed build updates to require an existing `build_id` before writing.
 - Documented the remaining cross-writer live-blog slug race between legacy admin writes and Briefly publishes.
+- Removed the repo rule that blocked deployments unless explicitly instructed.

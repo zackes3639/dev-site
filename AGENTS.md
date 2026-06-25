@@ -47,7 +47,6 @@ Default rule: for code changes, read `TECHSTACK.md` and `OPEN_BUGS.md`; for UI/c
 
 ## Safety rules (mandatory)
 
-- Do not deploy unless explicitly instructed.
 - Do not change current live-site deployment behavior unless explicitly instructed.
 - Do not refactor the public site structure unless explicitly instructed.
 - Keep Briefly changes isolated and production-minded.
