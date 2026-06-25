@@ -23,6 +23,23 @@ def slugify(text):
     text = re.sub(r'-+', '-', text).strip('-')
     return text
 
+def slug_exists(slug):
+    scan_kwargs = {
+        'FilterExpression': Attr('slug').eq(slug),
+        'ProjectionExpression': 'post_id'
+    }
+
+    while True:
+        response = table.scan(**scan_kwargs)
+        if response.get('Count', 0) > 0:
+            return True
+
+        last_evaluated_key = response.get('LastEvaluatedKey')
+        if not last_evaluated_key:
+            return False
+
+        scan_kwargs['ExclusiveStartKey'] = last_evaluated_key
+
 def lambda_handler(event, context):
     method = (
         event.get('httpMethod')
@@ -57,12 +74,7 @@ def lambda_handler(event, context):
     if not slug:
         return {'statusCode': 400, 'headers': HEADERS, 'body': json.dumps({'error': 'Could not generate a valid slug from title'})}
 
-    existing = table.scan(
-        FilterExpression=Attr('slug').eq(slug),
-        ProjectionExpression='post_id',
-        Limit=1
-    )
-    if existing.get('Count', 0) > 0:
+    if slug_exists(slug):
         return {'statusCode': 409, 'headers': HEADERS, 'body': json.dumps({'error': 'Slug already exists'})}
 
     post_id    = str(uuid.uuid4())

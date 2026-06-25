@@ -2,6 +2,7 @@ import json
 import boto3
 import os
 from decimal import Decimal
+from botocore.exceptions import ClientError
 
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table('ZS_DEV_BUILDS')
@@ -88,12 +89,18 @@ def lambda_handler(event, context):
     if not expr_parts:
         return {'statusCode': 400, 'headers': HEADERS, 'body': json.dumps({'error': 'No fields to update'})}
 
-    table.update_item(
-        Key={'build_id': build_id},
-        UpdateExpression='SET ' + ', '.join(expr_parts),
-        ExpressionAttributeNames=attr_names,
-        ExpressionAttributeValues=attr_values
-    )
+    try:
+        table.update_item(
+            Key={'build_id': build_id},
+            UpdateExpression='SET ' + ', '.join(expr_parts),
+            ExpressionAttributeNames=attr_names,
+            ExpressionAttributeValues=attr_values,
+            ConditionExpression='attribute_exists(build_id)'
+        )
+    except ClientError as e:
+        if e.response.get('Error', {}).get('Code') == 'ConditionalCheckFailedException':
+            return {'statusCode': 404, 'headers': HEADERS, 'body': json.dumps({'error': 'Build not found'})}
+        raise
 
     return {
         'statusCode': 200,

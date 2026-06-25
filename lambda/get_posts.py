@@ -8,9 +8,17 @@ table = dynamodb.Table("ZS_DEV_BLOG_POSTS")
 HEADERS = {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "https://zacksimon.dev",
-    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Headers": "Content-Type,X-Admin-Password",
     "Access-Control-Allow-Methods": "GET,OPTIONS",
 }
+
+def get_header(event, name):
+    headers = event.get("headers") or {}
+    name_lower = name.lower()
+    for key, value in headers.items():
+        if key.lower() == name_lower:
+            return value
+    return ""
 
 def lambda_handler(event, context):
     method = (
@@ -34,7 +42,7 @@ def lambda_handler(event, context):
 
         if include_drafts:
             admin_password = os.environ.get("ADMIN_PASSWORD", "")
-            provided_password = str(query.get("password", "")).strip()
+            provided_password = str(get_header(event, "X-Admin-Password")).strip()
             if not admin_password or provided_password != admin_password:
                 return {
                     "statusCode": 403,

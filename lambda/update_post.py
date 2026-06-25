@@ -24,6 +24,23 @@ def slugify(text):
     text = re.sub(r'-+', '-', text).strip('-')
     return text
 
+def slug_conflicts(slug, post_id):
+    scan_kwargs = {
+        'FilterExpression': Attr('slug').eq(slug) & Attr('post_id').ne(post_id),
+        'ProjectionExpression': 'post_id'
+    }
+
+    while True:
+        response = table.scan(**scan_kwargs)
+        if response.get('Count', 0) > 0:
+            return True
+
+        last_evaluated_key = response.get('LastEvaluatedKey')
+        if not last_evaluated_key:
+            return False
+
+        scan_kwargs['ExclusiveStartKey'] = last_evaluated_key
+
 def lambda_handler(event, context):
     method = (
         event.get('httpMethod')
@@ -84,12 +101,7 @@ def lambda_handler(event, context):
         return {'statusCode': 400, 'headers': HEADERS, 'body': json.dumps({'error': 'No fields to update'})}
 
     if 'slug' in updates:
-        existing = table.scan(
-            FilterExpression=Attr('slug').eq(updates['slug']) & Attr('post_id').ne(post_id),
-            ProjectionExpression='post_id',
-            Limit=1
-        )
-        if existing.get('Count', 0) > 0:
+        if slug_conflicts(updates['slug'], post_id):
             return {'statusCode': 409, 'headers': HEADERS, 'body': json.dumps({'error': 'Slug already exists'})}
 
     expr_parts = []

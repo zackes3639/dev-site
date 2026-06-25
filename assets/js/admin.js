@@ -112,9 +112,11 @@ function loadPostList() {
   body.innerHTML = '<p class="admin-empty">Loading…</p>';
   clearMsg('list-msg');
 
-  var listUrl = POSTS_URL + '?include_drafts=1&password=' + encodeURIComponent(sessionPassword);
+  var listUrl = POSTS_URL + '?include_drafts=1';
 
-  fetch(listUrl)
+  fetch(listUrl, {
+    headers: { 'X-Admin-Password': sessionPassword }
+  })
     .then(function(res) {
       if (res.status === 403) throw new Error('Session expired or password is incorrect. Please sign in again.');
       if (!res.ok) throw new Error('Failed to load posts');
