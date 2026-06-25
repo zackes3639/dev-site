@@ -28,26 +28,30 @@ Default rule: for code changes, read `TECHSTACK.md` and `OPEN_BUGS.md`; for UI/c
 - Default posture: protect live-site stability while iterating quickly on Briefly.
 - Sub-instruction docs listed above are part of this contract, not optional background reading.
 
-## Branch strategy (lightweight)
+## Git + deployment strategy
 
-- `main`: stable integration branch.
-- `briefly-dev`: active development branch for ongoing Briefly work.
+- `main`: the only active branch.
+- `origin/main`: canonical stored state in GitHub and the source of truth for what should be live on `zacksimon.dev`.
+- Local work is for editing, building, and validation before it is committed/pushed.
+- Anything pushed or merged to `origin/main` should be reflected on live `zacksimon.dev` through the AWS deploy workflow.
 
 ### Operational rule
 
-- From now on, do ongoing Briefly development on `briefly-dev`.
-- Merge stable, validated milestones from `briefly-dev` back into `main`.
+- When Zack says `push and merge`, agents should finish local validation, commit the intended changes, push/merge them to `origin/main`, and expect the GitHub Actions AWS deploy to run.
+- If the change touches AWS resources not currently deployed by `.github/workflows/deploy.yml` (for example Lambda or CDK changes), `push and merge` also means run the required deploy/smoke steps or add the missing automation before calling the work live.
+- Do not create long-lived feature branches unless Zack explicitly asks.
 
 ## Commit discipline
 
-- Commit after each meaningful milestone.
+- Commit meaningful milestones when they are ready to be stored in GitHub and deployed through `origin/main`.
 - Keep commits small, readable, and scoped.
 - Do not bundle unrelated changes in one commit.
-- Create a git checkpoint before larger Codex tasks.
+- Do not leave local-only commits as the final state after Zack says `push and merge`.
+- For larger Codex tasks where work is not ready to deploy, create an out-of-repo safety backup instead of a long-lived branch.
 
 ## Safety rules (mandatory)
 
-- Do not change current live-site deployment behavior unless explicitly instructed.
+- Do not bypass, disable, or weaken the `origin/main` to AWS deployment behavior unless explicitly instructed.
 - Do not refactor the public site structure unless explicitly instructed.
 - Keep Briefly changes isolated and production-minded.
 

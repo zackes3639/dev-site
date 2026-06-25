@@ -23,6 +23,10 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
 
 ### Changed
 
+- Documented the main-only GitHub workflow: build/validate locally, store source
+  in `origin/main`, and treat `push and merge` as approval to deploy live
+  through the AWS GitHub Actions workflow, with explicit deploy/smoke handling
+  required for Lambda/CDK changes outside the current workflow.
 - Fixed the public-site type hierarchy so H1 leads (H1 > H2); removed the inverted
   scale and the `white-space: nowrap` headline hacks.
 - Reduced newsletter signup friction: removed the age dropdown from every frontend

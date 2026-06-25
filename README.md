@@ -76,12 +76,14 @@ npm run -s briefly:admin:token
 
 ## Existing production deploy
 
-Site deploy still syncs root static files to S3 + CloudFront invalidation via `.github/workflows/deploy.yml`. The same workflow builds `@briefly/admin-briefly` and syncs its `dist` output to `admin/briefly/`.
+Site deploy syncs root static files to S3 + CloudFront invalidation via `.github/workflows/deploy.yml`. The same workflow builds `@briefly/admin-briefly` and syncs its `dist` output to `admin/briefly/`.
+
+Local work is for building and validation. GitHub `origin/main` is the stored source of truth, and anything pushed or merged there is expected to be reflected on live `zacksimon.dev`. In agent instructions, `push and merge` means commit the intended local work, push/merge it to `origin/main`, and let the AWS deploy workflow make it live. If the change touches AWS resources outside the current workflow, such as Lambda or CDK, the deploy/smoke step or automation update must be part of the same task.
 
 ## Branch and workflow model
 
-- `main` = stable integration branch
-- `briefly-dev` = active development branch for ongoing Briefly work
+- `main` = only active branch
+- `origin/main` = GitHub source of truth and live-site deployment boundary
 
 Workflow and guardrails docs:
 

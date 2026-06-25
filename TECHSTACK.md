@@ -24,11 +24,14 @@ Current technical facts for future agents.
 ## CI/CD and AWS
 
 - AWS CLI is available locally and has been verified with `aws sts get-caller-identity`.
+- Local development is for building and validation; GitHub `origin/main` is the stored source of truth.
 - GitHub Actions workflow: `.github/workflows/deploy.yml`.
-- Pushes to `main` trigger static-site deploy to S3 + CloudFront invalidation.
+- Pushes/merges to `origin/main` trigger static-site deploy to S3 + CloudFront invalidation.
+- The intended operating model is: if work is on `origin/main`, it should be reflected on live `zacksimon.dev`.
+- When Zack says `push and merge`, agents should treat that as approval to push/merge to `origin/main` and let the AWS deploy workflow make the change live.
 - Workflow uses GitHub OIDC via `aws-actions/configure-aws-credentials`.
 - The workflow installs npm dependencies, builds `@briefly/admin-briefly`, syncs root static files, then syncs `apps/admin-briefly/dist` to `s3://$S3_BUCKET_NAME/admin/briefly/`.
-- Lambda deploys are manual unless a task explicitly adds automation.
+- Lambda/CDK deploys are not currently automated by `.github/workflows/deploy.yml`; if a `push and merge` task changes those live AWS resources, the task must also run the required deploy/smoke steps or add deployment automation before reporting the change as live.
 
 ## Briefly stack
 
@@ -101,5 +104,5 @@ npm run -s briefly:admin:token
 - Current public blog reads from the legacy posts API in `assets/js/blog.js`.
 - Briefly publish writes a legacy-compatible public post item with `content`, `created_at`, and `published` fields.
 - Briefly publish returns the current public route shape: `/blog/post/?slug=...`.
-- Do not change live-site deployment behavior without explicit user approval.
+- Do not bypass, disable, or weaken the `origin/main` to AWS deployment behavior without explicit user approval.
 - The site password gate protects `/admin/briefly/` before the admin UI asks for a Cognito token.

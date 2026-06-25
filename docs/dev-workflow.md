@@ -1,46 +1,40 @@
 # Development Workflow (Lightweight)
 
-This repo uses a simple operating model optimized for a solo builder.
+This repo uses a simple main-only operating model optimized for a solo builder.
 
 ## Branch model
 
-- `main` is the stable integration branch.
-- `briefly-dev` is the active branch for ongoing Briefly work.
+- `main` is the only active branch.
+- `origin/main` is the canonical stored state in GitHub.
+- Anything on `origin/main` should be reflected on live `zacksimon.dev` by the AWS deploy workflow.
 
 ## Default day-to-day flow
 
 1. Start from latest `main`.
-2. Work in `briefly-dev` for Briefly tasks.
-3. Commit small milestones frequently.
-4. Run local validation.
-5. Merge stable milestone(s) back into `main`.
+2. Build and validate locally.
+3. Commit the intended changes to `main`.
+4. When Zack says `push and merge`, push/merge `main` to `origin/main`.
+5. Expect `.github/workflows/deploy.yml` to deploy to AWS and make the change live.
+6. If the change affects Lambda/CDK resources outside that workflow, run the required AWS deploy/smoke steps or add automation before calling the work live.
 
-## Suggested branch setup
+## Suggested setup
 
 ```bash
 git checkout main
 git pull origin main
-git checkout -b briefly-dev
-git push -u origin briefly-dev
-```
-
-If `briefly-dev` already exists:
-
-```bash
-git checkout briefly-dev
-git pull origin briefly-dev
 ```
 
 ## Commit guidance
 
-- One milestone per commit when possible.
+- One shippable/storable milestone per commit when possible.
 - Keep unrelated changes out of the same commit.
-- Before large Codex tasks, make a checkpoint commit first.
+- Do not leave local-only commits as the final handoff after Zack says `push and merge`; GitHub `origin/main` should match what is live.
+- Before large Codex tasks, make a checkpoint only when the work should be preserved in git; otherwise use an out-of-repo safety backup.
 
 ## Safety guardrails
 
-- No AWS resource changes unless explicitly requested.
-- Do not alter live-site deploy behavior by default.
+- Do not bypass, disable, or weaken the `origin/main` to AWS deploy behavior unless explicitly requested.
+- No infrastructure or Lambda automation changes unless explicitly requested, but do not claim Lambda/CDK changes are live from GitHub alone unless the needed deploy step has run.
 - Do not refactor public site layout unless explicitly requested.
 
 ## Validation and reporting

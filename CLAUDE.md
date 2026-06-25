@@ -35,7 +35,7 @@ edge/                 # site-access-gate.js (CloudFront edge gate)
 scripts/              # smoke tests, deploy helpers, guest-password rotation
 ```
 
-Default posture: **protect live-site stability while iterating on Briefly.** Keep Briefly changes isolated. Do not refactor the public site structure or change live-site deploy behavior unless explicitly told to.
+Default posture: **protect live-site stability while iterating on Briefly.** Keep Briefly changes isolated. Do not refactor the public site structure. Do not bypass, disable, or weaken the `origin/main` to AWS deploy behavior unless explicitly told to.
 
 ## Commands
 
@@ -71,7 +71,7 @@ aws s3 sync . s3://dev-site-647932856401-us-east-2-an \
 aws cloudfront create-invalidation --distribution-id <ID> --paths "/*"
 ```
 
-CI/CD: pushing to `main` triggers `.github/workflows/deploy.yml`, which syncs to S3 and invalidates CloudFront via GitHub OIDC (secrets: `S3_BUCKET_NAME`, `CLOUDFRONT_DISTRIBUTION_ID`, `AWS_ROLE_ARN`, `AWS_REGION`). **Lambda deploys are manual** — zip and upload via Console/CLI; source lives in `lambda/`.
+CI/CD: local work is for building and validation; GitHub `origin/main` is the stored source of truth. Pushing or merging to `origin/main` triggers `.github/workflows/deploy.yml`, which syncs to S3 and invalidates CloudFront via GitHub OIDC (secrets: `S3_BUCKET_NAME`, `CLOUDFRONT_DISTRIBUTION_ID`, `AWS_ROLE_ARN`, `AWS_REGION`). Anything on `origin/main` should be reflected on live `zacksimon.dev`. When Zack says `push and merge`, treat that as approval to push/merge to `origin/main` and let AWS deploy. Lambda/CDK deploys are not currently automated by this workflow; if a `push and merge` task changes those live resources, run the required deploy/smoke steps or add deployment automation before reporting the change as live.
 
 ## Live site backend (legacy)
 
@@ -126,5 +126,5 @@ Each page is its own folder as `index.html` (`blog/index.html`, `admin/index.htm
 
 ## Branches
 
-- `main` — stable integration branch.
-- `briefly-dev` — active branch for ongoing Briefly work. Merge stable, validated milestones back into `main`. Commit small, scoped milestones; don't bundle unrelated changes.
+- `main` — only active branch.
+- `origin/main` — GitHub source of truth and live-site deployment boundary. Commit small, scoped, shippable milestones; don't bundle unrelated changes. Do not leave local-only commits as the final handoff after Zack says `push and merge`. Use short-lived branches only when Zack explicitly asks.
