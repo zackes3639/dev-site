@@ -12,7 +12,7 @@ Use this template for larger or multi-step tasks.
 
 - Scope included: Briefly CORS, Briefly publish/live-blog integration, slug uniqueness, generation start atomicity, legacy admin password handling, and build update safety.
 - Scope excluded: AWS deployment, public-site redesign, and live-site deploy behavior changes.
-- Deployment allowed? (yes/no): no
+- Deployment allowed? (yes/no): yes; requested after implementation
 
 ## Plan
 
@@ -36,5 +36,5 @@ Use this template for larger or multi-step tasks.
 ## Delivery notes
 
 - File-by-file changes: See final task summary for exact files.
-- Risks/tradeoffs: Briefly publish now intentionally writes to the existing live blog table, but AWS deployment was not run. Legacy admin and Briefly publish can still race with each other on slug creation until a follow-up makes legacy writes share a transactional slug lock.
-- AWS deployment status: `NOT run` / `run`
+- Risks/tradeoffs: Briefly publish now intentionally writes to the existing live blog table. Legacy admin and Briefly publish can still race with each other on slug creation until a follow-up makes legacy writes share a transactional slug lock.
+- AWS deployment status: `run`

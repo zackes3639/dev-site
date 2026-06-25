@@ -31,7 +31,10 @@ Current technical facts for future agents.
 
 ## Briefly stack
 
-- Briefly is in progress and not deployed to AWS as of this doc update.
+- Briefly is in progress and deployed to AWS as `BrieflyV1Stack` as of 2026-06-25.
+- Briefly API URL: `https://yp2u8kczt9.execute-api.us-east-2.amazonaws.com/`.
+- Briefly Cognito user pool: `us-east-2_0hhgJcr4h`.
+- Briefly Cognito app client: `436n9qucieqcg55k6ufv7nr9s6`.
 - Planned/scaffolded services:
   - API Gateway HTTP API
   - Cognito JWT admin auth
@@ -65,10 +68,10 @@ Deploy smoke test for current live site:
 npm run smoke:deploy
 ```
 
-Briefly API smoke checks, once deployed/configured:
+Briefly API smoke checks, once an admin JWT is available:
 
 ```bash
-API_BASE=https://<briefly-api-id>.execute-api.<region>.amazonaws.com \
+API_BASE=https://yp2u8kczt9.execute-api.us-east-2.amazonaws.com \
 ADMIN_BEARER_TOKEN=<jwt> \
 npm run smoke:briefly
 ```

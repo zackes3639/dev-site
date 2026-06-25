@@ -29,24 +29,6 @@ http_status_with_cookie() {
   curl -sS -b "$cookie_jar" -o /dev/null -w "%{http_code}" "$url"
 }
 
-url_encode() {
-  local s="$1"
-  local out=""
-  local c hex
-  local i
-  for ((i=0; i<${#s}; i++)); do
-    c="${s:i:1}"
-    case "$c" in
-      [a-zA-Z0-9.~_-]) out+="$c" ;;
-      *)
-        printf -v hex '%%%02X' "'$c"
-        out+="$hex"
-        ;;
-    esac
-  done
-  printf "%s" "$out"
-}
-
 is_json_array() {
   local file="$1"
   if command -v jq >/dev/null 2>&1; then
@@ -232,8 +214,11 @@ else
 fi
 
 if [[ -n "$ADMIN_PASSWORD" ]]; then
-  encoded_password="$(url_encode "$ADMIN_PASSWORD")"
-  drafts_authed_code="$(http_status "$PUBLIC_API_BASE/posts?include_drafts=1&password=$encoded_password")"
+  drafts_authed_code="$(
+    curl -sS -o /dev/null -w "%{http_code}" \
+      -H "X-Admin-Password: $ADMIN_PASSWORD" \
+      "$PUBLIC_API_BASE/posts?include_drafts=1"
+  )"
   if [[ "$drafts_authed_code" == "200" ]]; then
     pass "Draft list works with ADMIN_PASSWORD"
   else

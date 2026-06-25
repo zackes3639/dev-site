@@ -22,3 +22,5 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
 - Changed build updates to require an existing `build_id` before writing.
 - Documented the remaining cross-writer live-blog slug race between legacy admin writes and Briefly publishes.
 - Removed the repo rule that blocked deployments unless explicitly instructed.
+- Deployed live Lambda fixes, public API CORS, the admin JS static asset, and `BrieflyV1Stack` to AWS.
+- Updated deploy smoke checks to validate draft listing with `X-Admin-Password`.
