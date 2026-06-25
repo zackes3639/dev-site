@@ -13,7 +13,9 @@ Known open issues and review findings. Update this file when issues are found, f
 
 ## Recently closed
 
-- 2026-06-25: Fixed Briefly admin browser CORS preflight by adding HTTP API `corsPreflight` for admin origins, JSON, authorization, and protected-route methods.
+- 2026-06-25: Fixed public-site mobile nav overflow. Below 760px the overflowing horizontally-scrolling pill nav (`.hotbar`) is hidden and replaced by a compact header + accessible menu drawer (built in `assets/js/script.js`, styled in `assets/css/style.css`). Drawer is keyboard-friendly (`aria-expanded`, focus trap, Escape) and falls back to the existing hotbar without JS.
+- 2026-06-25: Fixed inverted public-site type hierarchy. `--h1-fluid` was smaller than `--h2-fluid` and headlines were forced `white-space: nowrap` with shrinking mobile font overrides. Redefined the type tokens so H1 leads, added a grotesk display face, and removed the nowrap hacks.
+- 2026-06-25: Reduced newsletter signup friction. Removed the required age dropdown from all frontend forms (`index.html`, `blog/index.html`, `blog/post/index.html`, `post-template.html`, both static blog posts), made email required, marked phone optional, clarified email + optional SMS consent copy, and stopped sending `age` from `assets/js/subscribe.js`.
 - 2026-06-25: Fixed Briefly publish visibility by writing published drafts to both `briefly_posts` and the legacy live blog table, returning the current `/blog/post/?slug=...` URL.
 - 2026-06-25: Fixed legacy admin draft listing password leakage by moving the admin password from the query string to the `X-Admin-Password` request header.
 - 2026-06-25: Fixed legacy blog slug duplicate checks by paginating slug scans in create and update Lambdas.

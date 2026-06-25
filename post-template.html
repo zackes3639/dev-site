@@ -51,15 +51,12 @@
         <p class="newsletter-copy">I write about what I'm actually building — the decisions, the mistakes, and the progress. No fluff.</p>
         <form class="newsletter-form">
           <div class="newsletter-fields">
-            <input type="email" class="newsletter-input" placeholder="Email address" autocomplete="email" />
-            <input type="tel" class="newsletter-input" placeholder="Phone number (for SMS)" autocomplete="tel" />
-            <select name="age" class="newsletter-input" required>
-              <option value="" disabled selected>Select age</option>
-            </select>
+            <input type="email" class="newsletter-input" placeholder="Email address" autocomplete="email" required />
+            <input type="tel" class="newsletter-input" placeholder="Phone — optional, for SMS" autocomplete="tel" />
           </div>
           <label class="newsletter-consent">
             <input type="checkbox" class="newsletter-consent-check" />
-            I agree to the <a href="/privacy-terms/" target="_blank" rel="noopener">Privacy Policy &amp; Terms</a>
+            I agree to get the Build Log by email — plus optional SMS updates if I add a phone number — per the <a href="/privacy-terms/" target="_blank" rel="noopener">Privacy Policy &amp; Terms</a>.
           </label>
           <button type="submit" class="btn primary">Subscribe</button>
         </form>

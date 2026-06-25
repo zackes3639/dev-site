@@ -35,3 +35,58 @@ Design guidance for future agents working on `zacksimon.dev`, the existing admin
 - Avoid fixed widths that break below mobile viewport sizes.
 - Keep nav labels and buttons from wrapping into unusable states.
 - Test high-risk UI changes in at least one desktop and one mobile viewport.
+
+## Visual system — "Workbench Clean" (current public-site direction)
+
+Accepted redesign direction for `zacksimon.dev`. Reference mockups live in the
+`codex/zacksimon-redesign-mockups` branch under `mockups/` (home hero, builds
+board, mobile nav). Extend this system; do not invent a parallel one.
+
+### Design tokens (defined in `:root`, `assets/css/style.css`)
+
+- Use the CSS variables instead of hardcoding values in new/edited rules.
+- Palette: `--canvas` (white), `--ink`/`--ink-soft`/`--muted`/`--faint` (deep-navy
+  text scale), `--line`/`--surface`/`--surface-violet` (structure), `--accent` +
+  `--accent-strong`/`--accent-wash` (purple/indigo action), `--grid-line` (texture).
+- Type: `--font-display` (Space Grotesk grotesk headline face, with system
+  fallbacks), `--font-body` (Inter), `--font-mono` (labels/chips).
+- Scale is **H1-led**: `--h1-fluid` is always larger and stronger than `--h2-fluid`
+  (`--h3-fluid` below that). Never restore an inverted scale where H1 < H2, and do
+  not force headline `white-space: nowrap` to make text fit — let it wrap.
+- Radii: `--radius` (8px, the unified default), `--radius-sm` (6px), `--radius-pill`.
+- Shadows: `--shadow-sm` / `--shadow-md` / `--shadow-pop`.
+
+### Surface and texture
+
+- White-first canvas with a subtle fixed grid texture (`--grid-line`, 64px) on
+  `body` so wide empty areas read as intentional workbench, not unfinished.
+- Deep navy (`--ink`) is structure (text, the dark CTA bars/cards), not the whole
+  brand. Purple (`--accent`) is reserved for actions and active states; the primary
+  button is a filled purple action.
+- Headings use the display face; section labels and chips use the mono face.
+
+### Preserved distinctive patterns
+
+- Sticky pill nav on desktop (`.navbar` / `.hotbar`).
+- Kanban "board as portfolio" on Builds.
+- Contact routing/intent cards.
+- Monospace section labels (`/ what i do`, `/ builds · board`, etc.).
+
+### Navigation (mobile)
+
+- Below 760px the desktop pill nav is replaced by a compact header + a menu
+  button (`.nav-toggle`) and an accessible drawer (`.nav-drawer`). The drawer is
+  built by `assets/js/script.js` from the existing `.hotbar` links plus the
+  secondary Admin link, so it stays in sync per page.
+- The drawer uses `aria-expanded`/`aria-controls`, focus-moves into the panel on
+  open, traps Tab, closes on Escape / backdrop / link click, and restores focus.
+- Behavior is gated on `body.has-drawer` (added by JS); without JS the existing
+  `.hotbar` remains as the fallback. Mobile nav must never horizontally scroll or
+  clip primary links.
+
+### Newsletter forms
+
+- Email is required; phone is optional (for SMS). No age field anywhere on the
+  frontend.
+- Consent copy must state plainly that subscribing means email, plus optional SMS
+  only if a phone number is added, linking the Privacy Policy & Terms.

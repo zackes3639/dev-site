@@ -24,6 +24,15 @@ Writing guidance for site copy, docs, product text, and admin messages.
 - Favor tangible details over motivational filler.
 - CTAs should feel lightweight: read, subscribe, see builds, follow progress.
 
+## Newsletter consent and form copy
+
+- Be explicit and honest about what subscribing does: the user gets the Build Log
+  by **email**, plus **optional SMS** updates only if they add a phone number.
+- Standard consent line: "I agree to get the Build Log by email — plus optional SMS
+  updates if I add a phone number — per the Privacy Policy & Terms."
+- Mark the phone field as optional in its placeholder/label; never imply SMS is
+  required. Do not collect age or other fields the backend does not need surfaced.
+
 ## Briefly/admin product text
 
 - Keep UI messages operational:

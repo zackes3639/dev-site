@@ -6,6 +6,12 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
 
 ### Added
 
+- Added the "Workbench Clean" public-site visual system: unified CSS design
+  tokens (palette, typography, radii, shadows), a grotesk display headline face,
+  monospace labels/chips, and a subtle white-canvas grid texture.
+- Added an accessible mobile navigation drawer (compact header + menu button)
+  that replaces the overflowing pill nav below 760px, with `aria-expanded`,
+  focus trapping, Escape-to-close, and a no-JS hotbar fallback.
 - Added hosted Briefly admin deployment workflow for `/admin/briefly/`.
 - Added Cognito admin user/token helper scripts for Briefly v1.
 - Added deploy smoke checks for the hosted Briefly admin page and assets.
@@ -17,6 +23,13 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
 
 ### Changed
 
+- Fixed the public-site type hierarchy so H1 leads (H1 > H2); removed the inverted
+  scale and the `white-space: nowrap` headline hacks.
+- Reduced newsletter signup friction: removed the age dropdown from every frontend
+  form, made email required and phone optional, clarified email + optional SMS
+  consent copy, and stopped sending `age` from `assets/js/subscribe.js`.
+- Made the primary button a filled purple action and aligned cards/chips/buttons/
+  forms to the shared 8px-radius token system across the public pages.
 - Changed the Briefly admin Vite build to emit `/admin/briefly/` asset URLs and use local dev port `5173`.
 - Changed the Briefly Cognito app client to allow password-based token minting.
 - Documented hosted Briefly admin launch operations, acceptance checks, and current deployment state.
