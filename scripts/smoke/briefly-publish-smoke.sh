@@ -31,28 +31,73 @@ fi
 TMP_DIR="$(mktemp -d)"
 published_post_id=""
 published_slug=""
+title_prefix="Briefly E2E Smoke "
 
 cleanup() {
   local exit_code=$?
 
   if [[ "$SMOKE_PUBLISH_CLEANUP" == "1" && -n "$published_post_id" && -n "$published_slug" ]]; then
     if command -v aws >/dev/null 2>&1; then
+      post_key="$(jq -cn --arg post_id "$published_post_id" '{post_id:{S:$post_id}}')"
+      slug_key="$(jq -cn --arg slug "$published_slug" '{slug:{S:$slug}}')"
+      post_condition_values="$(jq -cn --arg slug "$published_slug" --arg title_prefix "$title_prefix" '{":slug":{S:$slug},":titlePrefix":{S:$title_prefix}}')"
+      slug_condition_values="$(jq -cn --arg post_id "$published_post_id" '{":postId":{S:$post_id}}')"
+
       aws dynamodb delete-item \
         --table-name "$LEGACY_BLOG_POSTS_TABLE" \
-        --key "{\"post_id\":{\"S\":\"$published_post_id\"}}" \
+        --key "$post_key" \
+        --condition-expression "slug = :slug AND begins_with(title, :titlePrefix)" \
+        --expression-attribute-values "$post_condition_values" \
         --region "$AWS_REGION" >/dev/null 2>&1 || true
 
       aws dynamodb delete-item \
         --table-name "$BRIEFLY_POSTS_TABLE" \
-        --key "{\"post_id\":{\"S\":\"$published_post_id\"}}" \
+        --key "$post_key" \
+        --condition-expression "slug = :slug AND begins_with(title, :titlePrefix)" \
+        --expression-attribute-values "$post_condition_values" \
         --region "$AWS_REGION" >/dev/null 2>&1 || true
 
       aws dynamodb delete-item \
         --table-name "$BRIEFLY_POST_SLUGS_TABLE" \
-        --key "{\"slug\":{\"S\":\"$published_slug\"}}" \
+        --key "$slug_key" \
+        --condition-expression "post_id = :postId" \
+        --expression-attribute-values "$slug_condition_values" \
         --region "$AWS_REGION" >/dev/null 2>&1 || true
 
-      echo "Cleaned up published smoke post: $published_slug"
+      remaining_legacy_post="$(
+        aws dynamodb get-item \
+          --table-name "$LEGACY_BLOG_POSTS_TABLE" \
+          --key "$post_key" \
+          --region "$AWS_REGION" \
+          --query 'Item.post_id.S' \
+          --output text 2>/dev/null || true
+      )"
+      remaining_briefly_post="$(
+        aws dynamodb get-item \
+          --table-name "$BRIEFLY_POSTS_TABLE" \
+          --key "$post_key" \
+          --region "$AWS_REGION" \
+          --query 'Item.post_id.S' \
+          --output text 2>/dev/null || true
+      )"
+      remaining_slug_lock="$(
+        aws dynamodb get-item \
+          --table-name "$BRIEFLY_POST_SLUGS_TABLE" \
+          --key "$slug_key" \
+          --region "$AWS_REGION" \
+          --query 'Item.post_id.S' \
+          --output text 2>/dev/null || true
+      )"
+
+      if [[ "$remaining_legacy_post" == "None" && "$remaining_briefly_post" == "None" && "$remaining_slug_lock" == "None" ]]; then
+        echo "Cleaned up published smoke post: $published_slug"
+      else
+        echo "WARN: published smoke post cleanup left residue for $published_slug" >&2
+      fi
+
+      if [[ -n "${input_id:-}" || -n "${run_id:-}" || -n "${draft_id:-}" ]]; then
+        echo "Retained Briefly audit artifacts: input_id=${input_id:-none} run_id=${run_id:-none} draft_id=${draft_id:-none}"
+      fi
     else
       echo "WARN: aws CLI unavailable; published smoke post was not cleaned up: $published_slug" >&2
     fi
@@ -107,7 +152,7 @@ expect_code() {
 timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
 slug_timestamp="$(printf '%s' "$timestamp" | tr '[:upper:]' '[:lower:]')"
 published_slug="briefly-e2e-smoke-${slug_timestamp}"
-title="Briefly E2E Smoke $timestamp"
+title="${title_prefix}${timestamp}"
 summary="Automated Briefly publish smoke for $timestamp."
 content="# $title
 

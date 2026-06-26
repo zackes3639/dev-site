@@ -125,7 +125,10 @@ aws cloudfront wait invalidation-completed --distribution-id E1VYG8DDDLSYLP --id
 - If switching back to Anthropic on Bedrock, first submit the Anthropic use-case form in AWS Bedrock and then test from the Lambda role, not only from local AWS credentials.
 - The corrected token label is already live from the manual admin static sync; pushing these local edits to `origin/main` will make source match the deployed state.
 - `smoke:briefly:e2e` publishes a test-prefixed post, verifies public integration, and cleans it up from `briefly_posts`, `briefly_post_slugs`, and `ZS_DEV_BLOG_POSTS`.
-- The GitHub Actions deploy workflow now reads `/zacksimon/site/owner-password` from SSM after OIDC auth instead of requiring a duplicate GitHub secret.
+- `smoke:briefly:e2e` cleanup is guarded by returned `post_id`, slug, and test title prefix; daily-input, draft, and workflow-run audit artifacts are retained.
+- The GitHub Actions deploy workflow now reads `/zacksimon/site/owner-password` from SSM after OIDC auth and reuses it for authenticated deploy smoke instead of requiring a duplicate GitHub secret.
+- The GitHub deploy role was updated with narrow SSM read/decrypt and Lambda@Edge/CloudFront permissions needed for the site password gate deploy.
+- Legacy admin update/delete refuse rows whose shared slug lock is Briefly-owned, preventing legacy edits from splitting Briefly-managed public posts from their lock.
 
 ## Deployment status
 
@@ -134,5 +137,5 @@ AWS deployment was run:
 - `BrieflyV1Stack` was deployed with Bedrock Converse/Nova generation.
 - Hosted admin static assets were synced to S3 and CloudFront invalidation `I2FCAL6FF2ABTBTDRA7CYQEVMK` completed.
 - Hosted browser publish was verified against the live site.
-
-Post-launch hardening source changes have not been committed, pushed, or deployed from this workspace yet.
+- Post-launch hardening commit `8c83c57` was pushed to `origin/main`, and GitHub Actions deploy run `28208023042` succeeded after deploy-role IAM was tightened for SSM and Lambda@Edge.
+- Legacy writer Lambdas `zs-dev-create-post`, `zs-dev-update-post`, and `zs-dev-delete-post` were manually deployed after the shared slug-lock source changes because `.github/workflows/deploy.yml` does not deploy `lambda/*`.

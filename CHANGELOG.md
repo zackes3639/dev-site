@@ -36,6 +36,8 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
   through the AWS GitHub Actions workflow, with explicit deploy/smoke handling
   required for Lambda/CDK changes outside the current workflow.
 - Changed the GitHub deploy workflow to read the site owner password from SSM instead of requiring a duplicate `SITE_ACCESS_PASSWORD` GitHub secret.
+- Changed deploy smoke to use the same SSM-loaded site password as the deployed site password gate.
+- Changed Briefly publish e2e smoke cleanup to condition deletes on the returned test post id, slug, and title prefix, while retaining internal Briefly audit artifacts.
 - Fixed the public-site type hierarchy so H1 leads (H1 > H2); removed the inverted
   scale and the `white-space: nowrap` headline hacks.
 - Reduced newsletter signup friction: removed the age dropdown from every frontend
@@ -56,6 +58,7 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
 - Changed Briefly generation start to use an atomic conditional transition to `running`.
 - Changed legacy blog slug checks to scan all pages before accepting a slug.
 - Changed legacy blog write paths to participate in the shared `briefly_post_slugs` slug-lock table.
+- Changed legacy admin update/delete to refuse Briefly-owned slug locks instead of mutating Briefly-managed public rows.
 - Changed the deployed Node create-post Lambda source to scan all pages before accepting a slug.
 - Changed build updates to require an existing `build_id` before writing.
 - Closed the remaining cross-writer live-blog slug race between legacy admin writes and Briefly publishes.

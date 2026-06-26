@@ -31,7 +31,8 @@ Current technical facts for future agents.
 - When Zack says `push and merge`, agents should treat that as approval to push/merge to `origin/main` and let the AWS deploy workflow make the change live.
 - Workflow uses GitHub OIDC via `aws-actions/configure-aws-credentials`.
 - The workflow installs npm dependencies, builds `@briefly/admin-briefly`, syncs root static files, then syncs `apps/admin-briefly/dist` to `s3://$S3_BUCKET_NAME/admin/briefly/`.
-- The workflow reads the site owner password from SSM (`/zacksimon/site/owner-password`) after OIDC auth and uses it when updating the site password gate.
+- The workflow reads the site owner password from SSM (`/zacksimon/site/owner-password`) after OIDC auth and uses the same value for both site-gate deployment and authenticated deploy smoke.
+- The GitHub deploy role needs SSM read/decrypt permissions for that parameter plus narrow permissions to update the existing Lambda@Edge site gate, publish versions, enable replication, and update the CloudFront association.
 - Lambda/CDK deploys are not currently automated by `.github/workflows/deploy.yml`; if a `push and merge` task changes those live AWS resources, the task must also run the required deploy/smoke steps or add deployment automation before reporting the change as live.
 
 ## Briefly stack
@@ -56,7 +57,7 @@ Current technical facts for future agents.
   - `briefly_workflow_runs`
 - Briefly publish writes approved posts to both `briefly_posts` and the legacy live blog table (`ZS_DEV_BLOG_POSTS`) so published drafts appear in the current Build Log.
 - Briefly publish and legacy blog writers use `briefly_post_slugs` as the shared slug uniqueness lock.
-- Legacy-created slug locks are marked with `source=legacy_blog`; legacy delete/update paths only release legacy-owned locks.
+- Legacy-created slug locks are marked with `source=legacy_blog`; legacy delete/update paths only release legacy-owned locks and refuse to mutate rows whose lock is Briefly-owned.
 - Briefly generation uses Bedrock Converse with Amazon Nova Pro via `BEDROCK_MODEL_ID=us.amazon.nova-pro-v1:0`.
 - The hosted admin build uses `VITE_BRIEFLY_API_BASE` for the API base only. Raw Cognito ID tokens are pasted into the UI and stored in localStorage; they are not baked into the static build.
 - Briefly API CORS allows `https://zacksimon.dev`, `http://localhost:5173`, and `http://localhost:4173`.
@@ -93,7 +94,7 @@ ADMIN_BEARER_TOKEN=<jwt> \
 npm run smoke:briefly:e2e
 ```
 
-The e2e smoke publishes a test-prefixed post, verifies public integration, then deletes the test post and slug lock when AWS CLI access is available.
+The e2e smoke publishes a test-prefixed post, verifies public integration, then conditionally deletes the test post and slug lock when AWS CLI access is available. It intentionally leaves Briefly daily-input, draft, and workflow-run audit artifacts for traceability.
 
 Create or reset the first Cognito admin user:
 

@@ -43,7 +43,7 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Deploy site password gate
+      - name: Load site password from SSM
         env:
           SITE_ACCESS_PASSWORD_PARAMETER: /zacksimon/site/owner-password
         run: |
@@ -52,7 +52,20 @@ jobs:
             --with-decryption \
             --query 'Parameter.Value' \
             --output text)"
-          export SITE_ACCESS_PASSWORD
+          echo "::add-mask::${SITE_ACCESS_PASSWORD}"
+          delimiter="$(uuidgen)"
+          {
+            echo "SITE_ACCESS_PASSWORD<<${delimiter}"
+            printf '%s\n' "${SITE_ACCESS_PASSWORD}"
+            echo "${delimiter}"
+          } >> "${GITHUB_ENV}"
+
+      - name: Deploy site password gate
+        run: |
+          if [[ -z "${SITE_ACCESS_PASSWORD:-}" ]]; then
+            echo "SITE_ACCESS_PASSWORD was not loaded from SSM."
+            exit 1
+          fi
           ./scripts/deploy-site-access-gate.sh
 
       - name: Upload site files to S3
@@ -94,7 +107,6 @@ jobs:
           SITE_URL: https://zacksimon.dev
           PUBLIC_API_BASE: https://33o1s2l689.execute-api.us-east-2.amazonaws.com
           WRITE_API_BASE: https://tblw8hlwu0.execute-api.us-east-2.amazonaws.com
-          SITE_ACCESS_PASSWORD: ${{ secrets.SITE_ACCESS_PASSWORD }}
         run: |
           for i in 1 2 3 4 5 6; do
             if ./scripts/smoke-test.sh; then

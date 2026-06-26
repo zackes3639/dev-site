@@ -3,13 +3,12 @@ import boto3
 import os
 import re
 from boto3.dynamodb.conditions import Attr
-from boto3.dynamodb.types import TypeSerializer
 from botocore.exceptions import ClientError
 
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table('ZS_DEV_BLOG_POSTS')
 post_slugs_table_name = os.environ.get('POST_SLUGS_TABLE', 'briefly_post_slugs')
-serializer = TypeSerializer()
+post_slugs_table = dynamodb.Table(post_slugs_table_name)
 LEGACY_SLUG_SOURCE = 'legacy_blog'
 
 HEADERS = {
@@ -46,23 +45,33 @@ def slug_conflicts(slug, post_id):
         scan_kwargs['ExclusiveStartKey'] = last_evaluated_key
 
 def slug_lock_conflicts(slug, post_id):
-    response = dynamodb.meta.client.get_item(
-        TableName=post_slugs_table_name,
-        Key={'slug': {'S': slug}},
-        ProjectionExpression='post_id'
-    )
-    item = response.get('Item')
+    item = get_slug_lock(slug)
     if not item:
         return False
 
-    locked_post_id = item.get('post_id', {}).get('S')
+    locked_post_id = item.get('post_id')
     return locked_post_id != post_id
 
-def marshal_value(value):
-    return serializer.serialize(value)
+def get_slug_lock(slug):
+    if not slug:
+        return None
 
-def marshal_item(item):
-    return {key: serializer.serialize(value) for key, value in item.items()}
+    response = post_slugs_table.get_item(
+        Key={'slug': slug},
+        ProjectionExpression='post_id, #source, source_draft_id',
+        ExpressionAttributeNames={'#source': 'source'}
+    )
+    return response.get('Item')
+
+def is_briefly_owned_slug_lock(item, post_id):
+    if not item:
+        return False
+
+    locked_post_id = item.get('post_id')
+    if locked_post_id != post_id:
+        return False
+
+    return item.get('source') != LEGACY_SLUG_SOURCE
 
 def lambda_handler(event, context):
     method = (
@@ -86,12 +95,14 @@ def lambda_handler(event, context):
     if not post_id:
         return {'statusCode': 400, 'headers': HEADERS, 'body': json.dumps({'error': 'post_id is required'})}
 
-    existing_post = None
-    if 'slug' in body:
-        existing_response = table.get_item(Key={'post_id': post_id})
-        existing_post = existing_response.get('Item')
-        if not existing_post:
-            return {'statusCode': 404, 'headers': HEADERS, 'body': json.dumps({'error': 'Post not found'})}
+    existing_response = table.get_item(Key={'post_id': post_id})
+    existing_post = existing_response.get('Item')
+    if not existing_post:
+        return {'statusCode': 404, 'headers': HEADERS, 'body': json.dumps({'error': 'Post not found'})}
+
+    existing_slug_lock = get_slug_lock(existing_post.get('slug'))
+    if is_briefly_owned_slug_lock(existing_slug_lock, post_id):
+        return {'statusCode': 409, 'headers': HEADERS, 'body': json.dumps({'error': 'Post is managed by Briefly'})}
 
     updates = {}
 
@@ -153,51 +164,40 @@ def lambda_handler(event, context):
             'post_id': post_id,
             'source': LEGACY_SLUG_SOURCE
         }
-        transaction_attr_names = {
-            **attr_names,
-            '#currentSlug': 'slug'
-        }
-        transaction_attr_values = {
-            **{key: marshal_value(value) for key, value in attr_values.items()},
-            ':oldSlug': marshal_value(existing_post.get('slug'))
-        }
 
+        new_lock_created = False
         try:
-            dynamodb.meta.client.transact_write_items(
-                TransactItems=[
-                    {
-                        'Put': {
-                            'TableName': post_slugs_table_name,
-                            'Item': marshal_item(now_slug_item),
-                            'ConditionExpression': 'attribute_not_exists(slug)'
-                        }
-                    },
-                    {
-                        'Update': {
-                            'TableName': table.name,
-                            'Key': {'post_id': {'S': post_id}},
-                            'UpdateExpression': update_expression,
-                            'ExpressionAttributeNames': transaction_attr_names,
-                            'ExpressionAttributeValues': transaction_attr_values,
-                            'ConditionExpression': 'attribute_exists(post_id) AND #currentSlug = :oldSlug'
-                        }
-                    },
-                    {
-                        'Delete': {
-                            'TableName': post_slugs_table_name,
-                            'Key': {'slug': marshal_value(existing_post.get('slug'))},
-                            'ConditionExpression': 'attribute_not_exists(slug) OR (post_id = :postId AND #source = :legacySource)',
-                            'ExpressionAttributeNames': {'#source': 'source'},
-                            'ExpressionAttributeValues': {
-                                ':postId': marshal_value(post_id),
-                                ':legacySource': marshal_value(LEGACY_SLUG_SOURCE)
-                            }
-                        }
-                    }
-                ]
+            post_slugs_table.put_item(
+                Item=now_slug_item,
+                ConditionExpression=Attr('slug').not_exists()
             )
+            new_lock_created = True
+
+            table.update_item(
+                Key={'post_id': post_id},
+                UpdateExpression=update_expression,
+                ExpressionAttributeNames=attr_names,
+                ExpressionAttributeValues=attr_values,
+                ConditionExpression=Attr('post_id').exists()
+            )
+
+            if existing_slug_lock and existing_slug_lock.get('source') == LEGACY_SLUG_SOURCE:
+                post_slugs_table.delete_item(
+                    Key={'slug': existing_post.get('slug')},
+                    ConditionExpression=Attr('post_id').eq(post_id) & Attr('source').eq(LEGACY_SLUG_SOURCE)
+                )
         except ClientError as e:
-            if e.response.get('Error', {}).get('Code') == 'TransactionCanceledException':
+            if new_lock_created:
+                try:
+                    post_slugs_table.delete_item(
+                        Key={'slug': updates['slug']},
+                        ConditionExpression=Attr('post_id').eq(post_id) & Attr('source').eq(LEGACY_SLUG_SOURCE)
+                    )
+                except ClientError as cleanup_error:
+                    if cleanup_error.response.get('Error', {}).get('Code') != 'ConditionalCheckFailedException':
+                        raise
+
+            if e.response.get('Error', {}).get('Code') == 'ConditionalCheckFailedException':
                 return {'statusCode': 409, 'headers': HEADERS, 'body': json.dumps({'error': 'Slug update conflict'})}
             raise
     else:

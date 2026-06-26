@@ -76,6 +76,7 @@ npm run smoke:briefly:e2e
 ```
 
 The e2e smoke publishes a test-prefixed post, verifies the public integration, and removes the test post from the Briefly/legacy post tables and slug-lock table.
+Cleanup is guarded by the returned `post_id`, expected slug, and test title prefix; Briefly daily-input, draft, and workflow-run audit artifacts are intentionally retained.
 
 Mint a Briefly Cognito ID token:
 

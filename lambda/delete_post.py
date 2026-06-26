@@ -16,6 +16,26 @@ HEADERS = {
     'Content-Type': 'application/json'
 }
 
+def get_slug_lock(slug):
+    if not slug:
+        return None
+
+    response = post_slugs_table.get_item(
+        Key={'slug': slug},
+        ProjectionExpression='post_id, #source, source_draft_id',
+        ExpressionAttributeNames={'#source': 'source'}
+    )
+    return response.get('Item')
+
+def is_briefly_owned_slug_lock(item, post_id):
+    if not item:
+        return False
+
+    if item.get('post_id') != post_id:
+        return False
+
+    return item.get('source') != LEGACY_SLUG_SOURCE
+
 def lambda_handler(event, context):
     method = event.get('requestContext', {}).get('http', {}).get('method', '')
 
@@ -37,6 +57,11 @@ def lambda_handler(event, context):
 
     existing_response = table.get_item(Key={'post_id': post_id})
     existing_post = existing_response.get('Item')
+
+    if existing_post and existing_post.get('slug'):
+        existing_slug_lock = get_slug_lock(existing_post.get('slug'))
+        if is_briefly_owned_slug_lock(existing_slug_lock, post_id):
+            return {'statusCode': 409, 'headers': HEADERS, 'body': json.dumps({'error': 'Post is managed by Briefly'})}
 
     table.delete_item(Key={'post_id': post_id})
 

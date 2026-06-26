@@ -80,6 +80,8 @@ ADMIN_BEARER_TOKEN=<jwt-token> \
 npm run smoke:briefly:e2e
 ```
 
+The e2e smoke removes only the returned test-prefixed public post and slug lock, using guarded DynamoDB conditions. Briefly daily-input, draft, and workflow-run audit artifacts are retained.
+
 Connection values saved in the UI are stored in localStorage for this browser profile.
 
 ## Hosted launch checklist

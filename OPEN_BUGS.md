@@ -9,6 +9,7 @@ Known open issues and review findings. Update this file when issues are found, f
 ## Recently closed
 
 - 2026-06-25: Fixed cross-writer live-blog slug uniqueness. Legacy create/update/delete paths now participate in the shared `briefly_post_slugs` lock table, while only releasing locks marked `source=legacy_blog`.
+- 2026-06-25: Fixed legacy-admin split-brain risk for Briefly-owned public posts. Legacy update/delete now refuse rows whose shared slug lock belongs to Briefly.
 - 2026-06-25: Fixed Briefly generation failure from the retired Claude 3.5 Sonnet Bedrock model. Generation now uses Bedrock Converse with Amazon Nova Pro (`us.amazon.nova-pro-v1:0`), avoiding the Anthropic use-case form dependency that blocked Claude Sonnet 4.6 from the Lambda role.
 - 2026-06-25: Fixed public-site mobile nav overflow. Below 760px the overflowing horizontally-scrolling pill nav (`.hotbar`) is hidden and replaced by a compact header + accessible menu drawer (built in `assets/js/script.js`, styled in `assets/css/style.css`). Drawer is keyboard-friendly (`aria-expanded`, focus trap, Escape) and falls back to the existing hotbar without JS.
 - 2026-06-25: Fixed inverted public-site type hierarchy. `--h1-fluid` was smaller than `--h2-fluid` and headlines were forced `white-space: nowrap` with shrinking mobile font overrides. Redefined the type tokens so H1 leads, added a grotesk display face, and removed the nowrap hacks.
