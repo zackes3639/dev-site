@@ -8,15 +8,24 @@ import {
   type UpdateDraftRequest
 } from "@briefly/contracts";
 import { ApiRequestError, BrieflyApiClient } from "./api";
+import { CognitoAuthError, signInWithCognito } from "./cognitoAuth";
 import "./styles.css";
 
 interface AdminSettings {
   apiBase: string;
+  authEmail?: string;
+}
+
+interface ActiveConnection extends AdminSettings {
   token: string;
 }
 
 const SETTINGS_KEY = "briefly_admin_settings_v1";
+const SESSION_TOKEN_KEY = "briefly_admin_session_token_v1";
 const DEFAULT_API_BASE = import.meta.env.VITE_BRIEFLY_API_BASE ?? "";
+const DEFAULT_COGNITO_REGION = import.meta.env.VITE_BRIEFLY_COGNITO_REGION ?? "us-east-2";
+const DEFAULT_COGNITO_CLIENT_ID =
+  import.meta.env.VITE_BRIEFLY_COGNITO_CLIENT_ID ?? "436n9qucieqcg55k6ufv7nr9s6";
 
 type NoticeTone = "neutral" | "success" | "error" | "warning";
 const DRAFT_REVIEW_STATUSES: DraftReviewStatus[] = ["pending_review", "approved", "rejected"];
@@ -24,6 +33,11 @@ const STYLE_PRESETS: StylePreset[] = ["build_log_v1"];
 
 const isObject = (value: unknown): value is Record<string, unknown> => {
   return typeof value === "object" && value !== null;
+};
+
+const toStoredSettings = (apiBase: string, authEmail?: string): AdminSettings => {
+  const trimmedEmail = authEmail?.trim();
+  return trimmedEmail ? { apiBase, authEmail: trimmedEmail } : { apiBase };
 };
 
 const readStoredSettings = (): AdminSettings | null => {
@@ -38,14 +52,18 @@ const readStoredSettings = (): AdminSettings | null => {
       return null;
     }
 
-    if (typeof parsed.apiBase !== "string" || typeof parsed.token !== "string") {
+    if (typeof parsed.apiBase !== "string") {
       return null;
     }
 
-    return {
-      apiBase: parsed.apiBase,
-      token: parsed.token
-    };
+    if (typeof parsed.token === "string" && parsed.token) {
+      window.sessionStorage.setItem(SESSION_TOKEN_KEY, parsed.token);
+    }
+
+    const settings = toStoredSettings(parsed.apiBase, typeof parsed.authEmail === "string" ? parsed.authEmail : undefined);
+    saveSettings(settings);
+
+    return settings;
   } catch {
     return null;
   }
@@ -53,6 +71,16 @@ const readStoredSettings = (): AdminSettings | null => {
 
 const saveSettings = (settings: AdminSettings): void => {
   window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+};
+
+const readSessionToken = (): string => window.sessionStorage.getItem(SESSION_TOKEN_KEY) ?? "";
+
+const saveSessionToken = (token: string): void => {
+  if (token) {
+    window.sessionStorage.setItem(SESSION_TOKEN_KEY, token);
+  } else {
+    window.sessionStorage.removeItem(SESSION_TOKEN_KEY);
+  }
 };
 
 const byId = <T extends HTMLElement>(id: string): T => {
@@ -117,6 +145,10 @@ const parseTags = (value: string): string[] =>
     .filter((tag) => tag.length > 0);
 
 const formatApiError = (error: unknown): string => {
+  if (error instanceof CognitoAuthError) {
+    return `${error.message} [${error.code}]`;
+  }
+
   if (error instanceof ApiRequestError) {
     const details = isObject(error.details) ? ` (${JSON.stringify(error.details)})` : "";
     return `${error.message} [${error.status}/${error.code}]${details}`;
@@ -171,16 +203,17 @@ const renderDraftMeta = (draft: DraftItem | null): void => {
 const getClient = (): BrieflyApiClient => {
   const settings = getActiveSettings();
   if (!settings.apiBase || !settings.token) {
-    throw new Error("Save API base and token first.");
+    throw new Error("Sign in or save an ID token first.");
   }
 
   return new BrieflyApiClient(settings);
 };
 
-const getActiveSettings = (): AdminSettings => {
+const getActiveSettings = (): ActiveConnection => {
   return {
     apiBase: byId<HTMLInputElement>("api-base").value.trim(),
-    token: byId<HTMLInputElement>("admin-token").value.trim()
+    token: byId<HTMLInputElement>("admin-token").value.trim(),
+    authEmail: byId<HTMLInputElement>("admin-email").value.trim()
   };
 };
 
@@ -199,8 +232,11 @@ const init = (): void => {
 
   const apiBaseInput = byId<HTMLInputElement>("api-base");
   const tokenInput = byId<HTMLInputElement>("admin-token");
+  const emailInput = byId<HTMLInputElement>("admin-email");
+  const passwordInput = byId<HTMLInputElement>("admin-password");
   apiBaseInput.value = storedSettings?.apiBase ?? DEFAULT_API_BASE;
-  tokenInput.value = storedSettings?.token ?? "";
+  tokenInput.value = readSessionToken();
+  emailInput.value = storedSettings?.authEmail ?? "";
 
   byId<HTMLInputElement>("input-date").value = new Date().toISOString().slice(0, 10);
   byId<HTMLInputElement>("target-word-count").value = "500";
@@ -220,7 +256,7 @@ const init = (): void => {
     byId<HTMLInputElement>("generation-run-id").value = runIdFromQuery;
   }
 
-  setStatus(byId("connection-state"), "Configure API base and paste a Cognito ID token. Stored locally in this browser.", "neutral");
+  setStatus(byId("connection-state"), "Sign in to start an admin session in this browser.", "neutral");
   setStatus(byId("create-input-state"), "", "neutral");
   setStatus(byId("generation-state"), "", "neutral");
   setStatus(byId("draft-state"), "Load a draft to edit and publish.", "neutral");
@@ -426,8 +462,61 @@ const init = (): void => {
       return;
     }
 
-    saveSettings(settings);
-    setStatus(byId("connection-state"), "Connection settings saved locally.", "success");
+    saveSessionToken(settings.token);
+    saveSettings(toStoredSettings(settings.apiBase, settings.authEmail));
+    setStatus(byId("connection-state"), "Connection settings saved. Token is kept for this browser session.", "success");
+  });
+
+  const authForm = byId<HTMLFormElement>("auth-form");
+  authForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const stateEl = byId<HTMLElement>("connection-state");
+    const signInBtn = byId<HTMLButtonElement>("sign-in-btn");
+    const signOutBtn = byId<HTMLButtonElement>("sign-out-btn");
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+    const apiBase = apiBaseInput.value.trim();
+
+    if (!apiBase) {
+      setStatus(stateEl, "API base is required.", "error");
+      return;
+    }
+
+    if (!email || !password) {
+      setStatus(stateEl, "Email and password are required.", "error");
+      return;
+    }
+
+    setDisabled([signInBtn, signOutBtn], true);
+    setStatus(stateEl, "Signing in with Cognito...", "neutral");
+
+    try {
+      const token = await signInWithCognito({
+        email,
+        password,
+        region: DEFAULT_COGNITO_REGION,
+        clientId: DEFAULT_COGNITO_CLIENT_ID
+      });
+      tokenInput.value = token;
+      passwordInput.value = "";
+      saveSessionToken(token);
+      saveSettings(toStoredSettings(apiBase, email));
+      setStatus(stateEl, "Signed in. Token is kept for this browser session.", "success");
+    } catch (error) {
+      setStatus(stateEl, formatApiError(error), "error");
+    } finally {
+      passwordInput.value = "";
+      setDisabled([signInBtn, signOutBtn], false);
+    }
+  });
+
+  byId<HTMLButtonElement>("sign-out-btn").addEventListener("click", () => {
+    tokenInput.value = "";
+    passwordInput.value = "";
+    saveSessionToken("");
+    saveSettings(toStoredSettings(apiBaseInput.value.trim(), emailInput.value.trim()));
+    setStatus(byId("connection-state"), "Signed out. Admin session cleared.", "success");
   });
 
   const createForm = byId<HTMLFormElement>("daily-input-form");

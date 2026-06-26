@@ -14,6 +14,20 @@
 
       <section class="card" aria-labelledby="connection-heading">
         <h2 id="connection-heading">Connection</h2>
+        <form id="auth-form" class="form-grid auth-grid" autocomplete="on">
+          <label>
+            Admin email
+            <input id="admin-email" name="admin_email" type="email" autocomplete="username" required />
+          </label>
+          <label>
+            Admin password
+            <input id="admin-password" name="admin_password" type="password" autocomplete="current-password" required />
+          </label>
+          <div class="button-row">
+            <button id="sign-in-btn" type="submit">Sign in</button>
+            <button id="sign-out-btn" class="secondary" type="button">Sign out</button>
+          </div>
+        </form>
         <form id="connection-form" class="form-grid">
           <label>
             API base
@@ -23,7 +37,7 @@
             Cognito ID token
             <input id="admin-token" name="admin_token" type="password" autocomplete="off" placeholder="Raw ID token" required />
           </label>
-          <button id="save-connection" type="submit">Save connection</button>
+          <button id="save-connection" class="secondary" type="submit">Save connection</button>
         </form>
         <p id="connection-state" class="status" aria-live="polite"></p>
       </section>

@@ -78,7 +78,7 @@ npm run smoke:briefly:e2e
 The e2e smoke publishes a test-prefixed post, verifies the public integration, and removes the test post from the Briefly/legacy post tables and slug-lock table.
 Cleanup is guarded by the returned `post_id`, expected slug, and test title prefix; Briefly daily-input, draft, and workflow-run audit artifacts are intentionally retained.
 
-Mint a Briefly Cognito ID token:
+The hosted admin can sign in directly with the Briefly Cognito email/password and keeps only the resulting ID token in browser session storage. The CLI token flow remains available for smoke tests and fallback access:
 
 ```bash
 BRIEFLY_ADMIN_EMAIL=ticketsfortampakids@gmail.com \
@@ -86,7 +86,7 @@ BRIEFLY_ADMIN_PASSWORD='set-a-policy-compliant-password' \
 npm run -s briefly:admin:token
 ```
 
-Paste the raw token output into `/admin/briefly/`; the admin client adds the `Bearer` prefix for API calls.
+Paste the raw token output into `/admin/briefly/` only when using the fallback token field; the admin client adds the `Bearer` prefix for API calls.
 
 ## Existing production deploy
 

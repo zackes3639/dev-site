@@ -27,7 +27,7 @@ Private hosted admin:
 https://zacksimon.dev/admin/briefly/
 ```
 
-The page is protected first by the site password gate. Inside the UI, paste a raw Cognito ID token for Briefly API calls.
+The page is protected first by the site password gate. Inside the UI, sign in with the Briefly Cognito email/password. A raw Cognito ID-token field remains as a fallback.
 
 ## Hosted build
 
@@ -44,7 +44,7 @@ Set the API base at build/dev time or fill the Connection section in the UI:
 
 - `VITE_BRIEFLY_API_BASE`
 
-Do not set a Vite bearer-token env var for hosted builds. Vite env values are baked into static assets.
+Do not set a Vite bearer-token env var for hosted builds. Vite env values are baked into static assets. The Cognito client id/region may be public runtime configuration; passwords and tokens must stay runtime-only. The UI remembers API base/email locally and keeps the ID token in sessionStorage only.
 
 Create or reset the Cognito admin user:
 
@@ -54,7 +54,7 @@ BRIEFLY_ADMIN_PASSWORD='set-a-policy-compliant-password' \
 npm run briefly:admin:ensure-user
 ```
 
-Mint an ID token:
+For normal use, sign in inside the hosted admin with the admin email/password. Mint an ID token only for smoke tests or fallback access:
 
 ```bash
 BRIEFLY_ADMIN_EMAIL=ticketsfortampakids@gmail.com \
@@ -62,7 +62,7 @@ BRIEFLY_ADMIN_PASSWORD='set-a-policy-compliant-password' \
 npm run -s briefly:admin:token
 ```
 
-Paste the raw token output into the UI. Do not prefix it with `Bearer`; the client adds that prefix.
+If using the fallback token field, paste the raw token output into the UI. Do not prefix it with `Bearer`; the client adds that prefix.
 
 Run API smoke checks with that token:
 
@@ -82,7 +82,7 @@ npm run smoke:briefly:e2e
 
 The e2e smoke removes only the returned test-prefixed public post and slug lock, using guarded DynamoDB conditions. Briefly daily-input, draft, and workflow-run audit artifacts are retained.
 
-Connection values saved in the UI are stored in localStorage for this browser profile.
+The UI remembers API base/email in localStorage and keeps the ID token in sessionStorage for the current browser session.
 
 ## Hosted launch checklist
 
@@ -91,6 +91,7 @@ Connection values saved in the UI are stored in localStorage for this browser pr
 - Confirm the app client allows `USER_PASSWORD_AUTH`.
 - Confirm unauthenticated `/admin/briefly/` is blocked by the site password gate.
 - Confirm authenticated `/admin/briefly/` returns 200 and JS/CSS load from `/admin/briefly/assets/`.
+- Confirm Cognito email/password sign-in succeeds inside the hosted UI, no password is stored after sign-in, and sign out clears the session token.
 - Create daily input, start generation, poll/load draft, edit draft, and save changes in a browser.
 - Publish only a deliberate approved draft, then verify `/blog/post/?slug=...` and The Build Log listing.
 

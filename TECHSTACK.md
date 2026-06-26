@@ -59,7 +59,7 @@ Current technical facts for future agents.
 - Briefly publish and legacy blog writers use `briefly_post_slugs` as the shared slug uniqueness lock.
 - Legacy-created slug locks are marked with `source=legacy_blog`; legacy delete/update paths only release legacy-owned locks and refuse to mutate rows whose lock is Briefly-owned.
 - Briefly generation uses Bedrock Converse with Amazon Nova Pro via `BEDROCK_MODEL_ID=us.amazon.nova-pro-v1:0`.
-- The hosted admin build uses `VITE_BRIEFLY_API_BASE` for the API base only. Raw Cognito ID tokens are pasted into the UI and stored in localStorage; they are not baked into the static build.
+- The hosted admin build uses `VITE_BRIEFLY_API_BASE` for the API base only. The UI signs in to Cognito with `USER_PASSWORD_AUTH` at runtime and keeps only the resulting ID token in sessionStorage; no Cognito password, bearer token, or ID token is baked into the static build. API base and admin email may be remembered locally, and a raw token paste field remains as a fallback.
 - Briefly API CORS allows `https://zacksimon.dev`, `http://localhost:5173`, and `http://localhost:4173`.
 
 ## Commands
@@ -104,7 +104,7 @@ BRIEFLY_ADMIN_PASSWORD='set-a-policy-compliant-password' \
 npm run briefly:admin:ensure-user
 ```
 
-Mint an ID token for the hosted admin UI or smoke tests:
+Mint an ID token for smoke tests or fallback hosted-admin access:
 
 ```bash
 BRIEFLY_ADMIN_EMAIL=ticketsfortampakids@gmail.com \
@@ -112,7 +112,7 @@ BRIEFLY_ADMIN_PASSWORD='set-a-policy-compliant-password' \
 npm run -s briefly:admin:token
 ```
 
-Paste the raw token output into the hosted admin. Do not prefix it with `Bearer`; the client adds that prefix.
+For normal hosted-admin use, sign in with the admin email/password in the UI. If using the fallback token field, paste the raw token output into the hosted admin. Do not prefix it with `Bearer`; the client adds that prefix.
 
 ## Integration boundaries
 

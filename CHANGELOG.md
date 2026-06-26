@@ -6,6 +6,7 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
 
 ### Added
 
+- Added hosted Briefly admin Cognito email/password sign-in so normal admin use no longer requires manually minting and pasting an ID token.
 - Added an amber/gold secondary accent (`--gold`/`--gold-strong`/`--gold-ink`/
   `--gold-wash`/`--surface-gold`) paired with the existing purple action color.
   Purple stays the single primary-action color; amber is energy/highlight only
@@ -31,6 +32,7 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
 
 ### Changed
 
+- Kept the raw Cognito ID-token field as a fallback while making browser-side Cognito sign-in the primary hosted-admin auth flow. Passwords are not stored; only the resulting ID token is kept in browser session storage.
 - Documented the main-only GitHub workflow: build/validate locally, store source
   in `origin/main`, and treat `push and merge` as approval to deploy live
   through the AWS GitHub Actions workflow, with explicit deploy/smoke handling

@@ -65,6 +65,12 @@ body {
   align-items: end;
 }
 
+.auth-grid {
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0.9rem;
+  padding-bottom: 0.9rem;
+}
+
 label {
   display: grid;
   gap: 0.35rem;
@@ -109,6 +115,10 @@ button {
   padding: 0.62rem 0.95rem;
   font-weight: 600;
   cursor: pointer;
+}
+
+button.secondary {
+  background: #425972;
 }
 
 button[disabled] {
