@@ -46,8 +46,16 @@ board, mobile nav). Extend this system; do not invent a parallel one.
 
 - Use the CSS variables instead of hardcoding values in new/edited rules.
 - Palette: `--canvas` (white), `--ink`/`--ink-soft`/`--muted`/`--faint` (deep-navy
-  text scale), `--line`/`--surface`/`--surface-violet` (structure), `--accent` +
-  `--accent-strong`/`--accent-wash` (purple/indigo action), `--grid-line` (texture).
+  text scale), `--line`/`--surface`/`--surface-violet`/`--surface-gold` (structure),
+  `--accent` + `--accent-strong`/`--accent-wash` (purple/indigo action),
+  `--gold` + `--gold-strong`/`--gold-ink`/`--gold-wash` (amber energy/highlight),
+  `--grid-line` (texture).
+- Two-color rule: purple is the **single primary-action** color (primary buttons,
+  links, active nav/states). Amber is **energy/highlight only** — secondary CTAs,
+  eyebrow ticks, the headline marker-underline, tinted surfaces, Build Log tag
+  chips, and the "In Progress" board column. They must never both style the same
+  primary action. Amber on a filled surface needs navy text (`--gold-ink`) for
+  contrast, and amber must not become a primary action.
 - Type: `--font-display` (Space Grotesk grotesk headline face, with system
   fallbacks), `--font-body` (Inter), `--font-mono` (labels/chips).
 - Scale is **H1-led**: `--h1-fluid` is always larger and stronger than `--h2-fluid`

@@ -38,6 +38,12 @@
   --accent-strong: #5a33b8;
   --accent-ink: #ffffff;
   --accent-wash: #f6f2ff;
+  /* Amber/gold — energy + highlight (paired with purple action). Never a primary action. */
+  --gold: #f4a93b;
+  --gold-strong: #e0911f;
+  --gold-ink: #0b1220;
+  --gold-wash: #fff7ea;
+  --surface-gold: #fff7ea;
   --grid-line: rgba(11, 18, 32, 0.04);
 
   /* Radii — unified 8px system */
@@ -435,6 +441,12 @@ body.navbar-transitioning .navbar.navbar-compact {
   display: inline;
 }
 
+/* Amber marker-underline highlight on a key headline word */
+.hero-headline .mark {
+  background: linear-gradient(180deg, transparent 62%, rgba(244, 169, 59, 0.5) 62%);
+  padding: 0 2px;
+}
+
 .page-hero-content.narrow {
   max-width: 840px;
 }
@@ -486,10 +498,17 @@ body.navbar-transitioning .navbar.navbar-compact {
   border-color: var(--accent-strong);
 }
 
+/* Secondary = amber "highlight" action (purple stays the primary action) */
 .secondary {
-  border: 1px solid #d1d5db;
-  color: var(--ink);
-  background: var(--canvas);
+  border: 1px solid var(--gold);
+  color: var(--gold-ink);
+  background: var(--gold);
+  box-shadow: 0 12px 24px rgba(244, 169, 59, 0.28);
+}
+
+.secondary:hover {
+  background: var(--gold-strong);
+  border-color: var(--gold-strong);
 }
 
 .hero-mini-info,
@@ -766,7 +785,7 @@ body.navbar-transitioning .navbar.navbar-compact {
   margin-inline: auto;
   padding: 28px var(--gutter);
   color: #475569;
-  border-top: 1px solid #e5e7eb;
+  border-top: 3px solid var(--gold);
   background: #ffffff;
 }
 
@@ -1601,12 +1620,30 @@ a.contact-info-value:hover {
 }
 
 .v2-eyebrow {
-  color: #6c3fd4;
+  color: var(--gold-strong);
   text-transform: uppercase;
   letter-spacing: 2px;
   font-size: 0.72rem;
   font-weight: 800;
   margin-bottom: 10px;
+}
+
+/* Amber tick before the eyebrow label */
+.v2-eyebrow::before {
+  content: "";
+  display: inline-block;
+  width: 18px;
+  height: 2px;
+  background: var(--gold);
+  vertical-align: middle;
+  margin-right: 8px;
+  border-radius: 2px;
+}
+
+/* "live" energy dot on the featured-build eyebrow */
+.v2-featured-build .v2-eyebrow::after {
+  content: " \25CF";
+  color: var(--gold);
 }
 
 .v2-btn-ghost {
@@ -1715,11 +1752,33 @@ a.contact-info-value:hover {
 }
 
 .v2-trip-card {
+  position: relative;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   padding: 18px;
   background: #ffffff;
+  overflow: hidden;
 }
+
+/* Colored top-spine on each card; tints rotate violet / gold / neutral */
+.v2-trip-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+}
+
+.v2-trip-card:nth-child(1) { background: var(--surface-violet); }
+.v2-trip-card:nth-child(1)::before { background: var(--accent); }
+.v2-trip-card:nth-child(1) h3 { color: var(--accent-strong); }
+
+.v2-trip-card:nth-child(2) { background: var(--surface-gold); }
+.v2-trip-card:nth-child(2)::before { background: var(--gold); }
+.v2-trip-card:nth-child(2) h3 { color: var(--gold-strong); }
+
+.v2-trip-card:nth-child(3) { background: var(--surface); }
+.v2-trip-card:nth-child(3)::before { background: var(--ink); }
+.v2-trip-card:nth-child(3) h3 { color: var(--ink); }
 
 .v2-trip-card h3 {
   font-size: 1.02rem;
@@ -1916,6 +1975,13 @@ a.contact-info-value:hover {
   font-weight: 800;
 }
 
+/* Color the board columns: Live = purple, In Progress = amber, Ideas = neutral */
+.v2-kanban-col:nth-child(1) .v2-kanban-col-head { border-bottom-color: var(--accent); }
+.v2-kanban-col:nth-child(1) .v2-count-badge { background: var(--accent); }
+
+.v2-kanban-col:nth-child(2) .v2-kanban-col-head { border-bottom-color: var(--gold); }
+.v2-kanban-col:nth-child(2) .v2-count-badge { background: var(--gold); color: var(--gold-ink); }
+
 .v2-kanban-card {
   background: #ffffff;
   border: 1px solid #e5e7eb;
@@ -1952,8 +2018,8 @@ a.contact-info-value:hover {
   display: inline-block;
   padding: 2px 7px;
   border-radius: 4px;
-  background: #eef2f7;
-  color: #475569;
+  background: var(--gold-wash);
+  color: var(--gold-strong);
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.3px;
@@ -2312,7 +2378,7 @@ a.contact-info-value:hover {
 
 .v2-subscribe-rail {
   margin-top: 0;
-  background: #f5f3ff;
+  background: var(--surface-gold);
   border: 1.5px solid #6c3fd4;
   border-radius: 8px;
   padding: 18px;
