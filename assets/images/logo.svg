@@ -1,33 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150" width="150" height="150">
-  <style>
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to   { transform: rotate(360deg); }
-    }
-    .arcs {
-      animation: spin 7s linear infinite;
-      transform-origin: 75px 75px;
-    }
-  </style>
-
-  <!-- Background circle -->
-  <circle cx="75" cy="75" r="70" fill="#6C3FD4"/>
-
-  <!-- Spinning arcs -->
-  <g class="arcs">
-    <path d="M75 18 A57 57 0 0 1 132 75" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
-    <path d="M75 132 A57 57 0 0 1 18 75"  fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
-    <circle cx="75"  cy="18"  r="4.5" fill="white" opacity="0.85"/>
-    <circle cx="75"  cy="132" r="4.5" fill="white" opacity="0.85"/>
-  </g>
-
-  <!-- ZS monogram -->
-  <text
-    x="75" y="92"
-    font-family="Georgia, 'Times New Roman', serif"
-    font-size="46"
-    font-weight="700"
-    fill="white"
-    text-anchor="middle"
-    letter-spacing="-2">ZS</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Zack Simon">
+  <!-- Terminal chip -->
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="#0b1220"/>
+  <!-- Lowercase zs monogram -->
+  <text x="19" y="42"
+        font-family="'Space Grotesk','Inter Tight',system-ui,-apple-system,'Segoe UI',sans-serif"
+        font-size="26" font-weight="700" fill="#ffffff"
+        text-anchor="middle" letter-spacing="-1">zs</text>
+  <!-- Amber cursor block -->
+  <rect x="34" y="24" width="13" height="20" rx="2" fill="#f4a93b"/>
 </svg>

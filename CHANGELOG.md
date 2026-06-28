@@ -7,6 +7,13 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
 ### Added
 
 - Added hosted Briefly admin Cognito email/password sign-in so normal admin use no longer requires manually minting and pasting an ID token.
+- Redesigned the public-site navbar across all pages: replaced the boxed
+  equal-width button group with a clean brand wordmark (`Zack Simon`) + a new
+  static terminal-caret logo mark (navy chip, lowercase `zs`, amber cursor) +
+  right-aligned text links (amber active dot) + an amber `Subscribe` CTA pill.
+  Preserved the sticky scroll-compact pill and the accessible mobile drawer
+  (drawer now also surfaces the Subscribe CTA); hardened the drawer's Admin-link
+  lookup to a `.nav-admin` selector.
 - Added an amber/gold secondary accent (`--gold`/`--gold-strong`/`--gold-ink`/
   `--gold-wash`/`--surface-gold`) paired with the existing purple action color.
   Purple stays the single primary-action color; amber is energy/highlight only
@@ -32,6 +39,7 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
 
 ### Changed
 
+- Changed the public Builds board boot state so JS users see loading placeholders until the current API data renders; the old hardcoded fallback cards were replaced with neutral unavailable messages for no-JS/API-error states.
 - Kept the raw Cognito ID-token field as a fallback while making browser-side Cognito sign-in the primary hosted-admin auth flow. Passwords are not stored; only the resulting ID token is kept in browser session storage.
 - Documented the main-only GitHub workflow: build/validate locally, store source
   in `origin/main`, and treat `push and merge` as approval to deploy live

@@ -75,17 +75,32 @@ board, mobile nav). Extend this system; do not invent a parallel one.
 
 ### Preserved distinctive patterns
 
-- Sticky pill nav on desktop (`.navbar` / `.hotbar`).
+- Sticky top nav (`.navbar` / `.hotbar`) that shrinks into a floating compact
+  pill on scroll (`.navbar-compact`, driven by `assets/js/script.js`).
 - Kanban "board as portfolio" on Builds.
 - Contact routing/intent cards.
 - Monospace section labels (`/ what i do`, `/ builds · board`, etc.).
 
+### Navbar layout (desktop)
+
+- Brand is the terminal-caret logo mark (`assets/images/logo.svg` — static navy
+  chip, lowercase `zs` + amber cursor) plus a `Zack Simon` wordmark
+  (`.logo-wordmark`, display face).
+- Links (`.hot-btn`) are plain right-aligned text, not a boxed button group; the
+  active link (`.hot-btn-active`) is marked by an amber dot, never a filled box.
+- The right cluster (`.nav-contact`) holds a muted `Admin` link and the amber
+  `Subscribe` action pill (`.nav-cta`). Purple stays the primary-action color;
+  the nav CTA is the one sanctioned amber action (highlight intent: list growth).
+- In the scroll-compact pill the wordmark and `.nav-contact` collapse away,
+  leaving just the logo mark + links. The 761–900px band hides the wordmark so
+  links + CTA never crowd before the mobile drawer takes over.
+
 ### Navigation (mobile)
 
-- Below 760px the desktop pill nav is replaced by a compact header + a menu
+- Below 760px the desktop nav is replaced by a compact header + a menu
   button (`.nav-toggle`) and an accessible drawer (`.nav-drawer`). The drawer is
-  built by `assets/js/script.js` from the existing `.hotbar` links plus the
-  secondary Admin link, so it stays in sync per page.
+  built by `assets/js/script.js` from the `.hotbar` links plus the Subscribe CTA
+  (`.nav-drawer-cta`) and the secondary Admin link, so it stays in sync per page.
 - The drawer uses `aria-expanded`/`aria-controls`, focus-moves into the panel on
   open, traps Tab, closes on Escape / backdrop / link click, and restores focus.
 - Behavior is gated on `body.has-drawer` (added by JS); without JS the existing

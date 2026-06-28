@@ -121,7 +121,17 @@ console.log("Zack's builder site loaded");
     list.appendChild(link);
   });
 
-  const adminSource = document.querySelector(".nav-contact a, .nav-admin");
+  // Surface the Subscribe CTA inside the drawer on mobile.
+  const ctaSource = document.querySelector(".nav-cta");
+  if (ctaSource) {
+    const cta = document.createElement("a");
+    cta.className = "nav-drawer-link nav-drawer-cta";
+    cta.href = ctaSource.getAttribute("href");
+    cta.textContent = ctaSource.textContent.trim();
+    list.appendChild(cta);
+  }
+
+  const adminSource = document.querySelector(".nav-admin");
   const admin = document.createElement("a");
   admin.className = "nav-drawer-link nav-drawer-link-secondary";
   admin.href = adminSource ? adminSource.getAttribute("href") : "/admin/";

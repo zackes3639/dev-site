@@ -4,24 +4,27 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Builds | Zack Simon</title>
+  <script>
+    document.documentElement.classList.add('js');
+  </script>
   <link rel="stylesheet" href="/assets/css/style.css" />
 </head>
 <body>
   <header class="navbar">
     <div class="nav-left">
       <a class="logo" href="/" aria-label="Go to home page">
-        <img src="/assets/images/logo.svg" alt="Zack Simon logo" class="logo-image" />
+        <img src="/assets/images/logo.svg" alt="Zack Simon logo" class="logo-image" /><span class="logo-wordmark">Zack Simon</span>
       </a>
     </div>
 
     <div class="hotbar" role="navigation" aria-label="Primary navigation">
-      <a class="hot-btn" href="/">About Me</a>
+      <a class="hot-btn" href="/">About</a>
       <a class="hot-btn hot-btn-active" href="/work/">Builds</a>
       <a class="hot-btn" href="/blog/">The Build Log</a>
       <a class="hot-btn" href="/contact/">Contact</a>
     </div>
 
-    <div class="nav-contact"><a href="/admin/" class="nav-admin">Admin</a></div>
+    <div class="nav-contact"><a href="/admin/" class="nav-admin">Admin</a><a href="/blog/#newsletter" class="nav-cta">Subscribe →</a></div>
   </header>
 
   <main>
@@ -37,87 +40,42 @@
       <div class="v2-kanban-col">
         <div class="v2-kanban-col-head">
           <h2>Live</h2>
-          <span class="v2-count-badge" id="col-live-count">3</span>
+          <span class="v2-count-badge" id="col-live-count">
+            <span class="v2-builds-count-loading">...</span>
+            <span class="v2-builds-count-fallback">0</span>
+          </span>
         </div>
-        <div id="col-live-cards">
-          <article class="v2-kanban-card">
-            <span class="v2-badge-live"><span class="v2-status-dot"></span>Live</span>
-            <h3>The Build Log</h3>
-            <div class="v2-tag-row">
-              <span class="v2-tag-chip">aws</span>
-              <span class="v2-tag-chip">lambda</span>
-              <span class="v2-tag-chip">md</span>
-            </div>
-            <a href="/blog/" class="build-link">Read →</a>
-          </article>
-          <article class="v2-kanban-card">
-            <span class="v2-badge-live"><span class="v2-status-dot"></span>Live</span>
-            <h3>Neon Wave</h3>
-            <p style="color:#475569; font-size:0.85rem;">A retro shoot 'em up — survive endless waves of enemies on a neon grid.</p>
-            <div class="v2-tag-row">
-              <span class="v2-tag-chip">js</span>
-              <span class="v2-tag-chip">canvas</span>
-            </div>
-            <a href="game/index.html" class="build-link">Play →</a>
-          </article>
-          <article class="v2-kanban-card v2-kanban-card-dim">
-            <span class="v2-badge-live"><span class="v2-status-dot"></span>Live</span>
-            <h3>zacksimon.dev v1</h3>
-            <div class="v2-tag-row">
-              <span class="v2-tag-chip">html</span>
-              <span class="v2-tag-chip">css</span>
-            </div>
-          </article>
+        <div id="col-live-cards" aria-busy="true">
+          <p class="v2-builds-loading">Loading current builds...</p>
+          <p class="v2-builds-fallback">Current live builds are unavailable.</p>
         </div>
       </div>
 
       <div class="v2-kanban-col">
         <div class="v2-kanban-col-head">
           <h2>In Progress</h2>
-          <span class="v2-count-badge" id="col-wip-count">2</span>
+          <span class="v2-count-badge" id="col-wip-count">
+            <span class="v2-builds-count-loading">...</span>
+            <span class="v2-builds-count-fallback">0</span>
+          </span>
         </div>
-        <div id="col-wip-cards">
-          <article class="v2-kanban-card">
-            <span class="v2-badge-wip">In Progress</span>
-            <h3>SaaS Validation Lab</h3>
-            <p style="color:#475569; font-size:0.85rem;">Probing operational-leverage problems worth solving.</p>
-            <div class="v2-progress-bar" aria-label="60% complete">
-              <div class="v2-progress-fill" style="width: 60%;"></div>
-            </div>
-          </article>
-          <article class="v2-kanban-card v2-kanban-card-dashed">
-            <span class="v2-badge-wip">In Progress</span>
-            <h3>Build Log v2 (SMS digest + tags)</h3>
-            <div class="v2-tag-row">
-              <span class="v2-tag-chip">sms</span>
-              <span class="v2-tag-chip">tags</span>
-            </div>
-          </article>
+        <div id="col-wip-cards" aria-busy="true">
+          <p class="v2-builds-loading">Loading current builds...</p>
+          <p class="v2-builds-fallback">Current in-progress builds are unavailable.</p>
         </div>
       </div>
 
       <div class="v2-kanban-col">
         <div class="v2-kanban-col-head">
           <h2>Ideas</h2>
-          <span class="v2-count-badge" id="col-idea-count">4</span>
+          <span class="v2-count-badge" id="col-idea-count">
+            <span class="v2-builds-count-loading">...</span>
+            <span class="v2-builds-count-fallback">0</span>
+          </span>
         </div>
-        <div id="col-idea-cards">
-          <article class="v2-kanban-card v2-kanban-card-dashed">
-            <span class="v2-badge-idea">Idea</span>
-            <h3>Workflow CRM</h3>
-          </article>
-          <article class="v2-kanban-card v2-kanban-card-dashed">
-            <span class="v2-badge-idea">Idea</span>
-            <h3>Ops dashboard</h3>
-          </article>
-          <article class="v2-kanban-card v2-kanban-card-dashed">
-            <span class="v2-badge-idea">Idea</span>
-            <h3>Dev time tracker</h3>
-          </article>
-          <article class="v2-kanban-card v2-kanban-card-dashed">
-            <span class="v2-badge-idea">Idea</span>
-            <h3>Weekly review tool</h3>
-          </article>
+        <div id="col-idea-cards" aria-busy="true">
+          <p class="v2-builds-loading">Loading current builds...</p>
+          <p class="v2-builds-fallback">Current build ideas are unavailable.</p>
         </div>
       </div>
     </section>
@@ -186,6 +144,13 @@
     }
 
     function renderBuilds(builds) {
+      if (!Array.isArray(builds)) throw new Error('Builds API returned an unexpected response');
+
+      document.documentElement.classList.remove('builds-api-fallback');
+      ['live', 'wip', 'idea'].forEach(function(s) {
+        document.getElementById('col-' + s + '-cards').setAttribute('aria-busy', 'false');
+      });
+
       builds.sort(function(a, b) {
         var ao = a.sort_order || 0, bo = b.sort_order || 0;
         if (ao !== bo) return ao - bo;
@@ -199,11 +164,23 @@
       });
     }
 
+    function showStaticBuildFallback() {
+      ['live', 'wip', 'idea'].forEach(function(s) {
+        document.getElementById('col-' + s + '-cards').setAttribute('aria-busy', 'false');
+      });
+      document.documentElement.classList.add('builds-api-fallback');
+    }
+
     if (!BUILDS_API_URL.includes('CONFIGURE_ME')) {
       fetch(BUILDS_API_URL)
-        .then(function(r) { return r.json(); })
+        .then(function(r) {
+          if (!r.ok) throw new Error('Failed to load builds');
+          return r.json();
+        })
         .then(renderBuilds)
-        .catch(function() {}); // keep static fallback on error
+        .catch(showStaticBuildFallback);
+    } else {
+      showStaticBuildFallback();
     }
   </script>
 </body>

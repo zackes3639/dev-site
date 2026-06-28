@@ -191,39 +191,46 @@ img {
 
 .nav-left,
 .nav-contact {
-  flex: 0 0 120px;
+  flex: 0 0 auto;
 }
 
 .logo {
-  width: 48px;
-  height: 48px;
-  display: inline-grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
   border-radius: 8px;
   background: transparent;
   flex-shrink: 0;
 }
 
 .logo-image {
-  width: 100%;
-  height: 100%;
+  width: 38px;
+  height: 38px;
   display: block;
   object-fit: contain;
+  flex-shrink: 0;
+}
+
+.logo-wordmark {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.05rem;
+  letter-spacing: -0.2px;
+  color: var(--ink);
+  white-space: nowrap;
 }
 
 .hotbar {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
+  justify-content: flex-end;
+  gap: 28px;
   width: 100%;
   justify-self: stretch;
-  padding: 6px;
-  background: #f8fafc;
-  border-radius: 8px;
+  padding: 0;
+  background: transparent;
+  border: 0;
   box-shadow: none;
-  border: 1px solid #e5e7eb;
-  overflow: hidden;
   transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1),
     transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
     padding 0.4s cubic-bezier(0.22, 1, 0.36, 1),
@@ -233,38 +240,47 @@ img {
 }
 
 .hot-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  flex: 1 1 0;
-  min-height: 40px;
+  flex: 0 0 auto;
+  position: relative;
   background: transparent;
-  color: #334155;
-  padding: 8px 14px;
-  border-radius: 6px;
-  font-weight: 700;
-  border: 1px solid transparent;
-  text-align: center;
-  transition: color 0.2s ease, border 0.2s ease, background 0.2s ease;
+  color: var(--muted);
+  padding: 6px 2px;
+  border: 0;
+  border-radius: 0;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: color 0.2s ease;
 }
 
 .hot-btn:hover {
-  color: #0b1220;
-  border-color: #d1d5db;
-  background: #ffffff;
+  color: var(--ink);
+  background: transparent;
 }
 
 .hot-btn-active {
-  color: #6c3fd4;
-  border-color: #6c3fd4;
-  background: #ffffff;
+  color: var(--ink);
+}
+
+/* Amber dot marks the active link */
+.hot-btn-active::before {
+  content: "";
+  position: absolute;
+  left: -13px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--gold);
 }
 
 .nav-contact {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  overflow: hidden;
+  gap: 18px;
   transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1),
     transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
     padding 0.4s cubic-bezier(0.22, 1, 0.36, 1),
@@ -309,6 +325,10 @@ body.navbar-transitioning .navbar.navbar-compact {
   justify-content: center;
 }
 
+.navbar.navbar-compact .logo-wordmark {
+  display: none;
+}
+
 .navbar.navbar-compact .hotbar {
   flex: 1 1 auto;
   justify-content: center;
@@ -337,7 +357,9 @@ body.navbar-transitioning .navbar.navbar-compact {
   height: 0;
   padding: 0;
   margin: 0;
+  gap: 0;
   border-width: 0;
+  overflow: hidden;
 }
 
 .nav-admin {
@@ -356,22 +378,22 @@ body.navbar-transitioning .navbar.navbar-compact {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 42px;
   padding: 9px 18px;
-  border: 1px solid #6c3fd4;
-  border-radius: 8px;
-  background: #ffffff;
-  color: #0b1220;
-  font-size: 0.95rem;
-  font-weight: 600;
+  border: 1px solid var(--gold);
+  border-radius: var(--radius-pill);
+  background: var(--gold);
+  color: var(--gold-ink);
+  font-size: 0.92rem;
+  font-weight: 700;
   white-space: nowrap;
+  box-shadow: 0 10px 20px rgba(244, 169, 59, 0.28);
   transition: transform 0.2s ease, background 0.2s ease, border 0.2s ease;
 }
 
 .nav-cta:hover {
   transform: translateY(-1px);
-  border-color: #6c3fd4;
-  background: #f6f2ff;
+  border-color: var(--gold-strong);
+  background: var(--gold-strong);
 }
 
 .nav-links {
@@ -1416,6 +1438,14 @@ a.contact-info-value:hover {
   }
 }
 
+/* Tight band: desktop nav still shown (drawer starts at 760), so drop the
+   wordmark to keep links + Subscribe CTA from crowding. */
+@media (min-width: 761px) and (max-width: 900px) {
+  .logo-wordmark {
+    display: none;
+  }
+}
+
 @media (max-width: 900px) {
   .hotbar {
     flex-wrap: nowrap;
@@ -2006,6 +2036,42 @@ a.contact-info-value:hover {
 
 .v2-kanban-card-dim {
   opacity: 0.55;
+}
+
+.v2-builds-loading,
+.v2-builds-count-loading {
+  display: none;
+}
+
+.v2-builds-loading,
+.v2-builds-fallback {
+  padding: 14px 8px;
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.js .v2-builds-loading {
+  display: block;
+}
+
+.js .v2-builds-count-loading {
+  display: inline;
+}
+
+.js .v2-builds-count-fallback,
+.js .v2-builds-fallback,
+.js.builds-api-fallback .v2-builds-loading,
+.js.builds-api-fallback .v2-builds-count-loading {
+  display: none;
+}
+
+.js.builds-api-fallback .v2-builds-count-fallback {
+  display: inline;
+}
+
+.js.builds-api-fallback .v2-builds-fallback {
+  display: block;
 }
 
 .v2-tag-row {
@@ -2850,6 +2916,20 @@ body.nav-drawer-open .nav-drawer {
   background: var(--accent-wash);
   border-color: var(--accent);
   color: var(--accent);
+}
+
+.nav-drawer-cta {
+  margin-top: 6px;
+  justify-content: center;
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--gold-ink);
+  font-weight: 700;
+}
+
+.nav-drawer-cta:hover {
+  background: var(--gold-strong);
+  border-color: var(--gold-strong);
 }
 
 .nav-drawer-link-secondary {
