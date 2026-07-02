@@ -15,6 +15,8 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
 - Added the missing Build Log SMS/newsletter delivery pipeline to `IDEAS.md` as a later marketing/operations backlog item.
 - Added a Briefly publish-status enforcement decision/risk to `OPEN_BUGS.md`.
 - Added non-static AWS deploy automation to the engineering backlog in `IDEAS.md`.
+- Added a private Briefly shortcut card to the `/admin/` hub that links to
+  `/admin/briefly/` while preserving the site password gate and Cognito sign-in.
 - Implemented the "Classic Amber" logo system across the public site: new
   light-tile badge + clipped amber-sliced `Z` mark (`assets/brand/*.svg`, generated
   vector-path lockups with no webfont dependency), `favicon.ico`,

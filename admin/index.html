@@ -204,11 +204,12 @@
     /* ── Hub ── */
     .admin-hub {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 14px;
     }
-    @media (max-width: 480px) { .admin-hub { grid-template-columns: 1fr; } }
+    @media (max-width: 720px) { .admin-hub { grid-template-columns: 1fr; } }
     .admin-hub-card {
+      display: block;
       border: 1px solid #e5e7eb;
       border-radius: 12px;
       padding: 28px 22px;
@@ -216,12 +217,20 @@
       transition: border-color 0.18s, box-shadow 0.18s;
       text-align: left;
       background: none;
+      color: inherit;
+      font: inherit;
+      text-decoration: none;
       width: 100%;
       box-sizing: border-box;
     }
-    .admin-hub-card:hover {
+    .admin-hub-card:hover,
+    .admin-hub-card:focus-visible {
       border-color: #6c3fd4;
       box-shadow: 0 4px 18px rgba(108,63,212,0.10);
+    }
+    .admin-hub-card:focus-visible {
+      outline: 2px solid #6c3fd4;
+      outline-offset: 3px;
     }
     .admin-hub-card-label {
       font-size: 0.7rem;
@@ -289,6 +298,11 @@
               <h2 class="admin-hub-card-title">The Build Log</h2>
               <p class="admin-hub-card-desc">Write, edit, and publish posts</p>
             </button>
+            <a class="admin-hub-card" id="hub-briefly-link" href="/admin/briefly/">
+              <p class="admin-hub-card-label">Workflow</p>
+              <h2 class="admin-hub-card-title">Briefly</h2>
+              <p class="admin-hub-card-desc">Generate, review, and publish Build Log drafts</p>
+            </a>
           </div>
         </div>
 
