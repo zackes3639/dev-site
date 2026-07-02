@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import secrets
 from datetime import datetime, timezone
 
 import boto3
@@ -82,6 +83,7 @@ def lambda_handler(event, context):
                 }
 
         subscriber_id = f"email#{email}"
+        now = datetime.now(timezone.utc).isoformat()
 
         item = {
             "subscriber_id": subscriber_id,
@@ -89,7 +91,9 @@ def lambda_handler(event, context):
             "phone": normalized_phone or "",
             "status": "active",
             "source": "website",
-            "created_at": datetime.now(timezone.utc).isoformat()
+            "unsubscribe_token": secrets.token_urlsafe(32),
+            "created_at": now,
+            "updated_at": now
         }
 
         table.put_item(Item=item)

@@ -1,5 +1,6 @@
 import json
 import os
+import hmac
 import boto3
 from datetime import datetime, timezone
 
@@ -23,8 +24,25 @@ def lambda_handler(event, context):
         return {"statusCode": 204, "headers": HEADERS, "body": ""}
 
     try:
-        body = json.loads(event.get("body") or "{}")
+        body = event.get("body") or "{}"
+        if isinstance(body, str):
+            try:
+                body = json.loads(body)
+            except json.JSONDecodeError:
+                return {
+                    "statusCode": 400,
+                    "headers": HEADERS,
+                    "body": json.dumps({"message": "Invalid request body"})
+                }
+        if not isinstance(body, dict):
+            return {
+                "statusCode": 400,
+                "headers": HEADERS,
+                "body": json.dumps({"message": "Invalid request body"})
+            }
+
         email = (body.get("email") or "").strip().lower()
+        token = (body.get("token") or "").strip()
 
         if not email:
             return {
@@ -32,16 +50,33 @@ def lambda_handler(event, context):
                 "headers": HEADERS,
                 "body": json.dumps({"message": "Email is required"})
             }
+        if not token:
+            return {
+                "statusCode": 400,
+                "headers": HEADERS,
+                "body": json.dumps({"message": "Unsubscribe token is required"})
+            }
 
         subscriber_id = f"email#{email}"
+        existing = table.get_item(Key={"subscriber_id": subscriber_id}).get("Item")
+        stored_token = (existing or {}).get("unsubscribe_token", "")
+
+        if not stored_token or not hmac.compare_digest(str(stored_token), token):
+            return {
+                "statusCode": 403,
+                "headers": HEADERS,
+                "body": json.dumps({"message": "Invalid unsubscribe link"})
+            }
+
+        now = datetime.now(timezone.utc).isoformat()
 
         table.update_item(
             Key={"subscriber_id": subscriber_id},
-            UpdateExpression="SET #s = :inactive, unsubscribed_at = :ts",
+            UpdateExpression="SET #s = :inactive, unsubscribed_at = :ts, updated_at = :ts",
             ExpressionAttributeNames={"#s": "status"},
             ExpressionAttributeValues={
                 ":inactive": "inactive",
-                ":ts": datetime.now(timezone.utc).isoformat()
+                ":ts": now
             }
         )
 
@@ -52,8 +87,9 @@ def lambda_handler(event, context):
         }
 
     except Exception as e:
+        print(f"unsubscribe lambda error: {e}")
         return {
             "statusCode": 500,
             "headers": HEADERS,
-            "body": json.dumps({"message": "Error", "error": str(e)})
+            "body": json.dumps({"message": "Internal server error"})
         }

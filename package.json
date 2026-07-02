@@ -16,6 +16,7 @@
     "smoke:deploy": "./scripts/smoke-test.sh",
     "smoke:briefly": "./scripts/smoke/briefly-smoke.sh",
     "smoke:briefly:e2e": "./scripts/smoke/briefly-publish-smoke.sh",
+    "smoke:newsletter-admin": "./scripts/smoke/newsletter-admin-smoke.sh",
     "briefly:admin:ensure-user": "./scripts/briefly-admin-auth.sh ensure-user",
     "briefly:admin:token": "./scripts/briefly-admin-auth.sh token",
     "guest-password:rotate": "node scripts/guest-password.mjs rotate",

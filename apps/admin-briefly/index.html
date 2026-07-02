@@ -161,6 +161,64 @@
         <div id="slug-conflict" class="conflict hidden" aria-live="polite"></div>
         <p id="draft-state" class="status" aria-live="polite"></p>
       </section>
+
+      <section class="card" aria-labelledby="newsletter-heading">
+        <h2 id="newsletter-heading">4. Newsletter Delivery</h2>
+        <form id="newsletter-list-form" class="form-grid compact">
+          <label>
+            Campaign
+            <select id="newsletter-campaign-select" name="campaign_id">
+              <option value="">Load campaigns</option>
+            </select>
+          </label>
+          <div class="button-row">
+            <button id="load-newsletter-campaigns-btn" type="submit">Load campaigns</button>
+            <button id="load-newsletter-campaign-btn" class="secondary" type="button">Load selected</button>
+          </div>
+        </form>
+
+        <div class="info-grid">
+          <section class="meta-panel" aria-labelledby="newsletter-campaign-meta-heading">
+            <h3 id="newsletter-campaign-meta-heading">Campaign</h3>
+            <dl id="newsletter-campaign-meta" class="meta-grid"></dl>
+          </section>
+          <section class="meta-panel" aria-labelledby="newsletter-source-meta-heading">
+            <h3 id="newsletter-source-meta-heading">Source post</h3>
+            <dl id="newsletter-source-meta" class="meta-grid"></dl>
+          </section>
+          <section class="meta-panel" aria-labelledby="newsletter-counts-meta-heading">
+            <h3 id="newsletter-counts-meta-heading">Counts</h3>
+            <dl id="newsletter-counts-meta" class="meta-grid"></dl>
+          </section>
+        </div>
+
+        <form id="newsletter-edit-form" class="form-grid" autocomplete="off">
+          <label>
+            Subject
+            <input id="newsletter-subject" name="subject" type="text" required />
+          </label>
+          <label>
+            Body
+            <textarea id="newsletter-body" name="body" rows="12" required></textarea>
+          </label>
+          <button id="save-newsletter-campaign-btn" type="submit">Save newsletter copy</button>
+        </form>
+
+        <form id="newsletter-test-form" class="form-grid compact">
+          <label>
+            Test recipient email
+            <input id="newsletter-test-email" name="recipient_email" type="email" autocomplete="email" required />
+          </label>
+          <button id="send-test-newsletter-btn" class="secondary" type="submit">Send test</button>
+        </form>
+
+        <form id="newsletter-send-form" class="form-grid compact">
+          <p id="newsletter-send-gate" class="inline-note" aria-live="polite">Load a campaign first.</p>
+          <button id="send-newsletter-campaign-btn" class="danger" type="submit">Send to subscribers</button>
+        </form>
+
+        <p id="newsletter-state" class="status" aria-live="polite"></p>
+      </section>
     </main>
 
     <script type="module" src="/src/main.ts"></script>

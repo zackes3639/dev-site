@@ -19,6 +19,12 @@ export type WorkflowStatus = (typeof WORKFLOW_STATUSES)[number];
 export const STYLE_PRESETS = ["build_log_v1"] as const;
 export type StylePreset = (typeof STYLE_PRESETS)[number];
 
+export const NEWSLETTER_CAMPAIGN_STATUSES = ["draft", "test_sent", "sending", "sent", "failed"] as const;
+export type NewsletterCampaignStatus = (typeof NEWSLETTER_CAMPAIGN_STATUSES)[number];
+
+export const NEWSLETTER_DELIVERY_STATUSES = ["queued", "sent", "failed"] as const;
+export type NewsletterDeliveryStatus = (typeof NEWSLETTER_DELIVERY_STATUSES)[number];
+
 export type ThreeBullets = [string, string, string];
 
 export interface TimestampedItem {
@@ -66,6 +72,73 @@ export interface PostItem extends TimestampedItem {
   source_input_id: string;
   source_draft_id: string;
   author_id: string;
+}
+
+export interface NewsletterCampaignSourcePost {
+  post_id: string;
+  slug: string;
+  title: string;
+  summary: string;
+  content: string;
+  created_at?: string;
+}
+
+export interface NewsletterCampaignItem extends TimestampedItem {
+  campaign_id: string;
+  source: "legacy_post";
+  source_post_id: string;
+  source_slug: string;
+  source_title: string;
+  source_summary: string;
+  source_content: string;
+  source_url: string;
+  subject: string;
+  body: string;
+  status: NewsletterCampaignStatus;
+  version: number;
+  detected_at: string;
+  test_sent_at?: string;
+  test_recipient?: string;
+  send_started_at?: string;
+  sent_at?: string;
+  failed_at?: string;
+  total_recipients?: number;
+  delivered_count?: number;
+  failed_count?: number;
+  skipped_count?: number;
+  last_error?: string;
+  updated_by?: string;
+}
+
+export interface NewsletterCampaignSummary extends TimestampedItem {
+  campaign_id: string;
+  source_post_id: string;
+  source_slug: string;
+  source_title: string;
+  source_summary: string;
+  source_url: string;
+  subject: string;
+  status: NewsletterCampaignStatus;
+  version: number;
+  test_sent_at?: string;
+  sent_at?: string;
+  failed_at?: string;
+  total_recipients?: number;
+  delivered_count?: number;
+  failed_count?: number;
+  skipped_count?: number;
+}
+
+export interface NewsletterDeliveryItem extends TimestampedItem {
+  delivery_id: string;
+  campaign_id: string;
+  subscriber_id: string;
+  email: string;
+  status: NewsletterDeliveryStatus;
+  message_id?: string;
+  sent_at?: string;
+  failed_at?: string;
+  error_message?: string;
 }
 
 export interface GenerationRunRequest {
@@ -178,6 +251,29 @@ export interface PublishDraftResponse {
   slug: string;
   published_at: string;
   url: string;
+}
+
+export interface UpdateNewsletterCampaignRequest {
+  expected_version: number;
+  subject?: string;
+  body?: string;
+}
+
+export interface ListNewsletterCampaignsResponse {
+  campaigns: NewsletterCampaignSummary[];
+}
+
+export interface GetNewsletterCampaignResponse {
+  campaign: NewsletterCampaignItem;
+}
+
+export interface UpdateNewsletterCampaignResponse {
+  campaign: NewsletterCampaignItem;
+}
+
+export interface NewsletterCampaignSendResponse {
+  campaign: NewsletterCampaignItem;
+  message: string;
 }
 
 export interface StartGenerationWorkflowInput extends GenerationRunRequest {

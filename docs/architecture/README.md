@@ -9,6 +9,7 @@ Hand-maintained SVG diagrams of the current system. They are documentation, not 
 | `site-serving-and-deploy.svg` | GitHub `origin/main` → GitHub Actions (`deploy.yml`, OIDC) → S3 sync + CloudFront invalidation; visitor → CloudFront (Lambda@Edge password gate) → S3 | the deploy workflow, CloudFront/S3 serving, or the site-access gate |
 | `legacy-backend-data-flow.svg` | Public pages (`blog.js`, subscribe forms) → read API Gateway; `/admin/` → write API Gateway; Lambdas → `ZS_DEV_BLOG_POSTS`, subscribers table, `briefly_post_slugs` | legacy API routes, Lambdas, or the DynamoDB tables they touch |
 | `briefly-publishing-pipeline.svg` | Briefly admin UI (Cognito) → Briefly HTTP API (JWT) → Step Functions + Lambda → Bedrock (Nova Pro) → human review → publish Lambda → dual write to `briefly_posts` + `ZS_DEV_BLOG_POSTS` | the Briefly stack (`infra/cdk`), generation/publishing services, or the publish integration with the legacy blog |
+| `build-log-newsletter-delivery.svg` | Build Log post detector → campaigns table → admin review/test send → SES email → delivery logs, subscribers, unsubscribe suppression | newsletter delivery jobs, campaigns/delivery log tables, SES provider behavior, unsubscribe handling, or newsletter admin smoke expectations |
 
 Facts in the diagrams must match `TECHSTACK.md` — that doc is the source of truth; these are its pictures.
 

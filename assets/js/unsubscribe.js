@@ -20,7 +20,7 @@ function setStatus(message, isError) {
     icon.style.background = '#dcfce7';
     icon.style.color = '#16a34a';
     heading.textContent = message;
-    subtext.textContent = "No more emails or SMS messages from us.";
+    subtext.textContent = 'No more Build Log emails from us.';
     document.getElementById('unsub-compliance').style.display = 'block';
   }
 }
@@ -28,8 +28,9 @@ function setStatus(message, isError) {
 (function() {
   var params = new URLSearchParams(window.location.search);
   var email = params.get('email');
+  var token = params.get('token');
 
-  if (!email) {
+  if (!email || !token) {
     setStatus('Invalid unsubscribe link.', true);
     return;
   }
@@ -39,7 +40,7 @@ function setStatus(message, isError) {
   fetch(UNSUBSCRIBE_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: email })
+    body: JSON.stringify({ email: email, token: token })
   })
     .then(function(res) {
       if (!res.ok) throw new Error('Server error: ' + res.status);

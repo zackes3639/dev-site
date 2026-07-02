@@ -7,7 +7,14 @@ import {
   type StylePreset,
   type UpdateDraftRequest
 } from "@briefly/contracts";
-import { ApiRequestError, BrieflyApiClient } from "./api";
+import {
+  ApiRequestError,
+  BrieflyApiClient,
+  type NewsletterCampaign,
+  type NewsletterCampaignCounts,
+  type NewsletterCampaignSummary,
+  type NewsletterSourcePost
+} from "./api";
 import { CognitoAuthError, signInWithCognito } from "./cognitoAuth";
 import "./styles.css";
 
@@ -30,6 +37,16 @@ const DEFAULT_COGNITO_CLIENT_ID =
 type NoticeTone = "neutral" | "success" | "error" | "warning";
 const DRAFT_REVIEW_STATUSES: DraftReviewStatus[] = ["pending_review", "approved", "rejected"];
 const STYLE_PRESETS: StylePreset[] = ["build_log_v1"];
+const NEWSLETTER_SEND_STATUS_ORDER = [
+  "draft",
+  "ready",
+  "test_sending",
+  "test_sent",
+  "send_failed",
+  "sending",
+  "sent"
+] as const;
+const NEWSLETTER_SEND_CLOSED_STATUSES = new Set(["sending", "sent"]);
 
 const isObject = (value: unknown): value is Record<string, unknown> => {
   return typeof value === "object" && value !== null;
@@ -161,6 +178,213 @@ const formatApiError = (error: unknown): string => {
   return "Unexpected error";
 };
 
+type MetaValue = string | number | null | undefined;
+
+const hasMetaValue = (value: MetaValue): value is string | number => {
+  return value !== undefined && value !== null && String(value).trim().length > 0;
+};
+
+const appendMetaEntry = (nodes: Node[], label: string, value: MetaValue): void => {
+  if (!hasMetaValue(value)) {
+    return;
+  }
+
+  const dt = document.createElement("dt");
+  dt.textContent = label;
+  const dd = document.createElement("dd");
+  dd.textContent = typeof value === "number" ? value.toLocaleString() : value;
+  nodes.push(dt, dd);
+};
+
+const renderMetaEntries = (meta: HTMLDListElement, entries: Array<[string, MetaValue]>): void => {
+  const nodes: Node[] = [];
+  for (const [label, value] of entries) {
+    appendMetaEntry(nodes, label, value);
+  }
+  meta.replaceChildren(...nodes);
+};
+
+const normalizeNewsletterStatus = (status: string | undefined): string => {
+  return (status ?? "").trim().toLowerCase();
+};
+
+const canSendNewsletterCampaign = (campaign: NewsletterCampaign | null): boolean => {
+  if (!campaign) {
+    return false;
+  }
+
+  const status = normalizeNewsletterStatus(campaign.status);
+  if (NEWSLETTER_SEND_CLOSED_STATUSES.has(status)) {
+    return false;
+  }
+
+  const statusRank = NEWSLETTER_SEND_STATUS_ORDER.indexOf(status as (typeof NEWSLETTER_SEND_STATUS_ORDER)[number]);
+  const testSentRank = NEWSLETTER_SEND_STATUS_ORDER.indexOf("test_sent");
+
+  return statusRank >= testSentRank;
+};
+
+const getNewsletterSendGateMessage = (campaign: NewsletterCampaign | null): string => {
+  if (!campaign) {
+    return "Load a newsletter campaign first.";
+  }
+
+  const status = normalizeNewsletterStatus(campaign.status);
+  if (status === "sending") {
+    return "Subscriber send is already running.";
+  }
+  if (status === "sent") {
+    return "This campaign has already been sent.";
+  }
+  if (!canSendNewsletterCampaign(campaign)) {
+    return "Send is locked until a test email has been sent for this campaign.";
+  }
+
+  return "";
+};
+
+const getNewsletterCampaignBody = (campaign: NewsletterCampaign | null): string => {
+  return campaign?.body ?? "";
+};
+
+const getNewsletterCounts = (campaign: NewsletterCampaign): NewsletterCampaignCounts => {
+  const counts: NewsletterCampaignCounts = {};
+  const copyCount = (key: keyof NewsletterCampaignCounts, value: number | undefined): void => {
+    if (typeof value === "number") {
+      counts[key] = value;
+    }
+  };
+
+  copyCount("subscriber_count", campaign.counts?.subscriber_count ?? campaign.subscriber_count);
+  copyCount("eligible_subscriber_count", campaign.counts?.eligible_subscriber_count ?? campaign.eligible_subscriber_count);
+  copyCount("recipient_count", campaign.counts?.recipient_count ?? campaign.recipient_count);
+  copyCount("test_send_count", campaign.counts?.test_send_count ?? campaign.test_send_count);
+  copyCount("sent_count", campaign.counts?.sent_count ?? campaign.sent_count);
+  copyCount("delivered_count", campaign.counts?.delivered_count ?? campaign.delivered_count);
+  copyCount("failed_count", campaign.counts?.failed_count ?? campaign.failed_count);
+  copyCount("suppressed_count", campaign.counts?.suppressed_count ?? campaign.suppressed_count);
+  copyCount("bounced_count", campaign.counts?.bounced_count ?? campaign.bounced_count);
+  copyCount("complained_count", campaign.counts?.complained_count ?? campaign.complained_count);
+
+  return counts;
+};
+
+const renderNewsletterSourceMeta = (sourcePost: NewsletterSourcePost | undefined): void => {
+  const meta = byId<HTMLDListElement>("newsletter-source-meta");
+  if (!sourcePost) {
+    renderMetaEntries(meta, [["Source post", "Not returned"]]);
+    return;
+  }
+
+  const entries: Array<[string, MetaValue]> = [
+    ["Post ID", sourcePost.post_id],
+    ["Title", sourcePost.title],
+    ["Slug", sourcePost.slug],
+    ["Status", sourcePost.status],
+    ["URL", sourcePost.url],
+    ["Published", sourcePost.published_at ? formatDate(sourcePost.published_at) : undefined],
+    ["Updated", sourcePost.updated_at ? formatDate(sourcePost.updated_at) : undefined]
+  ];
+
+  if (!entries.some(([, value]) => hasMetaValue(value))) {
+    renderMetaEntries(meta, [["Source post", "Not returned"]]);
+    return;
+  }
+
+  renderMetaEntries(meta, entries);
+};
+
+const sourcePostFromCampaign = (campaign: NewsletterCampaign): NewsletterSourcePost | undefined => {
+  if (campaign.source_post) {
+    return campaign.source_post;
+  }
+
+  if (
+    !campaign.source_post_id &&
+    !campaign.source_slug &&
+    !campaign.source_title &&
+    !campaign.source_url
+  ) {
+    return undefined;
+  }
+
+  const sourcePost: NewsletterSourcePost = {};
+  if (campaign.source_post_id) {
+    sourcePost.post_id = campaign.source_post_id;
+  }
+  if (campaign.source_slug) {
+    sourcePost.slug = campaign.source_slug;
+  }
+  if (campaign.source_title) {
+    sourcePost.title = campaign.source_title;
+  }
+  if (campaign.source_url) {
+    sourcePost.url = campaign.source_url;
+  }
+
+  return sourcePost;
+};
+
+const renderNewsletterCountsMeta = (campaign: NewsletterCampaign | null): void => {
+  const meta = byId<HTMLDListElement>("newsletter-counts-meta");
+  if (!campaign) {
+    renderMetaEntries(meta, [["Counts", "Load a campaign"]]);
+    return;
+  }
+
+  const counts = getNewsletterCounts(campaign);
+  const entries: Array<[string, MetaValue]> = [
+    ["Subscribers", counts.subscriber_count],
+    ["Eligible", counts.eligible_subscriber_count],
+    ["Recipients", counts.recipient_count],
+    ["Test sends", counts.test_send_count],
+    ["Sent", counts.sent_count],
+    ["Delivered", counts.delivered_count],
+    ["Failed", counts.failed_count],
+    ["Suppressed", counts.suppressed_count],
+    ["Bounced", counts.bounced_count],
+    ["Complaints", counts.complained_count]
+  ];
+
+  if (!entries.some(([, value]) => hasMetaValue(value))) {
+    renderMetaEntries(meta, [["Counts", "Not returned"]]);
+    return;
+  }
+
+  renderMetaEntries(meta, entries);
+};
+
+const renderNewsletterCampaignOptions = (
+  campaigns: NewsletterCampaignSummary[],
+  selectedCampaignId: string | null
+): void => {
+  const select = byId<HTMLSelectElement>("newsletter-campaign-select");
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = campaigns.length > 0 ? "Select a campaign" : "No campaigns returned";
+
+  const options = campaigns.map((campaign) => {
+    const option = document.createElement("option");
+    option.value = campaign.campaign_id;
+    const subject = campaign.subject?.trim() || "(no subject)";
+    option.textContent = `${subject} [${campaign.status}]`;
+    return option;
+  });
+
+  select.replaceChildren(placeholder, ...options);
+  if (selectedCampaignId && campaigns.some((campaign) => campaign.campaign_id === selectedCampaignId)) {
+    select.value = selectedCampaignId;
+  }
+};
+
+const isPublicSendsDisabledError = (error: unknown): boolean => {
+  return error instanceof ApiRequestError && error.code === "public_sends_disabled";
+};
+
+const isTestSendRequiredError = (error: unknown): boolean => {
+  return error instanceof ApiRequestError && error.code === "test_send_required";
+};
+
 const applyDraftToForm = (draft: DraftItem): void => {
   byId<HTMLInputElement>("draft-title").value = draft.title;
   byId<HTMLTextAreaElement>("draft-summary").value = draft.summary;
@@ -248,6 +472,7 @@ const init = (): void => {
   apiBaseInput.value = storedSettings?.apiBase ?? DEFAULT_API_BASE;
   tokenInput.value = readSessionToken();
   emailInput.value = storedSettings?.authEmail ?? "";
+  byId<HTMLInputElement>("newsletter-test-email").value = storedSettings?.authEmail ?? "";
 
   byId<HTMLInputElement>("input-date").value = new Date().toISOString().slice(0, 10);
   byId<HTMLInputElement>("target-word-count").value = "500";
@@ -256,6 +481,7 @@ const init = (): void => {
   const draftIdFromQuery = url.searchParams.get("draftId");
   const inputIdFromQuery = url.searchParams.get("inputId");
   const runIdFromQuery = url.searchParams.get("runId");
+  const campaignIdFromQuery = url.searchParams.get("campaignId");
 
   if (draftIdFromQuery) {
     byId<HTMLInputElement>("draft-id").value = draftIdFromQuery;
@@ -271,8 +497,10 @@ const init = (): void => {
   setStatus(byId("create-input-state"), "", "neutral");
   setStatus(byId("generation-state"), "", "neutral");
   setStatus(byId("draft-state"), "Load a draft to edit and publish.", "neutral");
+  setStatus(byId("newsletter-state"), "Load newsletter campaigns to edit delivery copy.", "neutral");
 
   let currentDraft: DraftItem | null = null;
+  let currentNewsletterCampaign: NewsletterCampaign | null = null;
   let currentInputId = inputIdFromQuery ?? "";
   let latestRunId = runIdFromQuery ?? "";
   let runPollTimer: number | null = null;
@@ -350,6 +578,110 @@ const init = (): void => {
 
   const scrollToDraftWorkspace = (): void => {
     byId("draft-workspace-heading").scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const setNewsletterActionState = (): void => {
+    const hasCampaign = currentNewsletterCampaign !== null;
+    const gateMessage = getNewsletterSendGateMessage(currentNewsletterCampaign);
+    byId<HTMLButtonElement>("save-newsletter-campaign-btn").disabled = !hasCampaign;
+    byId<HTMLButtonElement>("send-test-newsletter-btn").disabled = !hasCampaign;
+    byId<HTMLButtonElement>("send-newsletter-campaign-btn").disabled = gateMessage.length > 0;
+    byId<HTMLParagraphElement>("newsletter-send-gate").textContent = gateMessage || "Ready to send to subscribers.";
+  };
+
+  const renderNewsletterCampaign = (campaign: NewsletterCampaign | null): void => {
+    currentNewsletterCampaign = campaign;
+
+    byId<HTMLInputElement>("newsletter-subject").value = campaign?.subject ?? "";
+    byId<HTMLTextAreaElement>("newsletter-body").value = getNewsletterCampaignBody(campaign);
+
+    if (!campaign) {
+      renderMetaEntries(byId<HTMLDListElement>("newsletter-campaign-meta"), [["Campaign", "Load a campaign"]]);
+      renderNewsletterSourceMeta(undefined);
+      renderNewsletterCountsMeta(null);
+      setNewsletterActionState();
+      return;
+    }
+
+    renderMetaEntries(byId<HTMLDListElement>("newsletter-campaign-meta"), [
+      ["Campaign ID", campaign.campaign_id],
+      ["Status", campaign.status],
+      ["Version", campaign.version],
+      ["Subject", campaign.subject],
+      ["Created", campaign.created_at ? formatDate(campaign.created_at) : undefined],
+      ["Updated", campaign.updated_at ? formatDate(campaign.updated_at) : undefined],
+      ["Test sent", campaign.test_sent_at ? formatDate(campaign.test_sent_at) : undefined],
+      ["Sent", campaign.sent_at ? formatDate(campaign.sent_at) : undefined]
+    ]);
+    renderNewsletterSourceMeta(sourcePostFromCampaign(campaign));
+    renderNewsletterCountsMeta(campaign);
+    setNewsletterActionState();
+  };
+
+  const loadNewsletterCampaigns = async (preferredCampaignId?: string): Promise<void> => {
+    const stateEl = byId<HTMLElement>("newsletter-state");
+    const loadListBtn = byId<HTMLButtonElement>("load-newsletter-campaigns-btn");
+    const loadSelectedBtn = byId<HTMLButtonElement>("load-newsletter-campaign-btn");
+
+    setDisabled([loadListBtn, loadSelectedBtn], true);
+    setStatus(stateEl, "Loading newsletter campaigns...", "neutral");
+
+    try {
+      const client = getClient();
+      const response = await client.listNewsletterCampaigns();
+      renderNewsletterCampaignOptions(
+        response.campaigns,
+        preferredCampaignId ?? currentNewsletterCampaign?.campaign_id ?? null
+      );
+      const campaignCount = response.campaigns.length;
+      setStatus(
+        stateEl,
+        campaignCount === 1 ? "Loaded 1 newsletter campaign." : `Loaded ${campaignCount} newsletter campaigns.`,
+        "success"
+      );
+    } catch (error) {
+      setStatus(stateEl, formatApiError(error), "error");
+    } finally {
+      setDisabled([loadListBtn, loadSelectedBtn], false);
+      setNewsletterActionState();
+    }
+  };
+
+  const loadNewsletterCampaign = async (campaignId?: string): Promise<void> => {
+    const stateEl = byId<HTMLElement>("newsletter-state");
+    const selectedCampaignId = campaignId ?? byId<HTMLSelectElement>("newsletter-campaign-select").value.trim();
+
+    if (!selectedCampaignId) {
+      setStatus(stateEl, "Select a newsletter campaign first.", "error");
+      return;
+    }
+
+    const loadSelectedBtn = byId<HTMLButtonElement>("load-newsletter-campaign-btn");
+    const loadListBtn = byId<HTMLButtonElement>("load-newsletter-campaigns-btn");
+
+    setDisabled([loadListBtn, loadSelectedBtn], true);
+    setStatus(stateEl, "Loading newsletter campaign...", "neutral");
+
+    try {
+      const client = getClient();
+      const response = await client.getNewsletterCampaign(selectedCampaignId);
+      renderNewsletterCampaign(response.campaign);
+      const campaignSelect = byId<HTMLSelectElement>("newsletter-campaign-select");
+      if (![...campaignSelect.options].some((option) => option.value === response.campaign.campaign_id)) {
+        const option = document.createElement("option");
+        option.value = response.campaign.campaign_id;
+        option.textContent = `${response.campaign.subject?.trim() || "(no subject)"} [${response.campaign.status}]`;
+        campaignSelect.append(option);
+      }
+      campaignSelect.value = response.campaign.campaign_id;
+      setQueryParam("campaignId", response.campaign.campaign_id);
+      setStatus(stateEl, `Loaded newsletter campaign ${response.campaign.campaign_id}.`, "success");
+    } catch (error) {
+      setStatus(stateEl, formatApiError(error), "error");
+    } finally {
+      setDisabled([loadListBtn, loadSelectedBtn], false);
+      setNewsletterActionState();
+    }
   };
 
   const tryLoadDraftForInput = async (client: BrieflyApiClient, inputId: string, fallbackDraftId?: string): Promise<boolean> => {
@@ -525,6 +857,9 @@ const init = (): void => {
       passwordInput.value = "";
       saveSessionToken(token);
       saveSettings(toStoredSettings(apiBase, email));
+      if (!byId<HTMLInputElement>("newsletter-test-email").value.trim()) {
+        byId<HTMLInputElement>("newsletter-test-email").value = email;
+      }
       setStatus(stateEl, "Signed in. Token is kept for this browser session.", "success");
     } catch (error) {
       setStatus(stateEl, formatApiError(error), "error");
@@ -811,8 +1146,153 @@ const init = (): void => {
     byId<HTMLInputElement>("publish-slug").dataset.auto = "0";
   });
 
+  const newsletterListForm = byId<HTMLFormElement>("newsletter-list-form");
+  newsletterListForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    await loadNewsletterCampaigns();
+  });
+
+  byId<HTMLSelectElement>("newsletter-campaign-select").addEventListener("change", async () => {
+    const campaignId = byId<HTMLSelectElement>("newsletter-campaign-select").value.trim();
+    if (campaignId) {
+      await loadNewsletterCampaign(campaignId);
+    }
+  });
+
+  byId<HTMLButtonElement>("load-newsletter-campaign-btn").addEventListener("click", async () => {
+    await loadNewsletterCampaign();
+  });
+
+  const newsletterEditForm = byId<HTMLFormElement>("newsletter-edit-form");
+  newsletterEditForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const stateEl = byId<HTMLElement>("newsletter-state");
+    const saveBtn = byId<HTMLButtonElement>("save-newsletter-campaign-btn");
+
+    if (!currentNewsletterCampaign) {
+      setStatus(stateEl, "Load a newsletter campaign first.", "error");
+      return;
+    }
+
+    const subject = byId<HTMLInputElement>("newsletter-subject").value.trim();
+    const body = byId<HTMLTextAreaElement>("newsletter-body").value.trim();
+
+    if (!subject || !body) {
+      setStatus(stateEl, "Subject and body are required.", "error");
+      return;
+    }
+    if (typeof currentNewsletterCampaign.version !== "number") {
+      setStatus(stateEl, "Campaign version is missing. Reload the campaign and try again.", "error");
+      return;
+    }
+
+    setDisabled([saveBtn], true);
+    setStatus(stateEl, "Saving newsletter campaign...", "neutral");
+
+    try {
+      const client = getClient();
+      const response = await client.updateNewsletterCampaign(currentNewsletterCampaign.campaign_id, {
+        expected_version: currentNewsletterCampaign.version,
+        subject,
+        body
+      });
+      renderNewsletterCampaign(response.campaign);
+      setStatus(stateEl, `Newsletter campaign saved (${response.campaign.status}).`, "success");
+    } catch (error) {
+      setStatus(stateEl, formatApiError(error), "error");
+    } finally {
+      setNewsletterActionState();
+    }
+  });
+
+  const newsletterTestForm = byId<HTMLFormElement>("newsletter-test-form");
+  newsletterTestForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const stateEl = byId<HTMLElement>("newsletter-state");
+    const testBtn = byId<HTMLButtonElement>("send-test-newsletter-btn");
+
+    if (!currentNewsletterCampaign) {
+      setStatus(stateEl, "Load a newsletter campaign first.", "error");
+      return;
+    }
+
+    const recipientEmail = byId<HTMLInputElement>("newsletter-test-email").value.trim();
+    if (!recipientEmail) {
+      setStatus(stateEl, "Test recipient email is required.", "error");
+      return;
+    }
+
+    setDisabled([testBtn], true);
+    setStatus(stateEl, "Sending test email...", "neutral");
+
+    try {
+      const client = getClient();
+      const response = await client.testNewsletterCampaign(currentNewsletterCampaign.campaign_id, {
+        recipient_email: recipientEmail
+      });
+      renderNewsletterCampaign(response.campaign);
+      const message = response.message ?? `Test sent to ${recipientEmail}.`;
+      setStatus(stateEl, message, "success");
+    } catch (error) {
+      setStatus(stateEl, formatApiError(error), "error");
+    } finally {
+      setNewsletterActionState();
+    }
+  });
+
+  const newsletterSendForm = byId<HTMLFormElement>("newsletter-send-form");
+  newsletterSendForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const stateEl = byId<HTMLElement>("newsletter-state");
+    const sendBtn = byId<HTMLButtonElement>("send-newsletter-campaign-btn");
+
+    if (!currentNewsletterCampaign) {
+      setStatus(stateEl, "Load a newsletter campaign first.", "error");
+      return;
+    }
+
+    const gateMessage = getNewsletterSendGateMessage(currentNewsletterCampaign);
+    if (gateMessage) {
+      setStatus(stateEl, gateMessage, "warning");
+      return;
+    }
+
+    setDisabled([sendBtn], true);
+    setStatus(stateEl, "Sending newsletter to subscribers...", "neutral");
+
+    try {
+      const client = getClient();
+      const response = await client.sendNewsletterCampaign(currentNewsletterCampaign.campaign_id);
+      renderNewsletterCampaign(response.campaign);
+      setStatus(stateEl, response.message ?? "Newsletter send started.", "success");
+    } catch (error) {
+      if (isPublicSendsDisabledError(error)) {
+        setStatus(
+          stateEl,
+          "Subscriber sending is paused until SES production access is approved. Test sends can still be used.",
+          "warning"
+        );
+      } else if (isTestSendRequiredError(error)) {
+        setStatus(stateEl, "Send is locked until a test email has been sent for this campaign.", "warning");
+      } else {
+        setStatus(stateEl, formatApiError(error), "error");
+      }
+    } finally {
+      setNewsletterActionState();
+    }
+  });
+
+  renderNewsletterCampaign(null);
+
   if (draftIdFromQuery) {
     void loadDraft();
+  }
+
+  if (campaignIdFromQuery) {
+    void loadNewsletterCampaign(campaignIdFromQuery);
   }
 
   if (latestRunId) {

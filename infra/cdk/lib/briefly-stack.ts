@@ -5,6 +5,8 @@ import * as apigwv2 from "aws-cdk-lib/aws-apigatewayv2";
 import * as integrations from "aws-cdk-lib/aws-apigatewayv2-integrations";
 import * as cognito from "aws-cdk-lib/aws-cognito";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
+import * as events from "aws-cdk-lib/aws-events";
+import * as targets from "aws-cdk-lib/aws-events-targets";
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as lambdaNode from "aws-cdk-lib/aws-lambda-nodejs";
@@ -87,6 +89,48 @@ export class BrieflyStack extends cdk.Stack {
     });
 
     const legacyBlogPosts = dynamodb.Table.fromTableName(this, "LegacyBlogPostsTable", "ZS_DEV_BLOG_POSTS");
+    const subscribers = dynamodb.Table.fromTableName(this, "NewsletterSubscribersTable", "ZS_DEV_BLOG_SIGN_UP_DATA");
+
+    const newsletterCampaigns = new dynamodb.Table(this, "NewsletterCampaignsTable", {
+      tableName: "newsletter_campaigns",
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      partitionKey: { name: "campaign_id", type: dynamodb.AttributeType.STRING },
+      pointInTimeRecovery: true,
+      removalPolicy: cdk.RemovalPolicy.RETAIN
+    });
+
+    newsletterCampaigns.addGlobalSecondaryIndex({
+      indexName: "by_status",
+      partitionKey: { name: "status", type: dynamodb.AttributeType.STRING },
+      sortKey: { name: "updated_at", type: dynamodb.AttributeType.STRING }
+    });
+
+    newsletterCampaigns.addGlobalSecondaryIndex({
+      indexName: "by_post",
+      partitionKey: { name: "post_id", type: dynamodb.AttributeType.STRING },
+      sortKey: { name: "created_at", type: dynamodb.AttributeType.STRING }
+    });
+
+    const newsletterDeliveries = new dynamodb.Table(this, "NewsletterDeliveriesTable", {
+      tableName: "newsletter_deliveries",
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      partitionKey: { name: "campaign_id", type: dynamodb.AttributeType.STRING },
+      sortKey: { name: "subscriber_id", type: dynamodb.AttributeType.STRING },
+      pointInTimeRecovery: true,
+      removalPolicy: cdk.RemovalPolicy.RETAIN
+    });
+
+    newsletterDeliveries.addGlobalSecondaryIndex({
+      indexName: "by_status",
+      partitionKey: { name: "status", type: dynamodb.AttributeType.STRING },
+      sortKey: { name: "updated_at", type: dynamodb.AttributeType.STRING }
+    });
+
+    newsletterDeliveries.addGlobalSecondaryIndex({
+      indexName: "by_subscriber",
+      partitionKey: { name: "subscriber_id", type: dynamodb.AttributeType.STRING },
+      sortKey: { name: "updated_at", type: dynamodb.AttributeType.STRING }
+    });
 
     const workflowRuns = new dynamodb.Table(this, "WorkflowRunsTable", {
       tableName: "briefly_workflow_runs",
@@ -135,11 +179,17 @@ export class BrieflyStack extends cdk.Stack {
       }
     });
 
-    const createNodeLambda = (id: string, entry: string, environment: Record<string, string>, timeout = 30) => {
+    const createNodeLambda = (
+      id: string,
+      entry: string,
+      environment: Record<string, string>,
+      timeout = 30,
+      handler = "handler"
+    ) => {
       return new lambdaNode.NodejsFunction(this, id, {
         runtime: lambda.Runtime.NODEJS_20_X,
         entry: path.join(repoRoot, entry),
-        handler: "handler",
+        handler,
         timeout: cdk.Duration.seconds(timeout),
         environment,
         bundling: {
@@ -147,6 +197,28 @@ export class BrieflyStack extends cdk.Stack {
           tsconfig: baseTsConfig
         }
       });
+    };
+
+    const newsletterEnv = {
+      NEWSLETTER_POSTS_TABLE: legacyBlogPosts.tableName,
+      NEWSLETTER_SUBSCRIBERS_TABLE: subscribers.tableName,
+      NEWSLETTER_CAMPAIGNS_TABLE: newsletterCampaigns.tableName,
+      NEWSLETTER_DELIVERIES_TABLE: newsletterDeliveries.tableName,
+      NEWSLETTER_SITE_BASE_URL: "https://zacksimon.dev",
+      NEWSLETTER_FROM_EMAIL: "updates@zacksimon.dev",
+      NEWSLETTER_FROM_NAME: "The Build Log",
+      NEWSLETTER_REPLY_TO_EMAIL: "zacksimon13@gmail.com",
+      NEWSLETTER_TEST_RECIPIENT: "zacksimon13@gmail.com",
+      NEWSLETTER_PUBLIC_SENDS_ENABLED: "false"
+    };
+
+    const createNewsletterLambda = (id: string, handlerName: string, timeout = 30) => {
+      return createNodeLambda(
+        id,
+        `services/newsletter/src/handlers/${handlerName}.ts`,
+        newsletterEnv,
+        timeout
+      );
     };
 
     const generationLambda = createNodeLambda(
@@ -197,6 +269,79 @@ export class BrieflyStack extends cdk.Stack {
     posts.grantReadWriteData(publishingLambda);
     postSlugs.grantReadWriteData(publishingLambda);
     legacyBlogPosts.grantReadWriteData(publishingLambda);
+
+    const newsletterDetectorLambda = createNewsletterLambda("NewsletterDetectorLambda", "detectCampaigns", 60);
+    const newsletterListCampaignsLambda = createNewsletterLambda("NewsletterListCampaignsLambda", "listCampaigns");
+    const newsletterGetCampaignLambda = createNewsletterLambda("NewsletterGetCampaignLambda", "getCampaign");
+    const newsletterUpdateCampaignLambda = createNewsletterLambda("NewsletterUpdateCampaignLambda", "updateCampaign");
+    const newsletterSendTestCampaignLambda = createNewsletterLambda(
+      "NewsletterSendTestCampaignLambda",
+      "sendTestCampaign",
+      60
+    );
+    const newsletterSendCampaignLambda = createNewsletterLambda("NewsletterSendCampaignLambda", "sendCampaign", 120);
+
+    const createNewsletterSesSendPolicy = () => {
+      return new iam.PolicyStatement({
+        actions: ["ses:SendEmail"],
+        resources: [
+          cdk.Stack.of(this).formatArn({
+            service: "ses",
+            resource: "identity",
+            resourceName: "zacksimon.dev"
+          }),
+          cdk.Stack.of(this).formatArn({
+            service: "ses",
+            resource: "identity",
+            resourceName: "updates@zacksimon.dev"
+          }),
+          cdk.Stack.of(this).formatArn({
+            service: "ses",
+            resource: "identity",
+            resourceName: "zacksimon13@gmail.com"
+          }),
+          cdk.Stack.of(this).formatArn({
+            service: "ses",
+            resource: "configuration-set",
+            resourceName: "my-first-configuration-set"
+          })
+        ],
+        conditions: {
+          StringEquals: {
+            "ses:FromAddress": "updates@zacksimon.dev"
+          },
+          StringLike: {
+            "ses:FromDisplayName": "The Build Log"
+          }
+        }
+      });
+    };
+
+    legacyBlogPosts.grantReadData(newsletterDetectorLambda);
+    newsletterCampaigns.grantReadWriteData(newsletterDetectorLambda);
+
+    newsletterCampaigns.grantReadData(newsletterListCampaignsLambda);
+    newsletterDeliveries.grantReadData(newsletterListCampaignsLambda);
+
+    newsletterCampaigns.grantReadData(newsletterGetCampaignLambda);
+    newsletterDeliveries.grantReadData(newsletterGetCampaignLambda);
+
+    newsletterCampaigns.grantReadWriteData(newsletterUpdateCampaignLambda);
+
+    newsletterCampaigns.grantReadWriteData(newsletterSendTestCampaignLambda);
+    newsletterDeliveries.grantReadWriteData(newsletterSendTestCampaignLambda);
+    newsletterSendTestCampaignLambda.addToRolePolicy(createNewsletterSesSendPolicy());
+
+    subscribers.grantReadData(newsletterSendCampaignLambda);
+    newsletterCampaigns.grantReadWriteData(newsletterSendCampaignLambda);
+    newsletterDeliveries.grantReadWriteData(newsletterSendCampaignLambda);
+    newsletterSendCampaignLambda.addToRolePolicy(createNewsletterSesSendPolicy());
+
+    new events.Rule(this, "NewsletterDetectorSchedule", {
+      description: "Detects Build Log newsletter campaigns; sending remains manual via authenticated API routes.",
+      schedule: events.Schedule.rate(cdk.Duration.minutes(5)),
+      targets: [new targets.LambdaFunction(newsletterDetectorLambda)]
+    });
 
     const apiEnv = {
       DAILY_INPUTS_TABLE: dailyInputs.tableName,
@@ -365,6 +510,41 @@ export class BrieflyStack extends cdk.Stack {
       "/v1/drafts/{draftId}/publish",
       [apigwv2.HttpMethod.POST],
       new integrations.HttpLambdaIntegration("PublishDraftIntegration", publishDraftLambda)
+    );
+
+    addJwtRoute(
+      "ListNewsletterCampaignsRoute",
+      "/v1/newsletter/campaigns",
+      [apigwv2.HttpMethod.GET],
+      new integrations.HttpLambdaIntegration("ListNewsletterCampaignsIntegration", newsletterListCampaignsLambda)
+    );
+
+    addJwtRoute(
+      "GetNewsletterCampaignRoute",
+      "/v1/newsletter/campaigns/{campaignId}",
+      [apigwv2.HttpMethod.GET],
+      new integrations.HttpLambdaIntegration("GetNewsletterCampaignIntegration", newsletterGetCampaignLambda)
+    );
+
+    addJwtRoute(
+      "UpdateNewsletterCampaignRoute",
+      "/v1/newsletter/campaigns/{campaignId}",
+      [apigwv2.HttpMethod.PUT],
+      new integrations.HttpLambdaIntegration("UpdateNewsletterCampaignIntegration", newsletterUpdateCampaignLambda)
+    );
+
+    addJwtRoute(
+      "SendNewsletterTestCampaignRoute",
+      "/v1/newsletter/campaigns/{campaignId}/test",
+      [apigwv2.HttpMethod.POST],
+      new integrations.HttpLambdaIntegration("SendNewsletterTestCampaignIntegration", newsletterSendTestCampaignLambda)
+    );
+
+    addJwtRoute(
+      "SendNewsletterCampaignRoute",
+      "/v1/newsletter/campaigns/{campaignId}/send",
+      [apigwv2.HttpMethod.POST],
+      new integrations.HttpLambdaIntegration("SendNewsletterCampaignIntegration", newsletterSendCampaignLambda)
     );
 
     new cdk.CfnOutput(this, "BrieflyApiUrl", { value: api.url ?? "" });

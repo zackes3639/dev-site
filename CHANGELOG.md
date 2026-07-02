@@ -7,12 +7,18 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
 ### Added
 
 - Added maintained architecture/data-flow diagrams under `docs/architecture/`
-  (serving + deploy, legacy backend data flow, Briefly publishing pipeline) as
-  self-contained hand-editable SVGs, plus a README with the ownership map and
-  editing conventions. Wired the keep-diagrams-current rule into `AGENTS.md`,
-  `CLAUDE.md`, and `TECHSTACK.md`. `docs/*` stays excluded from the S3 deploy
-  sync, so nothing ships to the live site.
-- Added the missing Build Log SMS/newsletter delivery pipeline to `IDEAS.md` as a later marketing/operations backlog item.
+  (serving + deploy, legacy backend data flow, Briefly publishing pipeline,
+  Build Log newsletter delivery) as self-contained hand-editable SVGs, plus a
+  README with the ownership map and editing conventions. Wired the
+  keep-diagrams-current rule into `AGENTS.md`, `CLAUDE.md`, and `TECHSTACK.md`.
+  `docs/*` stays excluded from the S3 deploy sync, so nothing ships to the live
+  site.
+- Added Build Log newsletter delivery email v1: newsletter campaign contracts,
+  `@briefly/newsletter` detector/admin/send Lambdas, CDK campaign/delivery
+  tables, scheduled post detection, SES test-send wiring, tokenized unsubscribe
+  links, the Briefly admin newsletter panel, architecture documentation, the SES
+  production-access gate, SMS phase-2 note, and a no-blast admin API smoke
+  harness.
 - Added a Briefly publish-status enforcement decision/risk to `OPEN_BUGS.md`.
 - Added non-static AWS deploy automation to the engineering backlog in `IDEAS.md`.
 - Added a private Briefly shortcut card to the `/admin/` hub that links to
@@ -36,6 +42,9 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
 - Enlarged the public-site header lockup and its SVG descriptor line so
   `ARCHITECT · BUILDER · FOUNDER` remains readable at desktop nav size, while
   preserving the existing badge-only fallback at tight breakpoints.
+- Updated the Build Log delivery backlog from a broad SMS/newsletter gap to
+  email v1 in progress with SMS deferred to phase 2, and recorded SES
+  production access as the remaining blocker for real subscriber sends.
 - Updated the Classic Amber icon assets to use the clipped light-tile `Z` badge
   from the current logo source across favicon, Apple touch icon, manifest/social
   raster icons, compact nav badges, and lockup SVGs.

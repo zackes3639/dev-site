@@ -14,7 +14,7 @@ Later ideas to consider. These are not commitments; use them as a parking lot fo
 
 ## Marketing and Sales
 
-- Build the SMS/newsletter delivery pipeline after subscriber capture: campaign/digest creation, provider integration, unsubscribe suppression, test-send workflow, delivery logging, and basic send metrics.
+- Build Log delivery phase 2: add SMS only after email v1 is proven, SES production access is approved, unsubscribe/suppression behavior has live smoke coverage, and consent copy/provider requirements are revisited.
 - Productize three entry offers: AWS launch cleanup, workflow automation sprint, and founder technical audit.
 - Build one landing section/page per offer with who it is for, deliverables, timeline, price range or starting point, and a direct CTA.
 - Create a Build Log welcome sequence: intro, best posts, current build, offer, and reply prompt.

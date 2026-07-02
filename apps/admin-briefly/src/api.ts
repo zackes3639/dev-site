@@ -62,6 +62,91 @@ interface ApiClientOptions {
   token: string;
 }
 
+export type NewsletterCampaignStatus = string;
+
+export interface NewsletterSourcePost {
+  post_id?: string;
+  slug?: string;
+  title?: string;
+  status?: string;
+  url?: string;
+  published_at?: string;
+  updated_at?: string;
+}
+
+export interface NewsletterCampaignCounts {
+  subscriber_count?: number;
+  eligible_subscriber_count?: number;
+  recipient_count?: number;
+  test_send_count?: number;
+  sent_count?: number;
+  delivered_count?: number;
+  failed_count?: number;
+  suppressed_count?: number;
+  bounced_count?: number;
+  complained_count?: number;
+}
+
+export interface NewsletterCampaignSummary {
+  campaign_id: string;
+  status: NewsletterCampaignStatus;
+  version?: number;
+  subject?: string;
+  body?: string;
+  source_post_id?: string;
+  source_slug?: string;
+  source_title?: string;
+  source_summary?: string;
+  source_url?: string;
+  source_post?: NewsletterSourcePost;
+  counts?: NewsletterCampaignCounts;
+  subscriber_count?: number;
+  eligible_subscriber_count?: number;
+  recipient_count?: number;
+  test_send_count?: number;
+  sent_count?: number;
+  delivered_count?: number;
+  failed_count?: number;
+  suppressed_count?: number;
+  bounced_count?: number;
+  complained_count?: number;
+  created_at?: string;
+  updated_at?: string;
+  test_sent_at?: string;
+  sent_at?: string;
+}
+
+export interface NewsletterCampaign extends NewsletterCampaignSummary {
+  body?: string;
+}
+
+export interface ListNewsletterCampaignsResponse {
+  campaigns: NewsletterCampaignSummary[];
+}
+
+export interface GetNewsletterCampaignResponse {
+  campaign: NewsletterCampaign;
+}
+
+export interface UpdateNewsletterCampaignRequest {
+  expected_version: number;
+  subject: string;
+  body: string;
+}
+
+export interface UpdateNewsletterCampaignResponse {
+  campaign: NewsletterCampaign;
+}
+
+export interface TestNewsletterCampaignRequest {
+  recipient_email: string;
+}
+
+export interface NewsletterCampaignActionResponse {
+  campaign: NewsletterCampaign;
+  message?: string;
+}
+
 export class BrieflyApiClient {
   private readonly apiBase: string;
   private readonly token: string;
@@ -135,5 +220,50 @@ export class BrieflyApiClient {
       method: "POST",
       body: JSON.stringify(request)
     });
+  }
+
+  async listNewsletterCampaigns(): Promise<ListNewsletterCampaignsResponse> {
+    return this.request<ListNewsletterCampaignsResponse>("/v1/newsletter/campaigns", {
+      method: "GET"
+    });
+  }
+
+  async getNewsletterCampaign(campaignId: string): Promise<GetNewsletterCampaignResponse> {
+    return this.request<GetNewsletterCampaignResponse>(`/v1/newsletter/campaigns/${encodeURIComponent(campaignId)}`, {
+      method: "GET"
+    });
+  }
+
+  async updateNewsletterCampaign(
+    campaignId: string,
+    request: UpdateNewsletterCampaignRequest
+  ): Promise<UpdateNewsletterCampaignResponse> {
+    return this.request<UpdateNewsletterCampaignResponse>(`/v1/newsletter/campaigns/${encodeURIComponent(campaignId)}`, {
+      method: "PUT",
+      body: JSON.stringify(request)
+    });
+  }
+
+  async testNewsletterCampaign(
+    campaignId: string,
+    request: TestNewsletterCampaignRequest
+  ): Promise<NewsletterCampaignActionResponse> {
+    return this.request<NewsletterCampaignActionResponse>(
+      `/v1/newsletter/campaigns/${encodeURIComponent(campaignId)}/test`,
+      {
+        method: "POST",
+        body: JSON.stringify(request)
+      }
+    );
+  }
+
+  async sendNewsletterCampaign(campaignId: string): Promise<NewsletterCampaignActionResponse> {
+    return this.request<NewsletterCampaignActionResponse>(
+      `/v1/newsletter/campaigns/${encodeURIComponent(campaignId)}/send`,
+      {
+        method: "POST",
+        body: JSON.stringify({})
+      }
+    );
   }
 }

@@ -22,6 +22,17 @@ Current technical facts for future agents.
 - The deployed live create-post Lambda currently uses `lambda/create-post.js`; `lambda/create_post.py` is a Python variant kept in the repo.
 - Live site deploy syncs root static site files to S3, excludes repo docs/workspaces/metadata, and invalidates CloudFront.
 
+## Build Log newsletter delivery
+
+- Public Build Log subscriber capture is email-first. Public forms submit required email plus optional phone to the legacy subscribe Lambda; subscriber records are keyed by normalized email and new signups receive `unsubscribe_token`.
+- Newsletter delivery v1 is email-first and separate from Briefly publishing. `@briefly/newsletter` owns detector/admin/send handlers. CDK creates `newsletter_campaigns`, `newsletter_deliveries`, a five-minute EventBridge detector schedule, and JWT-protected admin routes under `/v1/newsletter/campaigns`.
+- Campaign detection scans `ZS_DEV_BLOG_POSTS` for `published=true` posts and creates exactly one draft campaign per post with `campaign_id=post#<post_id>`. Campaigns never auto-send.
+- Admin sends require a saved test send before subscriber delivery. Subscriber sends scan only active records in `ZS_DEV_BLOG_SIGN_UP_DATA`, lazily backfill missing `unsubscribe_token` values, write per-campaign/per-subscriber delivery rows, and render `/unsubscribe/?email=<email>&token=<token>` links. The public unsubscribe Lambda validates the token before marking a subscriber inactive.
+- Provider status as of 2026-07-02: SES sender/domain identities are verified, but public subscriber sends remain disabled with `NEWSLETTER_PUBLIC_SENDS_ENABLED=false` until SES production access is approved. Keep blast sends off by default; use explicit admin test-send smoke checks only.
+- SES IAM is constrained by `ses:FromAddress=updates@zacksimon.dev` and `ses:FromDisplayName=The Build Log`; it also includes the verified `zacksimon13@gmail.com` identity and `my-first-configuration-set` SES configuration set so sandbox test sends can target Zack without widening the sender.
+- SMS is deferred to phase 2. The optional phone field remains useful for later SMS consent, but it is not part of email v1 delivery.
+- The maintained delivery diagram is `docs/architecture/build-log-newsletter-delivery.svg`.
+
 ## CI/CD and AWS
 
 - AWS CLI is available locally and has been verified with `aws sts get-caller-identity`.
@@ -96,6 +107,16 @@ npm run smoke:briefly:e2e
 ```
 
 The e2e smoke publishes a test-prefixed post, verifies public integration, then conditionally deletes the test post and slug lock when AWS CLI access is available. It intentionally leaves Briefly daily-input, draft, and workflow-run audit artifacts for traceability.
+
+Build Log newsletter admin API smoke, once the newsletter admin API base is available:
+
+```bash
+NEWSLETTER_API_BASE=https://example.execute-api.us-east-2.amazonaws.com \
+ADMIN_BEARER_TOKEN=<jwt> \
+npm run smoke:newsletter-admin
+```
+
+The newsletter smoke does not call real subscriber blast endpoints. Optional SES test-send checks require `NEWSLETTER_ALLOW_TEST_SEND=1`, `NEWSLETTER_TEST_EMAIL`, and `NEWSLETTER_CAMPAIGN_ID`; they send only to the explicit test recipient.
 
 Create or reset the first Cognito admin user:
 

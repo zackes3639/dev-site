@@ -4,6 +4,7 @@ Known open issues and review findings. Update this file when issues are found, f
 
 ## Open
 
+- 2026-07-02: SES production access blocks real Build Log subscriber sends. SES identities are verified and email v1 now has campaign detection, admin review/test-send, tokenized unsubscribe links, delivery logging, and a hard `NEWSLETTER_PUBLIC_SENDS_ENABLED=false` public-send gate. Public subscriber blasts must stay disabled until SES production access is approved and a no-blast/live-read smoke passes. SMS remains phase 2.
 - 2026-07-02: Briefly publish status enforcement needs a product decision. The API/OpenAPI/docs describe publishing an approved draft, but `services/publishing/src/handlers/publishDraft.ts` currently accepts both `approved` and `pending_review` drafts as long as a human submits the publish request. Decide whether v1 intentionally allows one-step review+publish, or tighten the service/UI to require a saved `approved` status before publishing. AWS deployment was NOT run.
 
 ## Recently closed
