@@ -6,6 +6,6 @@
     { "src": "/zs-icon-512.png", "sizes": "512x512", "type": "image/png" }
   ],
   "theme_color": "#18181B",
-  "background_color": "#FAFAF9",
+  "background_color": "#F5F5F4",
   "display": "standalone"
 }

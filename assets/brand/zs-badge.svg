@@ -1,6 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Zack Simon">
-<rect width="512" height="512" rx="116" fill="#18181B"/>
-<rect x="134" y="136" width="244" height="68" fill="#FFFFFF"/>
-<path d="M246.5 222 L354.5 222 L265.5 290 L157.5 290 Z" fill="#F59E0B"/>
-<rect x="134" y="308" width="244" height="68" fill="#FFFFFF"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 110" width="512" height="512" role="img" aria-label="Zack Simon">
+<defs>
+<clipPath id="zclip">
+<path d="M8 8 H92 V26 L38 74 H92 V92 H8 V74 L62 26 H8 Z"/>
+</clipPath>
+</defs>
+<rect x="0" y="0" width="110" height="110" rx="26" fill="#18181B"/>
+<g transform="translate(18,18) scale(0.74)" clip-path="url(#zclip)">
+<rect x="0" y="0" width="100" height="34" fill="#F5F5F4"/>
+<rect x="0" y="37" width="100" height="26" fill="#F59E0B"/>
+<rect x="0" y="66" width="100" height="34" fill="#F5F5F4"/>
+</g>
 </svg>

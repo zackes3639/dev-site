@@ -10,7 +10,7 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
 - Added a Briefly publish-status enforcement decision/risk to `OPEN_BUGS.md`.
 - Added non-static AWS deploy automation to the engineering backlog in `IDEAS.md`.
 - Implemented the "Classic Amber" logo system across the public site: new
-  graphite badge + amber-sliced `Z` mark (`assets/brand/*.svg`, generated
+  light-tile badge + clipped amber-sliced `Z` mark (`assets/brand/*.svg`, generated
   vector-path lockups with no webfont dependency), `favicon.ico`,
   `zs-icon-180.png`/`zs-icon-512.png`, and `site.webmanifest`. Every live-site
   page now carries an identical favicon/manifest/theme-color block plus basic
@@ -25,6 +25,11 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
 
 ### Changed
 
+- Updated the Classic Amber icon assets to use the clipped light-tile `Z` badge
+  from the current logo source across favicon, Apple touch icon, manifest/social
+  raster icons, compact nav badges, and lockup SVGs.
+- Updated the Classic Amber lockup wordmark to use the site's Space Grotesk
+  display style instead of the prior angular vector lettering.
 - Tightened homepage Build Log copy so it no longer implies the SMS/newsletter delivery pipeline already exists.
 - Reconciled repo documentation with the current Briefly/admin/deploy state after the 2026-07-02 production bug-fix deploy.
 - Cleared stale active-plan language from `PLANS.md` so future agents start from an accurate no-active-plan state.

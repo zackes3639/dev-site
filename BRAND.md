@@ -28,25 +28,28 @@ Brand guidance for `zacksimon.dev`, The Build Log, and Briefly.
 
 ## Logo system — "Classic Amber"
 
-The mark is a graphite rounded-square badge containing a geometric `Z` sliced
-into three horizontal layers; the middle (diagonal) layer is amber. The wordmark
-and tagline in the lockups are vector paths — no webfont dependency.
+The canonical icon mark is a light stone rounded-square badge containing a
+clipped geometric `Z` sliced into three horizontal layers; the middle diagonal
+layer is amber and the top/bottom layers are graphite. A dark-tile alternate
+exists for constrained inverse contexts. The lockup wordmark uses the site's
+display face (`Space Grotesk`), while the small descriptor uses the site's mono
+label style.
 
 - Assets (all committed, no build step):
-  - `/assets/brand/zs-badge.svg` — icon-only mark, dark tile (primary; also the SVG favicon).
-  - `/assets/brand/zs-badge-light.svg` — icon-only mark, light tile with hairline border.
-  - `/assets/brand/zs-lockup-light-bg.svg` — badge + `ZACK SIMON` / `ARCHITECT·BUILDER·FOUNDER` for light backgrounds (transparent bg). Used in the site header.
+  - `/assets/brand/zs-badge-light.svg` — canonical icon-only mark, light tile with hairline border; used as the SVG favicon and the source for raster browser/app icons.
+  - `/assets/brand/zs-badge.svg` — icon-only dark-tile alternate using the same clipped `Z` geometry.
+  - `/assets/brand/zs-lockup-light-bg.svg` — light-tile badge + `Zack Simon` / `ARCHITECT·BUILDER·FOUNDER` for light backgrounds (transparent bg). Used in the site header.
   - `/assets/brand/zs-lockup-dark-bg.svg` — same lockup on a warm-black card for dark backgrounds.
   - `/favicon.ico` (16+32), `/zs-icon-180.png` (Apple touch), `/zs-icon-512.png` (manifest/OG stopgap), `/site.webmanifest`.
 - Brand colors (CSS tokens in `assets/css/style.css`): graphite `--zs-ink #18181B`,
   amber `--zs-amber #F59E0B` (accent only — the site-wide `--gold` aliases it),
-  warm black `--zs-black #0C0A09`, paper `--zs-paper #FAFAF9`, stone
-  `--zs-stone`/`--zs-stone-dark` for muted secondary text.
-- Usage: full lockup in the header on light backgrounds; badge-only in tight
-  spots (compact nav pill, narrow viewports, favicons). Amber stays accent-only
-  per the two-color rule in `DESIGN.md`.
-- The lockup SVGs are generated geometry (monoline vector letterforms), not a
-  typeface. Regenerate rather than hand-edit if the wordmark needs to change.
+  warm black `--zs-black #0C0A09`, paper `--zs-paper #FAFAF9`, light icon tile
+  `#F5F5F4`, and stone `--zs-stone`/`--zs-stone-dark` for muted secondary text.
+- Usage: full lockup in the header on light backgrounds; the light badge only in
+  tight spots (compact nav pill, narrow viewports, favicons). Amber stays
+  accent-only per the two-color rule in `DESIGN.md`.
+- Keep the lockup typography aligned to the site font stack instead of
+  reintroducing custom display lettering.
 
 ## Boundaries
 
