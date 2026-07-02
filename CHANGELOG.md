@@ -6,6 +6,7 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
 
 ### Added
 
+- Added `IDEAS.md` as a parking lot for later product, engineering, marketing, sales, and business-producing ideas.
 - Added hosted Briefly admin Cognito email/password sign-in so normal admin use no longer requires manually minting and pasting an ID token.
 - Redesigned the public-site navbar across all pages: replaced the boxed
   equal-width button group with a clean brand wordmark (`Zack Simon`) + a new
@@ -39,6 +40,10 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
 
 ### Changed
 
+- Balanced public-site display headings, tightened newsletter form text, and cleaned up visible card/post/privacy/contact/unsubscribe copy so rendered text no longer hangs or clips across desktop, tablet, and mobile viewports.
+- Stabilized public-site navbar active-link geometry so the active indicator no longer changes the apparent nav footprint when The Build Log is selected.
+- Updated `OPEN_BUGS.md` with the 2026-06-28 comprehensive review findings and closed the stale Builds API CORS item after deploy smoke/direct curl validation confirmed the header is present.
+- Fixed public-site navbar top-edge clipping by adding a safe top offset to the full sticky header while preserving the existing scroll-compact pill behavior.
 - Changed the public Builds board boot state so JS users see loading placeholders until the current API data renders; the old hardcoded fallback cards were replaced with neutral unavailable messages for no-JS/API-error states.
 - Kept the raw Cognito ID-token field as a fallback while making browser-side Cognito sign-in the primary hosted-admin auth flow. Passwords are not stored; only the resulting ID token is kept in browser session storage.
 - Documented the main-only GitHub workflow: build/validate locally, store source

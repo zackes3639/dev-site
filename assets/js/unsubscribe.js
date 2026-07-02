@@ -14,7 +14,7 @@ function setStatus(message, isError) {
     icon.style.background = '#fee2e2';
     icon.style.color = '#e53935';
     heading.textContent = message;
-    subtext.textContent = 'If you need help, contact support@zacksimon.dev';
+    subtext.textContent = 'Email support@zacksimon.dev for help.';
   } else {
     icon.textContent = '✓';
     icon.style.background = '#dcfce7';
