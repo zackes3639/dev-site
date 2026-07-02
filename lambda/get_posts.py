@@ -20,6 +20,22 @@ def get_header(event, name):
             return value
     return ""
 
+def scan_all_items(table):
+    items = []
+    scan_kwargs = {}
+
+    while True:
+        response = table.scan(**scan_kwargs)
+        items.extend(response.get("Items", []))
+
+        last_evaluated_key = response.get("LastEvaluatedKey")
+        if not last_evaluated_key:
+            break
+
+        scan_kwargs["ExclusiveStartKey"] = last_evaluated_key
+
+    return items
+
 def lambda_handler(event, context):
     method = (
         event.get("httpMethod")
@@ -34,9 +50,6 @@ def lambda_handler(event, context):
         }
 
     try:
-        response = table.scan()
-        items = response.get("Items", [])
-
         query = event.get("queryStringParameters") or {}
         include_drafts = str(query.get("include_drafts", "")).lower() in ("1", "true", "yes")
 
@@ -49,8 +62,9 @@ def lambda_handler(event, context):
                     "headers": HEADERS,
                     "body": json.dumps({"error": "Forbidden"}),
                 }
-            posts = items
+            posts = scan_all_items(table)
         else:
+            items = scan_all_items(table)
             posts = [p for p in items if p.get("published") is True]
 
         posts.sort(
@@ -65,8 +79,9 @@ def lambda_handler(event, context):
         }
 
     except Exception as e:
+        print(f"get_posts failed: {e}")
         return {
             "statusCode": 500,
             "headers": HEADERS,
-            "body": json.dumps({"message": "Error", "error": str(e)})
+            "body": json.dumps({"message": "Internal server error"})
         }

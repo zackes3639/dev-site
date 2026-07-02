@@ -184,20 +184,31 @@ const applyDraftToForm = (draft: DraftItem): void => {
 const renderDraftMeta = (draft: DraftItem | null): void => {
   const meta = byId<HTMLDListElement>("draft-meta");
   if (!draft) {
-    meta.innerHTML = "";
+    meta.replaceChildren();
     return;
   }
 
-  meta.innerHTML = `
-    <dt>Draft ID</dt><dd>${draft.draft_id}</dd>
-    <dt>Version</dt><dd>${draft.version}</dd>
-    <dt>Status</dt><dd>${draft.status}</dd>
-    <dt>Run ID</dt><dd>${draft.run_id}</dd>
-    <dt>Input ID</dt><dd>${draft.input_id}</dd>
-    <dt>Model</dt><dd>${draft.model_id}</dd>
-    <dt>Prompt</dt><dd>${draft.prompt_version}</dd>
-    <dt>Updated</dt><dd>${formatDate(draft.updated_at)}</dd>
-  `;
+  const entries: Array<[string, string]> = [
+    ["Draft ID", draft.draft_id],
+    ["Version", String(draft.version)],
+    ["Status", draft.status],
+    ["Run ID", draft.run_id],
+    ["Input ID", draft.input_id],
+    ["Model", draft.model_id],
+    ["Prompt", draft.prompt_version],
+    ["Updated", formatDate(draft.updated_at)]
+  ];
+
+  const nodes: Node[] = [];
+  for (const [label, value] of entries) {
+    const dt = document.createElement("dt");
+    dt.textContent = label;
+    const dd = document.createElement("dd");
+    dd.textContent = value;
+    nodes.push(dt, dd);
+  }
+
+  meta.replaceChildren(...nodes);
 };
 
 const getClient = (): BrieflyApiClient => {
@@ -269,26 +280,38 @@ const init = (): void => {
 
   const clearConflict = (): void => {
     const conflict = byId<HTMLDivElement>("slug-conflict");
-    conflict.innerHTML = "";
+    conflict.replaceChildren();
     conflict.classList.add("hidden");
   };
 
   const showSlugConflict = (slug: string, suggestedSlug?: string): void => {
     const conflict = byId<HTMLDivElement>("slug-conflict");
     if (!suggestedSlug) {
-      conflict.innerHTML = `<p>Slug <strong>${slug}</strong> is already taken.</p>`;
+      const paragraph = document.createElement("p");
+      paragraph.append("Slug ");
+      const strong = document.createElement("strong");
+      strong.textContent = slug;
+      paragraph.append(strong, " is already taken.");
+      conflict.replaceChildren(paragraph);
       conflict.classList.remove("hidden");
       return;
     }
 
-    conflict.innerHTML = `
-      <p>Slug <strong>${slug}</strong> is already taken.</p>
-      <button id="apply-suggested-slug" type="button">Use suggested slug: ${suggestedSlug}</button>
-    `;
+    const paragraph = document.createElement("p");
+    paragraph.append("Slug ");
+    const strong = document.createElement("strong");
+    strong.textContent = slug;
+    paragraph.append(strong, " is already taken.");
+
+    const applyButton = document.createElement("button");
+    applyButton.id = "apply-suggested-slug";
+    applyButton.type = "button";
+    applyButton.textContent = `Use suggested slug: ${suggestedSlug}`;
+
+    conflict.replaceChildren(paragraph, applyButton);
     conflict.classList.remove("hidden");
 
-    const applyBtn = byId<HTMLButtonElement>("apply-suggested-slug");
-    applyBtn.onclick = () => {
+    applyButton.onclick = () => {
       const slugInput = byId<HTMLInputElement>("publish-slug");
       slugInput.value = suggestedSlug;
       slugInput.dataset.auto = "0";

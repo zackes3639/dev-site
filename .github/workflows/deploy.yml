@@ -89,6 +89,17 @@ jobs:
             --exclude "package-lock.json" \
             --exclude "tsconfig*.json" \
             --exclude "CLAUDE.md" \
+            --exclude "AGENTS.md" \
+            --exclude "BRAND.md" \
+            --exclude "DESIGN.md" \
+            --exclude "OPEN_BUGS.md" \
+            --exclude "TECHSTACK.md" \
+            --exclude "VOICE.md" \
+            --exclude "CHANGELOG.md" \
+            --exclude "HANDOFF.md" \
+            --exclude "PLANS.md" \
+            --exclude "README.md" \
+            --exclude "IDEAS.md" \
             --exclude "memory/*"
 
       - name: Upload Briefly admin to S3

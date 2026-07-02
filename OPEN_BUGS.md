@@ -4,14 +4,15 @@ Known open issues and review findings. Update this file when issues are found, f
 
 ## Open
 
-- Public post/build list Lambdas only read the first DynamoDB scan page. `lambda/get_posts.py` calls `table.scan()` once before filtering/sorting posts, and `lambda/get_builds.py` does the same for builds. Once either table scan exceeds 1 MB, older posts/builds can silently disappear from `/blog/`, `/blog/post/`, `/admin/`, and `/work/`. Paginate with `LastEvaluatedKey` before filtering/sorting.
-- Newsletter subscribe API still accepts phone-only records and optional `age`, even though current public forms and docs make email required, phone optional, and age uncollected. `lambda/subscribe.py` allows `email or phone`, validates/stores `age`, and writes it. Align the API with the current consent/data-minimization contract and consider cleanup for any prior phone-only/age records.
-- Public Lambda 500 responses expose raw exception strings. `lambda/get_posts.py`, `lambda/get_builds.py`, and `lambda/subscribe.py` include `str(e)` in public response bodies. Return generic client errors and log details server-side instead.
-- Briefly admin renders API/DynamoDB values with `innerHTML`. `apps/admin-briefly/src/main.ts` builds draft metadata and slug-conflict messages with template strings. Replace these paths with DOM text nodes or explicit escaping before expanding admin use or rendering less-trusted fields.
-- Static-site deploy sync can upload root project docs to the site bucket. `.github/workflows/deploy.yml` excludes `docs/` and `CLAUDE.md`, but not root docs such as `AGENTS.md`, `BRAND.md`, `DESIGN.md`, `OPEN_BUGS.md`, `TECHSTACK.md`, `VOICE.md`, `CHANGELOG.md`, `HANDOFF.md`, `PLANS.md`, or `README.md`. Prefer an allowlisted deploy artifact or explicitly exclude non-site root docs before the site is intended to be broadly public.
+- No known open issues after the 2026-07-02 bug-fix pass and AWS deployment verification.
 
 ## Recently closed
 
+- 2026-07-02: Fixed public post/build list scan truncation. `lambda/get_posts.py` and `lambda/get_builds.py` now paginate DynamoDB scans with `LastEvaluatedKey` before filtering/sorting. AWS deployment was run and live posts/builds API checks passed.
+- 2026-07-02: Fixed newsletter subscribe API contract. `lambda/subscribe.py` now requires email, keeps phone optional, ignores/does not store `age`, and uses email-based subscriber IDs only. AWS deployment was run and live phone-only/invalid-JSON checks returned 400.
+- 2026-07-02: Fixed raw public Lambda 500 leakage. `lambda/get_posts.py`, `lambda/get_builds.py`, and `lambda/subscribe.py` now log server-side details and return generic 500 bodies. AWS deployment was run.
+- 2026-07-02: Fixed Briefly admin unsafe HTML rendering. Draft metadata and slug-conflict UI now use DOM nodes/text content instead of template-string `innerHTML`. GitHub Actions deployed the static/admin assets from `origin/main`.
+- 2026-07-02: Fixed static-site deploy doc leakage risk. `.github/workflows/deploy.yml` now excludes root repo docs such as `AGENTS.md`, `OPEN_BUGS.md`, `TECHSTACK.md`, `CHANGELOG.md`, `HANDOFF.md`, `PLANS.md`, `README.md`, and `IDEAS.md`. GitHub Actions deployed the updated sync workflow from `origin/main`.
 - 2026-06-28: Fixed public-site hanging/wrapped text issues found in browser QA. Home hero headings now balance without orphaning `to.`, newsletter phone placeholders no longer clip in the rail, consent policy links no longer stack word-by-word, and visible card/post/privacy/contact/unsubscribe copy was tightened to avoid one-word tails.
 - 2026-06-28: Fixed public-site navbar active-link geometry shift. Nav links now reserve indicator space on every item, so selecting the longer "The Build Log" label does not visually change the nav footprint.
 - 2026-06-28: Closed stale public Builds API CORS finding after `npm run smoke:deploy` and direct `curl -H 'Origin: https://zacksimon.dev' https://33o1s2l689.execute-api.us-east-2.amazonaws.com/builds` both confirmed `Access-Control-Allow-Origin: https://zacksimon.dev`.

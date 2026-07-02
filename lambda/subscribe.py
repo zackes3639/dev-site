@@ -39,17 +39,29 @@ def lambda_handler(event, context):
     try:
         body = event.get("body") or "{}"
         if isinstance(body, str):
-            body = json.loads(body)
-
-        email = (body.get("email") or "").strip().lower()
-        phone = (body.get("phone") or "").strip()
-        age = body.get("age")
-
-        if not email and not phone:
+            try:
+                body = json.loads(body)
+            except json.JSONDecodeError:
+                return {
+                    "statusCode": 400,
+                    "headers": HEADERS,
+                    "body": json.dumps({"message": "Invalid request body"})
+                }
+        if not isinstance(body, dict):
             return {
                 "statusCode": 400,
                 "headers": HEADERS,
-                "body": json.dumps({"message": "Email or phone is required"})
+                "body": json.dumps({"message": "Invalid request body"})
+            }
+
+        email = (body.get("email") or "").strip().lower()
+        phone = (body.get("phone") or "").strip()
+
+        if not email:
+            return {
+                "statusCode": 400,
+                "headers": HEADERS,
+                "body": json.dumps({"message": "Email is required"})
             }
 
         if email and not EMAIL_RE.match(email):
@@ -69,25 +81,12 @@ def lambda_handler(event, context):
                     "body": json.dumps({"message": "Invalid phone"})
                 }
 
-        if age:
-            try:
-                age = int(age)
-                if age < 1 or age > 99:
-                    raise ValueError
-            except:
-                return {
-                    "statusCode": 400,
-                    "headers": HEADERS,
-                    "body": json.dumps({"message": "Invalid age"})
-                }
-
-        subscriber_id = f"email#{email}" if email else f"phone#{normalized_phone}"
+        subscriber_id = f"email#{email}"
 
         item = {
             "subscriber_id": subscriber_id,
-            "email": email or "",
+            "email": email,
             "phone": normalized_phone or "",
-            "age": age,
             "status": "active",
             "source": "website",
             "created_at": datetime.now(timezone.utc).isoformat()
@@ -102,8 +101,9 @@ def lambda_handler(event, context):
         }
 
     except Exception as e:
+        print(f"subscribe lambda error: {e}")
         return {
             "statusCode": 500,
             "headers": HEADERS,
-            "body": json.dumps({"message": "Internal server error", "error": str(e)})
+            "body": json.dumps({"message": "Internal server error"})
         }

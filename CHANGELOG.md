@@ -40,6 +40,12 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
 
 ### Changed
 
+- Fixed public post/build list Lambda source to paginate DynamoDB scans before filtering/sorting, avoiding first-page-only truncation when tables exceed the scan page size.
+- Aligned the newsletter subscribe Lambda with the current form contract: email is required, phone is optional, `age` is no longer stored, and new subscriber records are email-keyed only.
+- Changed public Lambda 500 responses in `get_posts`, `get_builds`, and `subscribe` to return generic client bodies while logging server-side details.
+- Replaced unsafe Briefly admin `innerHTML` rendering for draft metadata and slug-conflict messages with DOM node/text rendering.
+- Added root documentation excludes to the static-site deploy sync so repo contracts/backlogs are not uploaded to the public site bucket.
+- Replaced the stale hosted-admin launch plan in `PLANS.md` with the active 2026-07-02 bug-fix execution plan.
 - Balanced public-site display headings, tightened newsletter form text, and cleaned up visible card/post/privacy/contact/unsubscribe copy so rendered text no longer hangs or clips across desktop, tablet, and mobile viewports.
 - Stabilized public-site navbar active-link geometry so the active indicator no longer changes the apparent nav footprint when The Build Log is selected.
 - Updated `OPEN_BUGS.md` with the 2026-06-28 comprehensive review findings and closed the stale Builds API CORS item after deploy smoke/direct curl validation confirmed the header is present.

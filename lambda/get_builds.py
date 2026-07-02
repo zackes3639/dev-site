@@ -18,6 +18,22 @@ class DecimalEncoder(json.JSONEncoder):
             return int(obj) if obj % 1 == 0 else float(obj)
         return super().default(obj)
 
+def scan_all_items(table):
+    items = []
+    scan_kwargs = {}
+
+    while True:
+        response = table.scan(**scan_kwargs)
+        items.extend(response.get('Items', []))
+
+        last_evaluated_key = response.get('LastEvaluatedKey')
+        if not last_evaluated_key:
+            break
+
+        scan_kwargs['ExclusiveStartKey'] = last_evaluated_key
+
+    return items
+
 def lambda_handler(event, context):
     method = event.get('requestContext', {}).get('http', {}).get('method', '')
 
@@ -25,8 +41,7 @@ def lambda_handler(event, context):
         return {'statusCode': 200, 'headers': HEADERS, 'body': ''}
 
     try:
-        response = table.scan()
-        items = response.get('Items', [])
+        items = scan_all_items(table)
 
         items.sort(key=lambda x: (int(x.get('sort_order', 0)), x.get('created_at', '')))
 
@@ -36,8 +51,9 @@ def lambda_handler(event, context):
             'body': json.dumps(items, cls=DecimalEncoder)
         }
     except Exception as e:
+        print(f'get_builds failed: {e}')
         return {
             'statusCode': 500,
             'headers': HEADERS,
-            'body': json.dumps({'error': str(e)})
+            'body': json.dumps({'message': 'Internal server error'})
         }
