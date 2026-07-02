@@ -8,7 +8,7 @@ Known open issues and review findings. Update this file when issues are found, f
 
 ## Recently closed
 
-- 2026-07-02: Fixed homepage Build Log copy that implied newsletter digest delivery already exists. The public copy now reflects the current Lambda/DynamoDB subscriber-capture state while SMS/newsletter delivery remains a backlog item in `IDEAS.md`. AWS deployment was NOT run.
+- 2026-07-02: Fixed homepage Build Log copy that implied newsletter digest delivery already exists. The public copy now reflects the current Lambda/DynamoDB subscriber-capture state while SMS/newsletter delivery remains a backlog item in `IDEAS.md`. GitHub Actions deployed this from `origin/main` on 2026-07-02 (deploy + smoke passed).
 - 2026-07-01: Closed the missing-browser-metadata gap: no page had favicon, web
   manifest, theme-color, or social (OG/Twitter) meta tags. All live-site pages
   now share the Classic Amber icon/meta block; `site.webmanifest` gets an
