@@ -55,6 +55,7 @@ Smoke tests:
 ```bash
 npm run smoke:deploy    # checks live site + public/write APIs (scripts/smoke-test.sh)
 npm run smoke:briefly   # Briefly API checks; needs API_BASE + ADMIN_BEARER_TOKEN
+npm run smoke:briefly:e2e # full create/generate/update/publish smoke; needs API_BASE + ADMIN_BEARER_TOKEN
 ```
 
 Run `npm run typecheck` and `npm run build` after meaningful TS changes. In handoff summaries, state file-by-file changes, validation results, and explicit AWS deployment status (`AWS deployment was run` / `... was NOT run`).
@@ -66,7 +67,13 @@ No build step — static files sync directly to S3.
 ```bash
 aws s3 sync . s3://dev-site-647932856401-us-east-2-an \
   --exclude ".git/*" --exclude ".github/*" --exclude ".claude/*" \
-  --exclude "lambda/*" --exclude "node_modules/*" --exclude ".DS_Store" --delete
+  --exclude "lambda/*" --exclude "apps/*" --exclude "services/*" \
+  --exclude "packages/*" --exclude "infra/*" --exclude "edge/*" \
+  --exclude "docs/*" --exclude "node_modules/*" \
+  --exclude "AGENTS.md" --exclude "BRAND.md" --exclude "CHANGELOG.md" \
+  --exclude "DESIGN.md" --exclude "HANDOFF.md" --exclude "IDEAS.md" \
+  --exclude "OPEN_BUGS.md" --exclude "PLANS.md" --exclude "README.md" \
+  --exclude "TECHSTACK.md" --exclude "VOICE.md" --delete
 
 aws cloudfront create-invalidation --distribution-id <ID> --paths "/*"
 ```
@@ -83,7 +90,7 @@ Static site (S3 + CloudFront) with a serverless backend on API Gateway + Lambda 
 |-------|--------|---------|
 | `GET /posts` | `get_posts.py` | All published posts, newest-first. Admin listing via `?include_drafts=1` + `X-Admin-Password` header |
 | `POST /posts` | `create-post.js` | Creates a post; requires `password` matching `ADMIN_PASSWORD` |
-| `POST /subscribe` | `subscribe.py` | Adds subscriber (email and/or phone) |
+| `POST /subscribe` | `subscribe.py` | Adds subscriber (email required, phone optional) |
 | `POST /unsubscribe` | `unsubscribe.py` | Sets subscriber `status` to `inactive` |
 
 There are also build endpoints (`create_build.py`, `update_build.py`, `get_builds.py`, `delete_build.py`) and `update_post.py` / `delete_post.py`.
@@ -95,7 +102,7 @@ The **deployed** create-post Lambda is `lambda/create-post.js` (Node); `lambda/c
 ### DynamoDB (live site)
 
 - **`ZS_DEV_BLOG_POSTS`** — PK `post_id` (UUID). Fields: `post_id`, `title`, `slug`, `summary`, `content`, `published` (bool), `created_at` (ISO-8601), `tag`/`tags`.
-- **Subscribers** (name from `TABLE_NAME` env) — PK `subscriber_id`, formatted `email#<email>` or `phone#<e164>`. Fields: `email`, `phone`, `age`, `status` (`active`/`inactive`), `source`, `created_at`, `unsubscribed_at`.
+- **Subscribers** (name from `TABLE_NAME` env) — PK `subscriber_id`, formatted `email#<email>` for current records. Fields: `email`, optional `phone`, `status` (`active`/`inactive`), `source`, `created_at`, `unsubscribed_at`. The current subscribe Lambda requires email and does not store `age`.
 
 ### Admin auth & gate
 
@@ -104,7 +111,7 @@ The **deployed** create-post Lambda is `lambda/create-post.js` (Node); `lambda/c
 
 ## Briefly backend and admin
 
-Defined in `infra/cdk/lib/briefly-stack.ts`: API Gateway HTTP API + Cognito JWT admin auth + Lambda + Step Functions + DynamoDB + Bedrock generation. Human review required before publish (no auto-publish). The Vite admin is built with `VITE_BRIEFLY_API_BASE` and hosted privately at `/admin/briefly/`; raw Cognito ID tokens are pasted into the UI and are not baked into static assets.
+Defined in `infra/cdk/lib/briefly-stack.ts`: API Gateway HTTP API + Cognito JWT admin auth + Lambda + Step Functions + DynamoDB + Bedrock generation. Human review required before publish (no auto-publish). The Vite admin is built with `VITE_BRIEFLY_API_BASE` and hosted privately at `/admin/briefly/`; normal use is Cognito email/password sign-in in the UI, with raw Cognito ID-token paste retained for smoke/fallback access. Passwords, bearer tokens, and ID tokens are not baked into static assets.
 
 Briefly tables: `briefly_daily_inputs`, `briefly_drafts`, `briefly_posts`, `briefly_post_slugs`, `briefly_workflow_runs`.
 
@@ -120,7 +127,7 @@ Each page is its own folder as `index.html` (`blog/index.html`, `admin/index.htm
 ## Conventions
 
 - Phone numbers normalized to E.164 (`+1XXXXXXXXXX`) before storage.
-- Slugs are optional at creation but required for the post detail page; auto-generate from title when absent. Slug-uniqueness checks must paginate full table scans (legacy bug — see `OPEN_BUGS.md`).
+- Slugs are optional at creation but required for the post detail page; auto-generate from title when absent. Slug-uniqueness checks must paginate full table scans; the prior first-page-only issue is closed in `OPEN_BUGS.md`.
 - `get_posts.py` returns published posts by default; admin listing via `?include_drafts=1` + `X-Admin-Password`.
 - CORS: subscribe/unsubscribe/get_posts restricted to `https://zacksimon.dev`; write Lambdas allow `*`. Briefly HTTP API has `corsPreflight` for admin origins.
 

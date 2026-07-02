@@ -1,6 +1,6 @@
 # Briefly Hosted Admin Handoff
 
-Date: 2026-06-25
+Last updated: 2026-07-02
 
 ## Current state
 
@@ -11,11 +11,11 @@ https://zacksimon.dev/admin/briefly/
 ```
 
 - Current branch: `main`.
-- `origin/main` already contains the hosted-admin launch and main-only workflow docs.
-- This workspace is continuing post-launch hardening: deploy workflow SSM secret handling, Briefly e2e publish smoke, and shared legacy/Briefly slug locking.
+- `origin/main` contains the hosted-admin launch, main-only workflow docs, post-launch hardening, and the 2026-07-02 production bug-fix pass.
+- No known open issues are currently tracked in `OPEN_BUGS.md`.
 - The Cognito admin user `ticketsfortampakids@gmail.com` exists and is `CONFIRMED`.
 - A policy-compliant admin password was generated for this launch session and kept out of repo/docs. Reset it with `npm run briefly:admin:ensure-user` whenever a durable user-owned password is needed.
-- Cognito ID tokens are minted with `npm run -s briefly:admin:token` and pasted into the hosted UI as raw ID tokens. Do not paste `Bearer ...`; the client adds the `Bearer` prefix.
+- Normal hosted admin use is Cognito email/password sign-in inside `/admin/briefly/`. Cognito ID tokens are minted with `npm run -s briefly:admin:token` only for smoke tests or fallback UI access; paste raw token output only, never `Bearer ...`.
 
 ## AWS state
 
@@ -55,7 +55,7 @@ Passed in the hosted workflow:
 - Site password gate showed before `/admin/briefly/`.
 - Correct site password opened the hosted Briefly admin.
 - Hosted admin loaded with no browser console warnings/errors.
-- Raw Cognito ID token was saved in the UI.
+- Cognito auth succeeded and the admin session token was available in the UI.
 - Daily input was created.
 - Generation started, completed, and auto-loaded a draft.
 - Draft was edited, approved, and saved.
@@ -123,7 +123,7 @@ aws cloudfront wait invalidation-completed --distribution-id E1VYG8DDDLSYLP --id
 
 - If Zack needs a durable admin password, reset the Cognito user with a password he owns.
 - If switching back to Anthropic on Bedrock, first submit the Anthropic use-case form in AWS Bedrock and then test from the Lambda role, not only from local AWS credentials.
-- The corrected token label is already live from the manual admin static sync; pushing these local edits to `origin/main` will make source match the deployed state.
+- The hosted admin source and deployed static assets both use Cognito email/password sign-in as the primary path, with raw ID-token paste retained as fallback.
 - `smoke:briefly:e2e` publishes a test-prefixed post, verifies public integration, and cleans it up from `briefly_posts`, `briefly_post_slugs`, and `ZS_DEV_BLOG_POSTS`.
 - `smoke:briefly:e2e` cleanup is guarded by returned `post_id`, slug, and test title prefix; daily-input, draft, and workflow-run audit artifacts are retained.
 - The GitHub Actions deploy workflow now reads `/zacksimon/site/owner-password` from SSM after OIDC auth and reuses it for authenticated deploy smoke instead of requiring a duplicate GitHub secret.
@@ -139,3 +139,4 @@ AWS deployment was run:
 - Hosted browser publish was verified against the live site.
 - Post-launch hardening commit `8c83c57` was pushed to `origin/main`, and GitHub Actions deploy run `28208023042` succeeded after deploy-role IAM was tightened for SSM and Lambda@Edge.
 - Legacy writer Lambdas `zs-dev-create-post`, `zs-dev-update-post`, and `zs-dev-delete-post` were manually deployed after the shared slug-lock source changes because `.github/workflows/deploy.yml` does not deploy `lambda/*`.
+- Latest confirmed GitHub Actions deploy: run `28557083391` succeeded for `11d166b` (`fix: close open production bugs`) on 2026-07-02, deploying the static/admin asset workflow and confirming the public bug-fix pass.

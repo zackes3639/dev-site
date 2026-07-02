@@ -4,6 +4,15 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
 
 ## Unreleased
 
+### Changed
+
+- Reconciled repo documentation with the current Briefly/admin/deploy state after the 2026-07-02 production bug-fix deploy.
+- Cleared stale active-plan language from `PLANS.md` so future agents start from an accurate no-active-plan state.
+- Updated Briefly auth, subscriber-contract, architecture, and handoff docs so Cognito email/password sign-in is the normal admin path and raw ID-token paste is fallback/smoke-only.
+- Documented Zack's approval rule: approved local changes should be committed, pushed to `origin/main`, and deploy-verified unless explicitly held locally.
+
+## 2026-07-02
+
 ### Added
 
 - Added `IDEAS.md` as a parking lot for later product, engineering, marketing, sales, and business-producing ideas.

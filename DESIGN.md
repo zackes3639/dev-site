@@ -7,7 +7,7 @@ Design guidance for future agents working on `zacksimon.dev`, the existing admin
 - Protect the live site's current structure unless a task explicitly asks for public-site redesign.
 - Favor clean, readable, builder-focused interfaces over marketing-heavy ornament.
 - Keep layouts practical: clear navigation, obvious CTAs, strong content hierarchy, and responsive behavior that works on small screens first.
-- Existing public-site pages use a restrained white/slate foundation with purple accent moments. Extend that system instead of inventing a new visual language.
+- Existing public-site pages use a restrained white/deep-navy foundation with purple primary actions and amber highlight moments. Extend that system instead of inventing a new visual language.
 
 ## Live site patterns
 

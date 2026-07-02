@@ -23,9 +23,9 @@ This document captures the v1 Briefly stack on top of zacksimon.dev.
 
 - Site password gate protects `/admin/briefly/`.
 - Cognito JWT protects Briefly API calls from the admin UI.
-- The Cognito app client allows password-based CLI token minting for v1.
+- The Cognito app client allows `USER_PASSWORD_AUTH` for hosted admin sign-in and CLI token minting for v1 smoke/fallback use.
 - Hosted admin assets are built from `apps/admin-briefly` and uploaded to `s3://$S3_BUCKET_NAME/admin/briefly/`.
-- The admin bundle includes the API base URL only; raw Cognito ID tokens are pasted at runtime and the client adds the `Bearer` prefix.
+- The admin bundle includes the API base URL only. Normal use signs in with Cognito email/password at runtime and stores only the resulting ID token in sessionStorage; raw ID-token paste remains a fallback, and the client adds the `Bearer` prefix for API calls.
 
 ## Publish integration
 

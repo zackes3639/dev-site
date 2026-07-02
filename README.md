@@ -102,7 +102,7 @@ Local work is for building and validation. GitHub `origin/main` is the stored so
 Workflow and guardrails docs:
 
 - `AGENTS.md` (working contract for future Codex sessions)
-- `PLANS.md` (execution-plan template)
+- `PLANS.md` (active execution plans; should say no active plan when none is open)
 - `docs/dev-workflow.md` (lightweight branch/commit/validation process)
 
 ## Notes

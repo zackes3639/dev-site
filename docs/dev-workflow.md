@@ -13,7 +13,7 @@ This repo uses a simple main-only operating model optimized for a solo builder.
 1. Start from latest `main`.
 2. Build and validate locally.
 3. Commit the intended changes to `main`.
-4. When Zack says `push and merge`, push/merge `main` to `origin/main`.
+4. When Zack explicitly approves local changes or says `push and merge`, push/merge `main` to `origin/main` unless he explicitly asks to hold the work locally.
 5. Expect `.github/workflows/deploy.yml` to deploy to AWS and make the change live.
 6. If the change affects Lambda/CDK resources outside that workflow, run the required AWS deploy/smoke steps or add automation before calling the work live.
 
@@ -28,7 +28,7 @@ git pull origin main
 
 - One shippable/storable milestone per commit when possible.
 - Keep unrelated changes out of the same commit.
-- Do not leave local-only commits as the final handoff after Zack says `push and merge`; GitHub `origin/main` should match what is live.
+- Do not leave approved local edits or local-only commits as the final handoff after Zack approves shipping or says `push and merge`; GitHub `origin/main` should match what is live.
 - Before large Codex tasks, make a checkpoint only when the work should be preserved in git; otherwise use an out-of-repo safety backup.
 
 ## Safety guardrails
@@ -63,6 +63,8 @@ In final handoff notes, always include:
 - File-by-file changes
 - Validation run and result
 - Explicit AWS deployment status
+
+Keep `CHANGELOG.md` active: add meaningful repo behavior, documentation, deployment-process, and risk-tracking changes in the same change that makes them.
 
 ## Agent contract
 

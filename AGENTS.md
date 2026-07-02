@@ -38,6 +38,7 @@ Default rule: for code changes, read `TECHSTACK.md` and `OPEN_BUGS.md`; for UI/c
 ### Operational rule
 
 - When Zack says `push and merge`, agents should finish local validation, commit the intended changes, push/merge them to `origin/main`, and expect the GitHub Actions AWS deploy to run.
+- When Zack explicitly approves local changes, agents should not leave them local-only: finish validation, commit the approved work, push it to `origin/main`, and verify the deploy workflow unless Zack explicitly says to hold it locally.
 - If the change touches AWS resources not currently deployed by `.github/workflows/deploy.yml` (for example Lambda or CDK changes), `push and merge` also means run the required deploy/smoke steps or add the missing automation before calling the work live.
 - Do not create long-lived feature branches unless Zack explicitly asks.
 
@@ -46,7 +47,7 @@ Default rule: for code changes, read `TECHSTACK.md` and `OPEN_BUGS.md`; for UI/c
 - Commit meaningful milestones when they are ready to be stored in GitHub and deployed through `origin/main`.
 - Keep commits small, readable, and scoped.
 - Do not bundle unrelated changes in one commit.
-- Do not leave local-only commits as the final state after Zack says `push and merge`.
+- Do not leave approved local edits or local-only commits as the final state after Zack approves shipping or says `push and merge`.
 - For larger Codex tasks where work is not ready to deploy, create an out-of-repo safety backup instead of a long-lived branch.
 
 ## Safety rules (mandatory)
