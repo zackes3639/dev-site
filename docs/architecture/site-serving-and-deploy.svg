@@ -1,0 +1,63 @@
+<svg width="680" height="310" viewBox="0 0 680 310" xmlns="http://www.w3.org/2000/svg" role="img">
+  <title>zacksimon.dev — serving and deploy flow</title>
+  <desc>Pushes to GitHub origin/main trigger the GitHub Actions deploy workflow, which syncs static files to S3 and invalidates CloudFront. Visitors reach the site through CloudFront, which runs a Lambda@Edge password gate in front of the S3 bucket.</desc>
+  <!-- Hand-maintained diagram; update rules in docs/architecture/README.md -->
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="#5F5E5A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <style>
+    text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+    .th { font-size: 14px; font-weight: 500; }
+    .ts { font-size: 12px; font-weight: 400; }
+    .arr { stroke: #5F5E5A; stroke-width: 1.5; fill: none; }
+    .c-gray rect { fill: #F1EFE8; stroke: #5F5E5A; }
+    .c-gray .th { fill: #444441; }
+    .c-gray .ts { fill: #5F5E5A; }
+    .c-purple rect { fill: #EEEDFE; stroke: #534AB7; }
+    .c-purple .th { fill: #3C3489; }
+    .c-purple .ts { fill: #534AB7; }
+    .c-teal rect { fill: #E1F5EE; stroke: #0F6E56; }
+    .c-teal .th { fill: #085041; }
+    .c-teal .ts { fill: #0F6E56; }
+    .legend { fill: #5F5E5A; }
+  </style>
+  <rect x="0" y="0" width="680" height="310" fill="#FFFFFF"/>
+  <g class="c-gray">
+    <rect x="40" y="40" width="190" height="56" rx="8" stroke-width="0.5"/>
+    <text class="th" x="135" y="58" text-anchor="middle" dominant-baseline="central">GitHub origin/main</text>
+    <text class="ts" x="135" y="76" text-anchor="middle" dominant-baseline="central">source of truth</text>
+  </g>
+  <g class="c-gray">
+    <rect x="300" y="40" width="200" height="56" rx="8" stroke-width="0.5"/>
+    <text class="th" x="400" y="58" text-anchor="middle" dominant-baseline="central">GitHub Actions</text>
+    <text class="ts" x="400" y="76" text-anchor="middle" dominant-baseline="central">deploy.yml via OIDC</text>
+  </g>
+  <g class="c-gray">
+    <rect x="40" y="170" width="170" height="56" rx="8" stroke-width="0.5"/>
+    <text class="th" x="125" y="188" text-anchor="middle" dominant-baseline="central">Visitor browser</text>
+    <text class="ts" x="125" y="206" text-anchor="middle" dominant-baseline="central">zacksimon.dev</text>
+  </g>
+  <g class="c-purple">
+    <rect x="270" y="170" width="190" height="56" rx="8" stroke-width="0.5"/>
+    <text class="th" x="365" y="188" text-anchor="middle" dominant-baseline="central">CloudFront</text>
+    <text class="ts" x="365" y="206" text-anchor="middle" dominant-baseline="central">Lambda@Edge password gate</text>
+  </g>
+  <g class="c-teal">
+    <rect x="520" y="170" width="120" height="56" rx="8" stroke-width="0.5"/>
+    <text class="th" x="580" y="188" text-anchor="middle" dominant-baseline="central">S3 bucket</text>
+    <text class="ts" x="580" y="206" text-anchor="middle" dominant-baseline="central">static files</text>
+  </g>
+  <line x1="230" y1="68" x2="290" y2="68" class="arr" marker-end="url(#arrow)"/>
+  <line x1="365" y1="96" x2="365" y2="160" class="arr" marker-end="url(#arrow)"/>
+  <path d="M470 96 L470 130 L580 130 L580 160" class="arr" marker-end="url(#arrow)"/>
+  <line x1="210" y1="198" x2="260" y2="198" class="arr" marker-end="url(#arrow)"/>
+  <line x1="460" y1="198" x2="510" y2="198" class="arr" marker-end="url(#arrow)"/>
+  <g class="c-gray"><rect x="40" y="274" width="12" height="12" rx="2" stroke-width="0.5"/></g>
+  <text class="ts legend" x="58" y="280" dominant-baseline="central">External / client</text>
+  <g class="c-purple"><rect x="220" y="274" width="12" height="12" rx="2" stroke-width="0.5"/></g>
+  <text class="ts legend" x="238" y="280" dominant-baseline="central">AWS serving</text>
+  <g class="c-teal"><rect x="400" y="274" width="12" height="12" rx="2" stroke-width="0.5"/></g>
+  <text class="ts legend" x="418" y="280" dominant-baseline="central">Storage</text>
+</svg>

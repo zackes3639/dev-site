@@ -12,7 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Default rule: code changes → read `TECHSTACK.md` + `OPEN_BUGS.md`. UI/content changes → also read `DESIGN.md`, `BRAND.md`, `VOICE.md`.
 
-Documentation discipline (from `AGENTS.md`): when a change touches design/brand/voice/tech-stack/deploy/known-risks, update the matching sub-doc in the same change; record found/fixed/deferred bugs in `OPEN_BUGS.md`; log meaningful behavior/doc/process changes in `CHANGELOG.md`. Use `PLANS.md` for active multi-step execution plans.
+Documentation discipline (from `AGENTS.md`): when a change touches design/brand/voice/tech-stack/deploy/known-risks, update the matching sub-doc in the same change; record found/fixed/deferred bugs in `OPEN_BUGS.md`; log meaningful behavior/doc/process changes in `CHANGELOG.md`. Use `PLANS.md` for active multi-step execution plans. Changes that alter architecture or data flow must also update the matching SVG diagram in `docs/architecture/` (see `docs/architecture/README.md` for the ownership map and editing conventions).
 
 ## Repository shape
 

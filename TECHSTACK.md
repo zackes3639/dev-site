@@ -11,6 +11,7 @@ Current technical facts for future agents.
 - `services/api`, `services/generation`, and `services/publishing` are TypeScript Lambda workspaces.
 - `packages/contracts` and `packages/shared` hold shared contracts/utilities.
 - `infra/cdk` contains the Briefly CDK stack.
+- `docs/architecture/` holds maintained SVG diagrams of the serving/deploy flow, legacy backend data flow, and Briefly publishing pipeline. They must stay consistent with this doc; update them alongside architecture changes (see `docs/architecture/README.md`).
 
 ## Live site stack
 

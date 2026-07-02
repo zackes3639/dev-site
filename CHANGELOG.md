@@ -6,6 +6,12 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
 
 ### Added
 
+- Added maintained architecture/data-flow diagrams under `docs/architecture/`
+  (serving + deploy, legacy backend data flow, Briefly publishing pipeline) as
+  self-contained hand-editable SVGs, plus a README with the ownership map and
+  editing conventions. Wired the keep-diagrams-current rule into `AGENTS.md`,
+  `CLAUDE.md`, and `TECHSTACK.md`. `docs/*` stays excluded from the S3 deploy
+  sync, so nothing ships to the live site.
 - Added the missing Build Log SMS/newsletter delivery pipeline to `IDEAS.md` as a later marketing/operations backlog item.
 - Added a Briefly publish-status enforcement decision/risk to `OPEN_BUGS.md`.
 - Added non-static AWS deploy automation to the engineering backlog in `IDEAS.md`.

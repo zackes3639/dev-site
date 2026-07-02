@@ -17,6 +17,7 @@ Default rule: for code changes, read `TECHSTACK.md` and `OPEN_BUGS.md`; for UI/c
 ## Documentation update rule
 
 - When a task changes design guidance, brand/voice, tech stack, deploy behavior, or known risks, update the relevant sub-instruction doc in the same change.
+- When a task alters architecture or data flow (deploy workflow, CloudFront/S3 serving, API routes, Lambdas, DynamoDB tables, or the Briefly pipeline), update the affected diagram in `docs/architecture/` in the same change. `docs/architecture/README.md` maps which diagram owns what and how to edit them.
 - When a known bug is found, fixed, or intentionally deferred, update `OPEN_BUGS.md`.
 - When repo behavior, agent rules, deploy process, or meaningful project documentation changes, add an entry to `CHANGELOG.md`.
 - Keep these docs short, operational, and accurate. Prefer current facts over aspirational plans.
