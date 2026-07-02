@@ -4,6 +4,22 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
 
 ## Unreleased
 
+### Added
+
+- Implemented the "Classic Amber" logo system across the public site: new
+  graphite badge + amber-sliced `Z` mark (`assets/brand/*.svg`, generated
+  vector-path lockups with no webfont dependency), `favicon.ico`,
+  `zs-icon-180.png`/`zs-icon-512.png`, and `site.webmanifest`. Every live-site
+  page now carries an identical favicon/manifest/theme-color block plus basic
+  per-page Open Graph/Twitter meta. The header logo is the full lockup (linked
+  to `/`) with a badge-only fallback in the compact pill, the 761–900px band,
+  and ≤480px viewports; the old `assets/images/logo.svg` chip and
+  `.logo-wordmark` span were retired. Added `--zs-*` brand tokens and pointed
+  `--gold` at the logo amber `#F59E0B` (was `#f4a93b`) so site amber matches
+  the mark. The deploy workflow re-uploads `site.webmanifest` with an explicit
+  `application/manifest+json` content type. Briefly admin (`apps/admin-briefly`)
+  intentionally untouched.
+
 ### Changed
 
 - Reconciled repo documentation with the current Briefly/admin/deploy state after the 2026-07-02 production bug-fix deploy.

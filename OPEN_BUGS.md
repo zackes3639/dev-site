@@ -8,6 +8,11 @@ Known open issues and review findings. Update this file when issues are found, f
 
 ## Recently closed
 
+- 2026-07-01: Closed the missing-browser-metadata gap: no page had favicon, web
+  manifest, theme-color, or social (OG/Twitter) meta tags. All live-site pages
+  now share the Classic Amber icon/meta block; `site.webmanifest` gets an
+  explicit content type in the deploy workflow. AWS deployment was NOT run.
+
 - 2026-07-02: Fixed public post/build list scan truncation. `lambda/get_posts.py` and `lambda/get_builds.py` now paginate DynamoDB scans with `LastEvaluatedKey` before filtering/sorting. AWS deployment was run and live posts/builds API checks passed.
 - 2026-07-02: Fixed newsletter subscribe API contract. `lambda/subscribe.py` now requires email, keeps phone optional, ignores/does not store `age`, and uses email-based subscriber IDs only. AWS deployment was run and live phone-only/invalid-JSON checks returned 400.
 - 2026-07-02: Fixed raw public Lambda 500 leakage. `lambda/get_posts.py`, `lambda/get_builds.py`, and `lambda/subscribe.py` now log server-side details and return generic 500 bodies. AWS deployment was run.

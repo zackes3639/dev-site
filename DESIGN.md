@@ -50,6 +50,10 @@ board, mobile nav). Extend this system; do not invent a parallel one.
   `--accent` + `--accent-strong`/`--accent-wash` (purple/indigo action),
   `--gold` + `--gold-strong`/`--gold-ink`/`--gold-wash` (amber energy/highlight),
   `--grid-line` (texture).
+- Brand tokens (`--zs-ink`, `--zs-amber`, `--zs-black`, `--zs-paper`,
+  `--zs-stone`, `--zs-stone-dark`) carry the Classic Amber logo palette
+  (`BRAND.md`). They are additive; the one component-level link is that
+  `--gold` now aliases `--zs-amber` (#F59E0B) so site amber matches the mark.
 - Two-color rule: purple is the **single primary-action** color (primary buttons,
   links, active nav/states). Amber is **energy/highlight only** — secondary CTAs,
   eyebrow ticks, the headline marker-underline, tinted surfaces, Build Log tag
@@ -83,9 +87,13 @@ board, mobile nav). Extend this system; do not invent a parallel one.
 
 ### Navbar layout (desktop)
 
-- Brand is the terminal-caret logo mark (`assets/images/logo.svg` — static navy
-  chip, lowercase `zs` + amber cursor) plus a `Zack Simon` wordmark
-  (`.logo-wordmark`, display face).
+- Brand is the "Classic Amber" lockup (`assets/brand/zs-lockup-light-bg.svg` —
+  graphite badge with the three-layer amber-sliced `Z`, plus vector-path
+  `ZACK SIMON` wordmark and tagline; see `BRAND.md`), rendered as `.logo-lockup`
+  at 48px header height. A badge-only fallback (`.logo-badge`,
+  `assets/brand/zs-badge.svg`) replaces it in the scroll-compact pill, the
+  761–900px band, and at ≤480px. The old `assets/images/logo.svg` chip and the
+  HTML `.logo-wordmark` span are retired.
 - Links (`.hot-btn`) are plain right-aligned text, not a boxed button group; the
   active link (`.hot-btn-active`) is marked by an amber dot, never a filled box.
 - The right cluster (`.nav-contact`) holds a muted `Admin` link and the amber

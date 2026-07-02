@@ -39,8 +39,17 @@
   --accent-strong: #5a33b8;
   --accent-ink: #ffffff;
   --accent-wash: #f6f2ff;
+  /* Classic Amber brand tokens (logo system) — additive; components keep
+     their existing tokens. --zs-amber is the one amber source of truth. */
+  --zs-ink: #18181B;      /* graphite — tile, primary text */
+  --zs-amber: #F59E0B;    /* gold stratum — accent only */
+  --zs-black: #0C0A09;    /* warm black — dark-mode surfaces */
+  --zs-paper: #FAFAF9;    /* warm off-white */
+  --zs-stone: #78716C;    /* muted secondary text (light bg) */
+  --zs-stone-dark: #A8A29E; /* muted secondary text (dark bg) */
+
   /* Amber/gold — energy + highlight (paired with purple action). Never a primary action. */
-  --gold: #f4a93b;
+  --gold: var(--zs-amber);
   --gold-strong: #e0911f;
   --gold-ink: #0b1220;
   --gold-wash: #fff7ea;
@@ -222,21 +231,21 @@ img {
   flex-shrink: 0;
 }
 
-.logo-image {
-  width: 38px;
-  height: 38px;
+/* Brand lockup (badge + wordmark, one SVG) with a badge-only fallback for
+   tight contexts: the scroll-compact pill, the 761–900px band, and <=480px. */
+.logo-lockup {
+  height: 48px;
+  width: auto;
   display: block;
-  object-fit: contain;
   flex-shrink: 0;
 }
 
-.logo-wordmark {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 1.05rem;
-  letter-spacing: -0.2px;
-  color: var(--ink);
-  white-space: nowrap;
+.logo-badge {
+  width: 38px;
+  height: 38px;
+  display: none;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .hotbar {
@@ -345,8 +354,14 @@ body.navbar-transitioning .navbar.navbar-compact {
   justify-content: center;
 }
 
-.navbar.navbar-compact .logo-wordmark {
+.navbar.navbar-compact .logo-lockup {
   display: none;
+}
+
+.navbar.navbar-compact .logo-badge {
+  display: block;
+  width: clamp(34px, 3.8vw, 42px);
+  height: auto;
 }
 
 .navbar.navbar-compact .hotbar {
@@ -1470,11 +1485,26 @@ a.contact-info-value:hover {
   }
 }
 
-/* Tight band: desktop nav still shown (drawer starts at 760), so drop the
-   wordmark to keep links + Subscribe CTA from crowding. */
+/* Tight band: desktop nav still shown (drawer starts at 760), so drop to the
+   badge-only mark to keep links + Subscribe CTA from crowding. */
 @media (min-width: 761px) and (max-width: 900px) {
-  .logo-wordmark {
+  .logo-lockup {
     display: none;
+  }
+
+  .logo-badge {
+    display: block;
+  }
+}
+
+/* Small phones: full lockup crowds the drawer header — badge-only. */
+@media (max-width: 480px) {
+  .logo-lockup {
+    display: none;
+  }
+
+  .logo-badge {
+    display: block;
   }
 }
 

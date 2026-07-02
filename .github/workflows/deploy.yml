@@ -102,6 +102,13 @@ jobs:
             --exclude "IDEAS.md" \
             --exclude "memory/*"
 
+      # aws s3 sync guesses content types from the runner's mime tables, which
+      # may not know .webmanifest — re-upload it with the correct type.
+      - name: Set web manifest content type
+        run: |
+          aws s3 cp site.webmanifest s3://${S3_BUCKET_NAME}/site.webmanifest \
+            --content-type "application/manifest+json"
+
       - name: Upload Briefly admin to S3
         run: |
           aws s3 sync apps/admin-briefly/dist s3://${S3_BUCKET_NAME}/admin/briefly/ \

@@ -30,7 +30,7 @@ Current technical facts for future agents.
 - The intended operating model is: if work is on `origin/main`, it should be reflected on live `zacksimon.dev`.
 - When Zack says `push and merge`, agents should treat that as approval to push/merge to `origin/main` and let the AWS deploy workflow make the change live.
 - Workflow uses GitHub OIDC via `aws-actions/configure-aws-credentials`.
-- The workflow installs npm dependencies, builds `@briefly/admin-briefly`, syncs root static site files while excluding repo docs/workspaces/metadata, then syncs `apps/admin-briefly/dist` to `s3://$S3_BUCKET_NAME/admin/briefly/`.
+- The workflow installs npm dependencies, builds `@briefly/admin-briefly`, syncs root static site files while excluding repo docs/workspaces/metadata, re-uploads `site.webmanifest` with an explicit `application/manifest+json` content type (the runner's mime tables may not know `.webmanifest`), then syncs `apps/admin-briefly/dist` to `s3://$S3_BUCKET_NAME/admin/briefly/`.
 - The workflow reads the site owner password from SSM (`/zacksimon/site/owner-password`) after OIDC auth and uses the same value for both site-gate deployment and authenticated deploy smoke.
 - The GitHub deploy role needs SSM read/decrypt permissions for that parameter plus narrow permissions to update the existing Lambda@Edge site gate, publish versions, enable replication, and update the CloudFront association.
 - Lambda/CDK deploys are not currently automated by `.github/workflows/deploy.yml`; if a `push and merge` task changes those live AWS resources, the task must also run the required deploy/smoke steps or add deployment automation before reporting the change as live.
