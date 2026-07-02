@@ -234,7 +234,7 @@ img {
 /* Brand lockup (badge + wordmark, one SVG) with a badge-only fallback for
    tight contexts: the scroll-compact pill, the 761–900px band, and <=480px. */
 .logo-lockup {
-  height: 48px;
+  height: 56px;
   width: auto;
   display: block;
   flex-shrink: 0;

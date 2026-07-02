@@ -90,7 +90,7 @@ board, mobile nav). Extend this system; do not invent a parallel one.
 - Brand is the "Classic Amber" lockup (`assets/brand/zs-lockup-light-bg.svg` —
   light-tile badge with the three-layer amber-sliced `Z`, plus a `Space Grotesk`
   `Zack Simon` wordmark and mono descriptor; see `BRAND.md`), rendered as
-  `.logo-lockup` at 48px header height. A badge-only fallback (`.logo-badge`,
+  `.logo-lockup` at 56px header height. A badge-only fallback (`.logo-badge`,
   `assets/brand/zs-badge-light.svg`) replaces it in the scroll-compact pill, the
   761–900px band, and at ≤480px. The old `assets/images/logo.svg` chip and the
   HTML `.logo-wordmark` span are retired.

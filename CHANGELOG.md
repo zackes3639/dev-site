@@ -31,6 +31,9 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
 
 ### Changed
 
+- Enlarged the public-site header lockup and its SVG descriptor line so
+  `ARCHITECT · BUILDER · FOUNDER` remains readable at desktop nav size, while
+  preserving the existing badge-only fallback at tight breakpoints.
 - Updated the Classic Amber icon assets to use the clipped light-tile `Z` badge
   from the current logo source across favicon, Apple touch icon, manifest/social
   raster icons, compact nav badges, and lockup SVGs.

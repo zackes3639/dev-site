@@ -9,9 +9,9 @@
 }
 .tagline {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 19px;
+  font-size: 31px;
   font-weight: 700;
-  letter-spacing: 3.4px;
+  letter-spacing: 0.2px;
 }
 </style>
 <svg x="20" y="20" width="180" height="180" viewBox="0 0 110 110" aria-hidden="true" focusable="false">
@@ -28,9 +28,9 @@
 </g>
 </svg>
 <text x="238" y="92" class="wordmark" fill="#18181B">Zack Simon</text>
-<text x="240" y="151" class="tagline" fill="#78716C">ARCHITECT</text>
-<circle cx="372" cy="145" r="2.4" fill="#F59E0B"/>
-<text x="392" y="151" class="tagline" fill="#78716C">BUILDER</text>
-<circle cx="511" cy="145" r="2.4" fill="#F59E0B"/>
-<text x="531" y="151" class="tagline" fill="#78716C">FOUNDER</text>
+<text x="240" y="160" class="tagline" fill="#78716C">ARCHITECT</text>
+<circle cx="427" cy="151" r="3.5" fill="#F59E0B"/>
+<text x="448" y="160" class="tagline" fill="#78716C">BUILDER</text>
+<circle cx="597" cy="151" r="3.5" fill="#F59E0B"/>
+<text x="618" y="160" class="tagline" fill="#78716C">FOUNDER</text>
 </svg>
