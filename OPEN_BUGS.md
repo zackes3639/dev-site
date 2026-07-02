@@ -11,7 +11,8 @@ Known open issues and review findings. Update this file when issues are found, f
 - 2026-07-02: Fixed the Classic Amber header lockup descriptor being too small
   to read at desktop nav size. The lockup SVG descriptor is larger, the desktop
   header renders the full lockup at 56px high, and tight breakpoints still use
-  the badge-only fallback. AWS deployment was NOT run.
+  the badge-only fallback. GitHub Actions deployed this from `origin/main` on
+  2026-07-02 (deploy + smoke passed).
 - 2026-07-02: Fixed homepage Build Log copy that implied newsletter digest delivery already exists. The public copy now reflects the current Lambda/DynamoDB subscriber-capture state while SMS/newsletter delivery remains a backlog item in `IDEAS.md`. GitHub Actions deployed this from `origin/main` on 2026-07-02 (deploy + smoke passed).
 - 2026-07-01: Closed the missing-browser-metadata gap: no page had favicon, web
   manifest, theme-color, or social (OG/Twitter) meta tags. All live-site pages
