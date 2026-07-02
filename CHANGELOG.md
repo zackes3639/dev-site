@@ -6,6 +6,9 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
 
 ### Added
 
+- Added the missing Build Log SMS/newsletter delivery pipeline to `IDEAS.md` as a later marketing/operations backlog item.
+- Added a Briefly publish-status enforcement decision/risk to `OPEN_BUGS.md`.
+- Added non-static AWS deploy automation to the engineering backlog in `IDEAS.md`.
 - Implemented the "Classic Amber" logo system across the public site: new
   graphite badge + amber-sliced `Z` mark (`assets/brand/*.svg`, generated
   vector-path lockups with no webfont dependency), `favicon.ico`,
@@ -22,6 +25,7 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
 
 ### Changed
 
+- Tightened homepage Build Log copy so it no longer implies the SMS/newsletter delivery pipeline already exists.
 - Reconciled repo documentation with the current Briefly/admin/deploy state after the 2026-07-02 production bug-fix deploy.
 - Cleared stale active-plan language from `PLANS.md` so future agents start from an accurate no-active-plan state.
 - Updated Briefly auth, subscriber-contract, architecture, and handoff docs so Cognito email/password sign-in is the normal admin path and raw ID-token paste is fallback/smoke-only.

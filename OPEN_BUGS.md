@@ -4,10 +4,11 @@ Known open issues and review findings. Update this file when issues are found, f
 
 ## Open
 
-- No known open issues after the 2026-07-02 bug-fix pass and AWS deployment verification.
+- 2026-07-02: Briefly publish status enforcement needs a product decision. The API/OpenAPI/docs describe publishing an approved draft, but `services/publishing/src/handlers/publishDraft.ts` currently accepts both `approved` and `pending_review` drafts as long as a human submits the publish request. Decide whether v1 intentionally allows one-step review+publish, or tighten the service/UI to require a saved `approved` status before publishing. AWS deployment was NOT run.
 
 ## Recently closed
 
+- 2026-07-02: Fixed homepage Build Log copy that implied newsletter digest delivery already exists. The public copy now reflects the current Lambda/DynamoDB subscriber-capture state while SMS/newsletter delivery remains a backlog item in `IDEAS.md`. AWS deployment was NOT run.
 - 2026-07-01: Closed the missing-browser-metadata gap: no page had favicon, web
   manifest, theme-color, or social (OG/Twitter) meta tags. All live-site pages
   now share the Classic Amber icon/meta block; `site.webmanifest` gets an

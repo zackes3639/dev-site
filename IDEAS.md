@@ -14,6 +14,7 @@ Later ideas to consider. These are not commitments; use them as a parking lot fo
 
 ## Marketing and Sales
 
+- Build the SMS/newsletter delivery pipeline after subscriber capture: campaign/digest creation, provider integration, unsubscribe suppression, test-send workflow, delivery logging, and basic send metrics.
 - Productize three entry offers: AWS launch cleanup, workflow automation sprint, and founder technical audit.
 - Build one landing section/page per offer with who it is for, deliverables, timeline, price range or starting point, and a direct CTA.
 - Create a Build Log welcome sequence: intro, best posts, current build, offer, and reply prompt.
@@ -44,6 +45,7 @@ Later ideas to consider. These are not commitments; use them as a parking lot fo
 
 ## Engineering and Operations
 
+- Automate non-static AWS deploy paths for legacy Lambdas and Briefly CDK changes, including smoke verification, so `origin/main` can be a stronger live-state boundary.
 - Migrate root static site files into `apps/site` so deploys can sync a clean build artifact instead of the repo root.
 - Add pagination helpers/tests for all DynamoDB scan/query list paths.
 - Add focused unit tests around slug locking, publish conflicts, and legacy/Briefly split-brain protection.
