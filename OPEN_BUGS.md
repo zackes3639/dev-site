@@ -12,7 +12,8 @@ Known open issues and review findings. Update this file when issues are found, f
 - 2026-07-04: Fixed Briefly admin's cryptic expired-session failure. The admin
   client now detects expired stored Cognito ID tokens, clears rejected session
   tokens after API `401` responses, and shows sign-in-again guidance instead of
-  `Unauthorized [401/api_error]`. AWS deployment was NOT run.
+  `Unauthorized [401/api_error]`. GitHub Actions deployed this from
+  `origin/main` on 2026-07-04 (deploy + smoke passed).
 - 2026-07-02: Fixed the Classic Amber header lockup descriptor being too small
   to read at desktop nav size. The lockup SVG descriptor is larger, the desktop
   header renders the full lockup at 56px high, and tight breakpoints still use
