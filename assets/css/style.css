@@ -1733,7 +1733,7 @@ a.contact-info-value:hover {
   border-radius: 2px;
 }
 
-/* "live" energy dot on the featured-build eyebrow */
+/* Energy dot on the featured-build eyebrow */
 .v2-featured-build .v2-eyebrow::after {
   content: " \25CF";
   color: var(--gold);
