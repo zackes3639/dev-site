@@ -40,9 +40,9 @@ label style.
   - `/assets/brand/zs-badge.svg` — icon-only dark-tile alternate using the same clipped `Z` geometry.
   - `/assets/brand/zs-lockup-light-bg.svg` — light-tile badge + `Zack Simon` / `ARCHITECT·BUILDER·FOUNDER` for light backgrounds (transparent bg). Used in the site header.
   - `/assets/brand/zs-lockup-dark-bg.svg` — same lockup on a warm-black card for dark backgrounds.
-  - `/favicon.ico` (16+32), `/apple-touch-icon.png` (Apple/iOS link surfaces),
-    `/zs-icon-180.png` (source alias), `/zs-icon-512.png` (manifest/OG
-    stopgap), `/site.webmanifest`.
+  - `/favicon.ico` (16+32), `/apple-touch-icon.png` (Apple/iOS compact link and
+    app-icon surfaces), `/zs-icon-180.png` (source alias), `/zs-icon-512.png`
+    (manifest icon), `/site.webmanifest`.
 - Brand colors (CSS tokens in `assets/css/style.css`): graphite `--zs-ink #18181B`,
   amber `--zs-amber #F59E0B` (accent only — the site-wide `--gold` aliases it),
   warm black `--zs-black #0C0A09`, paper `--zs-paper #FAFAF9`, light icon tile
@@ -50,6 +50,9 @@ label style.
 - Usage: full lockup in the header on light backgrounds; the light badge only in
   tight spots (compact nav pill, narrow viewports, favicons). Amber stays
   accent-only per the two-color rule in `DESIGN.md`.
+- Link previews should stay compact on Apple/iOS-style surfaces: keep the
+  `apple-touch-icon` metadata, but do not add page-level `og:image`/large hero
+  preview metadata unless Zack explicitly wants rich card previews.
 - Keep the lockup typography aligned to the site font stack instead of
   reintroducing custom display lettering.
 

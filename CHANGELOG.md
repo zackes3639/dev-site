@@ -9,7 +9,9 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
 - Added `/apple-touch-icon.png` as the conventional root Apple/iOS touch-icon
   path and pointed all public page touch-icon metadata plus `site.webmanifest`
   at it, so hyperlink/save-to-home/preview surfaces have a stable logo URL to
-  discover.
+  discover. Public pages intentionally omit large `og:image` metadata so
+  Apple/iOS-style link previews can stay compact and use the logo as the small
+  icon rather than a card-sized hero image.
 - Added maintained architecture/data-flow diagrams under `docs/architecture/`
   (serving + deploy, legacy backend data flow, Briefly publishing pipeline,
   Build Log newsletter delivery) as self-contained hand-editable SVGs, plus a
@@ -48,6 +50,9 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
   place before syncing static/admin assets, deploy smoke expects public pages,
   and the docs/diagram reflect that `/admin/briefly/` is a reachable static
   shell protected at the API layer by Cognito.
+- Removed the page-level `og:image` logo metadata from public static pages to
+  avoid oversized rich link cards on Apple/iOS-style previews while preserving
+  the favicon and `apple-touch-icon` logo paths.
 - Improved Briefly admin auth-session handling: expired stored Cognito ID tokens
   are cleared before use, bare API Gateway `401` responses are labeled as
   unauthorized, and admin actions now tell the operator to sign in again instead

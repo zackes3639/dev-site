@@ -9,6 +9,11 @@ Known open issues and review findings. Update this file when issues are found, f
 
 ## Recently closed
 
+- 2026-07-04: Fixed the oversized Apple/iOS link preview card after adding the
+  root touch icon. Public pages now omit the large `og:image` hint so compact
+  hyperlink pills can use `/apple-touch-icon.png` as the small logo slot instead
+  of rendering the logo as a card-sized hero image. This is a static metadata
+  fix covered by the normal GitHub Actions deploy/smoke workflow.
 - 2026-07-04: Fixed the route rewrite regression discovered while removing the
   CloudFront site password gate. A detach-only deploy made pretty directory URLs
   such as `/work/`, `/blog/`, and `/admin/briefly/` return S3 `403`; the active
@@ -17,7 +22,8 @@ Known open issues and review findings. Update this file when issues are found, f
 - 2026-07-04: Fixed iOS-style hyperlink/icon surfaces missing the site logo by
   adding the conventional root `/apple-touch-icon.png` asset, pointing all
   public page `apple-touch-icon` tags at it with `sizes="180x180"`, and updating
-  the manifest to use that path. AWS deployment was NOT run.
+  the manifest to use that path. GitHub Actions deployed this from `origin/main`
+  on 2026-07-04 (deploy + smoke passed after the route-rewrite repair).
 - 2026-07-04: Fixed Briefly admin's cryptic expired-session failure. The admin
   client now detects expired stored Cognito ID tokens, clears rejected session
   tokens after API `401` responses, and shows sign-in-again guidance instead of
