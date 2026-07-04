@@ -6,6 +6,10 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
 
 ### Added
 
+- Added `/apple-touch-icon.png` as the conventional root Apple/iOS touch-icon
+  path and pointed all public page touch-icon metadata plus `site.webmanifest`
+  at it, so hyperlink/save-to-home/preview surfaces have a stable logo URL to
+  discover.
 - Added maintained architecture/data-flow diagrams under `docs/architecture/`
   (serving + deploy, legacy backend data flow, Briefly publishing pipeline,
   Build Log newsletter delivery) as self-contained hand-editable SVGs, plus a

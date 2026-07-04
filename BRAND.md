@@ -40,7 +40,9 @@ label style.
   - `/assets/brand/zs-badge.svg` — icon-only dark-tile alternate using the same clipped `Z` geometry.
   - `/assets/brand/zs-lockup-light-bg.svg` — light-tile badge + `Zack Simon` / `ARCHITECT·BUILDER·FOUNDER` for light backgrounds (transparent bg). Used in the site header.
   - `/assets/brand/zs-lockup-dark-bg.svg` — same lockup on a warm-black card for dark backgrounds.
-  - `/favicon.ico` (16+32), `/zs-icon-180.png` (Apple touch), `/zs-icon-512.png` (manifest/OG stopgap), `/site.webmanifest`.
+  - `/favicon.ico` (16+32), `/apple-touch-icon.png` (Apple/iOS link surfaces),
+    `/zs-icon-180.png` (source alias), `/zs-icon-512.png` (manifest/OG
+    stopgap), `/site.webmanifest`.
 - Brand colors (CSS tokens in `assets/css/style.css`): graphite `--zs-ink #18181B`,
   amber `--zs-amber #F59E0B` (accent only — the site-wide `--gold` aliases it),
   warm black `--zs-black #0C0A09`, paper `--zs-paper #FAFAF9`, light icon tile

@@ -9,6 +9,10 @@ Known open issues and review findings. Update this file when issues are found, f
 
 ## Recently closed
 
+- 2026-07-04: Fixed iOS-style hyperlink/icon surfaces missing the site logo by
+  adding the conventional root `/apple-touch-icon.png` asset, pointing all
+  public page `apple-touch-icon` tags at it with `sizes="180x180"`, and updating
+  the manifest to use that path. AWS deployment was NOT run.
 - 2026-07-04: Fixed Briefly admin's cryptic expired-session failure. The admin
   client now detects expired stored Cognito ID tokens, clears rejected session
   tokens after API `401` responses, and shows sign-in-again guidance instead of
