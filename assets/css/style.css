@@ -232,7 +232,7 @@ img {
 }
 
 /* Brand lockup (badge + wordmark, one SVG) with a badge-only fallback for
-   tight contexts: the scroll-compact pill, the 761–900px band, and <=480px. */
+   tight contexts: the scroll-compact pill, the 761–1000px band, and <=480px. */
 .logo-lockup {
   height: 56px;
   width: auto;
@@ -1487,7 +1487,7 @@ a.contact-info-value:hover {
 
 /* Tight band: desktop nav still shown (drawer starts at 760), so drop to the
    badge-only mark to keep links + Subscribe CTA from crowding. */
-@media (min-width: 761px) and (max-width: 900px) {
+@media (min-width: 761px) and (max-width: 1000px) {
   .logo-lockup {
     display: none;
   }

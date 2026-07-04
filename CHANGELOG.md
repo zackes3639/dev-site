@@ -39,6 +39,9 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
 
 ### Changed
 
+- Increased the Classic Amber header lockup descriptor (`ARCHITECT · BUILDER ·
+  FOUNDER`) by another 40% and widened the lockup asset so the larger mono line
+  does not clip; the badge-only nav fallback now covers the 761–1000px band.
 - Enlarged the public-site header lockup and its SVG descriptor line so
   `ARCHITECT · BUILDER · FOUNDER` remains readable at desktop nav size, while
   preserving the existing badge-only fallback at tight breakpoints.
