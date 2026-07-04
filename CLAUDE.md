@@ -19,7 +19,7 @@ Documentation discipline (from `AGENTS.md`): when a change touches design/brand/
 This is a monorepo holding two things:
 
 1. **The live site (`zacksimon.dev`)** — pure static HTML/CSS/JS at the repo root, deployed directly to S3/CloudFront. No build step. Its Python/Node Lambdas live in `lambda/`.
-2. **Briefly** — an in-progress TypeScript app (admin UI + serverless backend) that generates and publishes Build Log posts. The backend is deployed as `BrieflyV1Stack`; the private admin is hosted at `/admin/briefly/` by the main deploy workflow. Lives in npm workspaces:
+2. **Briefly** — an in-progress TypeScript app (admin UI + serverless backend) that generates and publishes Build Log posts. The backend is deployed as `BrieflyV1Stack`; the admin shell is hosted at `/admin/briefly/` by the main deploy workflow. Lives in npm workspaces:
 
 ```text
 apps/admin-briefly/   # Briefly admin frontend (Vite + TS)
@@ -27,7 +27,7 @@ apps/site/            # placeholder for a future migration of the root static si
 services/api/         # Briefly HTTP API Lambda handlers (TS)
 services/generation/  # Bedrock draft-generation Lambda (TS)
 services/publishing/  # publish-draft Lambda (TS)
-services/site-auth/   # site-access-gate Lambda (password gate, JS)
+services/site-auth/   # retired site-access-gate auth helper (not in active deploy)
 packages/contracts/   # shared API/data contracts + JSON Schema / OpenAPI
 packages/shared/      # shared utils (ids, logger, http response)
 infra/cdk/            # AWS CDK stack for Briefly v1 (BrieflyV1Stack)
@@ -104,14 +104,14 @@ The **deployed** create-post Lambda is `lambda/create-post.js` (Node); `lambda/c
 - **`ZS_DEV_BLOG_POSTS`** — PK `post_id` (UUID). Fields: `post_id`, `title`, `slug`, `summary`, `content`, `published` (bool), `created_at` (ISO-8601), `tag`/`tags`.
 - **Subscribers** (name from `TABLE_NAME` env) — PK `subscriber_id`, formatted `email#<email>` for current records. Fields: `email`, optional `phone`, `status` (`active`/`inactive`), `source`, `created_at`, `unsubscribed_at`. The current subscribe Lambda requires email and does not store `age`.
 
-### Admin auth & gate
+### Admin auth
 
 - **Admin write auth:** password-only. The `password` body field (writes) or `X-Admin-Password` header (admin draft listing) is checked against the `ADMIN_PASSWORD` Lambda env var. No sessions/tokens. Admin page: `/admin/`.
-- **Site-access gate:** `services/site-auth` + `edge/site-access-gate.js` password-protect the site. Owner/guest passwords live in SSM (`/zacksimon/site/owner-password`, `/zacksimon/site/guest-password`). Rotate the guest password with `npm run guest-password:rotate` (show: `guest-password:show`).
+- **Public site access:** the site-wide CloudFront password gate is removed. `.github/workflows/deploy.yml` runs `scripts/remove-site-access-gate.sh` so the default CloudFront behavior stays unassociated from the legacy Lambda@Edge gate.
 
 ## Briefly backend and admin
 
-Defined in `infra/cdk/lib/briefly-stack.ts`: API Gateway HTTP API + Cognito JWT admin auth + Lambda + Step Functions + DynamoDB + Bedrock generation. Human review required before publish (no auto-publish). The Vite admin is built with `VITE_BRIEFLY_API_BASE` and hosted privately at `/admin/briefly/`; normal use is Cognito email/password sign-in in the UI, with raw Cognito ID-token paste retained for smoke/fallback access. Passwords, bearer tokens, and ID tokens are not baked into static assets.
+Defined in `infra/cdk/lib/briefly-stack.ts`: API Gateway HTTP API + Cognito JWT admin auth + Lambda + Step Functions + DynamoDB + Bedrock generation. Human review required before publish (no auto-publish). The Vite admin is built with `VITE_BRIEFLY_API_BASE` and hosted at `/admin/briefly/`; normal use is Cognito email/password sign-in in the UI, with raw Cognito ID-token paste retained for smoke/fallback access. Passwords, bearer tokens, and ID tokens are not baked into static assets.
 
 Briefly tables: `briefly_daily_inputs`, `briefly_drafts`, `briefly_posts`, `briefly_post_slugs`, `briefly_workflow_runs`.
 

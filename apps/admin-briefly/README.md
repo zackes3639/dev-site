@@ -21,13 +21,13 @@ The app runs at `http://localhost:5173`, matching the local CORS origin in CDK.
 
 ## Hosted URL
 
-Private hosted admin:
+Hosted admin:
 
 ```text
 https://zacksimon.dev/admin/briefly/
 ```
 
-The page is protected first by the site password gate. Inside the UI, sign in with the Briefly Cognito email/password. A raw Cognito ID-token field remains as a fallback.
+The static admin shell is directly reachable. Inside the UI, sign in with the Briefly Cognito email/password before calling the Briefly API. A raw Cognito ID-token field remains as a fallback.
 
 ## Hosted build
 
@@ -89,8 +89,8 @@ The UI remembers API base/email in localStorage and keeps the ID token in sessio
 - Deploy `BrieflyV1Stack` before the site deploy.
 - Confirm CloudFormation outputs match `TECHSTACK.md`.
 - Confirm the app client allows `USER_PASSWORD_AUTH`.
-- Confirm unauthenticated `/admin/briefly/` is blocked by the site password gate.
-- Confirm authenticated `/admin/briefly/` returns 200 and JS/CSS load from `/admin/briefly/assets/`.
+- Confirm `/admin/briefly/` returns 200 and JS/CSS load from `/admin/briefly/assets/`.
+- Confirm API actions require Cognito sign-in.
 - Confirm Cognito email/password sign-in succeeds inside the hosted UI, no password is stored after sign-in, and sign out clears the session token.
 - Create daily input, start generation, poll/load draft, edit draft, and save changes in a browser.
 - Publish only a deliberate approved draft, then verify `/blog/post/?slug=...` and The Build Log listing.

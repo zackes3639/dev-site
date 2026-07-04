@@ -4,7 +4,7 @@ Last updated: 2026-07-02
 
 ## Current state
 
-Briefly is operational as a private hosted admin workflow at:
+Briefly is operational as a hosted admin workflow at:
 
 ```text
 https://zacksimon.dev/admin/briefly/
@@ -97,7 +97,7 @@ Final validation passed:
 npm run typecheck
 VITE_BRIEFLY_API_BASE=https://yp2u8kczt9.execute-api.us-east-2.amazonaws.com npm run build
 API_BASE=https://yp2u8kczt9.execute-api.us-east-2.amazonaws.com ADMIN_BEARER_TOKEN='<jwt>' npm run smoke:briefly
-SITE_ACCESS_PASSWORD='<from-ssm>' npm run smoke:deploy
+npm run smoke:deploy
 npm test
 git diff --check
 ```
@@ -112,7 +112,7 @@ aws cloudfront wait invalidation-completed --distribution-id E1VYG8DDDLSYLP --id
 
 ## Still important
 
-- Do not remove or weaken the site password gate.
+- Keep Briefly API actions protected by Cognito; the site-wide CloudFront password gate has been removed.
 - Do not bake Cognito bearer tokens into the Vite build.
 - Do not remove Briefly publish integration with the live Build Log.
 - Do not remove `briefly_post_slugs` slug-lock behavior.
@@ -126,8 +126,7 @@ aws cloudfront wait invalidation-completed --distribution-id E1VYG8DDDLSYLP --id
 - The hosted admin source and deployed static assets both use Cognito email/password sign-in as the primary path, with raw ID-token paste retained as fallback.
 - `smoke:briefly:e2e` publishes a test-prefixed post, verifies public integration, and cleans it up from `briefly_posts`, `briefly_post_slugs`, and `ZS_DEV_BLOG_POSTS`.
 - `smoke:briefly:e2e` cleanup is guarded by returned `post_id`, slug, and test title prefix; daily-input, draft, and workflow-run audit artifacts are retained.
-- The GitHub Actions deploy workflow now reads `/zacksimon/site/owner-password` from SSM after OIDC auth and reuses it for authenticated deploy smoke instead of requiring a duplicate GitHub secret.
-- The GitHub deploy role was updated with narrow SSM read/decrypt and Lambda@Edge/CloudFront permissions needed for the site password gate deploy.
+- The GitHub Actions deploy workflow removes any default CloudFront site-access gate association before syncing static/admin assets and running public-access deploy smoke.
 - Legacy admin update/delete refuse rows whose shared slug lock is Briefly-owned, preventing legacy edits from splitting Briefly-managed public posts from their lock.
 
 ## Deployment status

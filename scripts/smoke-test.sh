@@ -5,7 +5,6 @@ SITE_URL="${SITE_URL:-https://zacksimon.dev}"
 PUBLIC_API_BASE="${PUBLIC_API_BASE:-https://33o1s2l689.execute-api.us-east-2.amazonaws.com}"
 WRITE_API_BASE="${WRITE_API_BASE:-https://tblw8hlwu0.execute-api.us-east-2.amazonaws.com}"
 ADMIN_PASSWORD="${ADMIN_PASSWORD:-}"
-SITE_ACCESS_PASSWORD="${SITE_ACCESS_PASSWORD:-}"
 
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
@@ -23,22 +22,58 @@ http_status() {
   curl -sS -o /dev/null -w "%{http_code}" "$url"
 }
 
-http_status_with_cookie() {
-  local url="$1"
-  local cookie_jar="$2"
-  curl -sS -b "$cookie_jar" -o /dev/null -w "%{http_code}" "$url"
-}
-
-fetch_with_optional_cookie() {
+fetch_url() {
   local url="$1"
   local output="$2"
-  local cookie_jar="${3:-}"
+  curl -sS -o "$output" "$url"
+}
 
-  if [[ -n "$cookie_jar" ]]; then
-    curl -sS -b "$cookie_jar" -o "$output" "$url"
+check_page_200() {
+  local label="$1"
+  local url="$2"
+  local code
+  code="$(http_status "$url")"
+  if [[ "$code" == "200" ]]; then
+    pass "$label returns 200"
   else
-    curl -sS -o "$output" "$url"
+    fail "$label expected 200, got $code ($url)"
   fi
+}
+
+check_briefly_admin_assets() {
+  local site_origin="${SITE_URL%/}"
+  local html_file="$TMP_DIR/briefly-admin.html"
+  local code
+
+  code="$(http_status "$site_origin/admin/briefly/")"
+
+  if [[ "$code" == "200" ]]; then
+    pass "Briefly admin page returns 200"
+  else
+    fail "Briefly admin page expected 200, got $code ($site_origin/admin/briefly/)"
+    return
+  fi
+
+  fetch_url "$site_origin/admin/briefly/" "$html_file"
+  briefly_assets=()
+  while IFS= read -r asset_path; do
+    briefly_assets+=("$asset_path")
+  done < <(grep -Eo '/admin/briefly/assets/[^"]+\.(js|css)' "$html_file" | sort -u)
+
+  if ((${#briefly_assets[@]} == 0)); then
+    fail "Briefly admin page did not reference /admin/briefly/assets/ JS/CSS"
+    return
+  fi
+
+  for asset_path in "${briefly_assets[@]}"; do
+    code="$(http_status "$site_origin$asset_path")"
+
+    if [[ "$code" == "200" ]]; then
+      pass "Briefly admin asset loads: $asset_path"
+    else
+      fail "Briefly admin asset expected 200, got $code ($asset_path)"
+    fi
+  done
 }
 
 is_json_array() {
@@ -59,179 +94,29 @@ extract_first_slug() {
   fi
 }
 
-check_page_200() {
-  local label="$1"
-  local url="$2"
-  local code
-  code="$(http_status "$url")"
-  if [[ "$code" == "200" ]]; then
-    pass "$label returns 200"
-  else
-    fail "$label expected 200, got $code ($url)"
-  fi
-}
-
-check_authed_page_200() {
-  local label="$1"
-  local url="$2"
-  local cookie_jar="$3"
-  local code
-  code="$(http_status_with_cookie "$url" "$cookie_jar")"
-  if [[ "$code" == "200" ]]; then
-    pass "$label returns 200 with site password session"
-  else
-    fail "$label expected 200 with site password session, got $code ($url)"
-  fi
-}
-
-check_briefly_admin_assets() {
-  local cookie_jar="${1:-}"
-  local site_origin="${SITE_URL%/}"
-  local html_file="$TMP_DIR/briefly-admin.html"
-  local code
-
-  if [[ -n "$cookie_jar" ]]; then
-    code="$(http_status_with_cookie "$site_origin/admin/briefly/" "$cookie_jar")"
-  else
-    code="$(http_status "$site_origin/admin/briefly/")"
-  fi
-
-  if [[ "$code" == "200" ]]; then
-    pass "Briefly admin page returns 200"
-  else
-    fail "Briefly admin page expected 200, got $code ($site_origin/admin/briefly/)"
-    return
-  fi
-
-  fetch_with_optional_cookie "$site_origin/admin/briefly/" "$html_file" "$cookie_jar"
-  briefly_assets=()
-  while IFS= read -r asset_path; do
-    briefly_assets+=("$asset_path")
-  done < <(grep -Eo '/admin/briefly/assets/[^"]+\.(js|css)' "$html_file" | sort -u)
-
-  if ((${#briefly_assets[@]} == 0)); then
-    fail "Briefly admin page did not reference /admin/briefly/assets/ JS/CSS"
-    return
-  fi
-
-  for asset_path in "${briefly_assets[@]}"; do
-    if [[ -n "$cookie_jar" ]]; then
-      code="$(http_status_with_cookie "$site_origin$asset_path" "$cookie_jar")"
-    else
-      code="$(http_status "$site_origin$asset_path")"
-    fi
-
-    if [[ "$code" == "200" ]]; then
-      pass "Briefly admin asset loads: $asset_path"
-    else
-      fail "Briefly admin asset expected 200, got $code ($asset_path)"
-    fi
-  done
-}
-
 echo "Running deploy smoke test..."
 echo "Site: $SITE_URL"
 echo "Public API: $PUBLIC_API_BASE"
 echo "Write API: $WRITE_API_BASE"
 
-site_cookie_jar="$TMP_DIR/site.cookies"
-protected_without_password=0
-
-if [[ -n "$SITE_ACCESS_PASSWORD" ]]; then
-  curl -sS "$SITE_URL/" > "$TMP_DIR/site_login.html"
-  if grep -q 'action="/__site-login"' "$TMP_DIR/site_login.html"; then
-    pass "Unauthenticated home page shows password login"
-  else
-    fail "Unauthenticated home page did not show password login"
-  fi
-
-  wrong_code="$(
-    curl -sS -o "$TMP_DIR/wrong_login.html" -w "%{http_code}" \
-      -H "Content-Type: application/x-www-form-urlencoded" \
-      -X POST "$SITE_URL/__site-login" \
-      --data-urlencode "password=wrong-password" \
-      --data-urlencode "returnTo=/"
-  )"
-  if [[ "$wrong_code" == "200" ]] && grep -q "That password did not work" "$TMP_DIR/wrong_login.html"; then
-    pass "Wrong site password fails"
-  else
-    fail "Wrong site password did not fail as expected"
-  fi
-
-  login_code="$(
-    curl -sS -o /dev/null -w "%{http_code}" \
-      -c "$site_cookie_jar" \
-      -H "Content-Type: application/x-www-form-urlencoded" \
-      -X POST "$SITE_URL/__site-login" \
-      --data-urlencode "password=$SITE_ACCESS_PASSWORD" \
-      --data-urlencode "returnTo=/"
-  )"
-  if [[ "$login_code" == "303" ]]; then
-    pass "Correct site password creates session"
-  else
-    fail "Correct site password expected 303, got $login_code"
-  fi
-
-  deep_link_code="$(http_status "$SITE_URL/blog/")"
-  if [[ "$deep_link_code" == "302" ]]; then
-    pass "Unauthenticated deep link is blocked"
-  else
-    fail "Unauthenticated deep link expected 302, got $deep_link_code"
-  fi
-
-  briefly_link_code="$(http_status "${SITE_URL%/}/admin/briefly/")"
-  if [[ "$briefly_link_code" == "302" ]]; then
-    pass "Unauthenticated Briefly admin is blocked"
-  else
-    fail "Unauthenticated Briefly admin expected 302, got $briefly_link_code"
-  fi
-
-  check_authed_page_200 "Home page" "$SITE_URL/" "$site_cookie_jar"
-  check_authed_page_200 "Builds page" "$SITE_URL/work/" "$site_cookie_jar"
-  check_authed_page_200 "Blog page" "$SITE_URL/blog/" "$site_cookie_jar"
-  check_authed_page_200 "Admin page" "$SITE_URL/admin/" "$site_cookie_jar"
-  check_briefly_admin_assets "$site_cookie_jar"
+curl -sS "$SITE_URL/" > "$TMP_DIR/site_home.html"
+if grep -q 'action="/__site-login"' "$TMP_DIR/site_home.html"; then
+  fail "Home page still shows the removed site password login"
 else
-  curl -sS "$SITE_URL/" > "$TMP_DIR/site_home.html"
-  if grep -q 'action="/__site-login"' "$TMP_DIR/site_home.html"; then
-    protected_without_password=1
-    pass "Unauthenticated home page shows password login"
-
-    deep_link_code="$(http_status "$SITE_URL/blog/")"
-    if [[ "$deep_link_code" == "302" ]]; then
-      pass "Unauthenticated deep link is blocked"
-    else
-      fail "Unauthenticated deep link expected 302, got $deep_link_code"
-    fi
-
-    briefly_link_code="$(http_status "${SITE_URL%/}/admin/briefly/")"
-    if [[ "$briefly_link_code" == "302" ]]; then
-      pass "Unauthenticated Briefly admin is blocked"
-    else
-      fail "Unauthenticated Briefly admin expected 302, got $briefly_link_code"
-    fi
-  else
-    check_page_200 "Home page" "$SITE_URL/"
-    check_page_200 "Builds page" "$SITE_URL/work/"
-    check_page_200 "Blog page" "$SITE_URL/blog/"
-    check_page_200 "Admin page" "$SITE_URL/admin/"
-    check_briefly_admin_assets
-  fi
+  pass "Home page does not show the removed site password login"
 fi
 
-if [[ "$protected_without_password" == "1" ]]; then
-  pass "/builds.html redirect check skipped without site password"
-elif [[ -n "$SITE_ACCESS_PASSWORD" ]]; then
-  curl -sS -b "$site_cookie_jar" "$SITE_URL/builds.html" > "$TMP_DIR/builds_redirect.html"
+check_page_200 "Home page" "$SITE_URL/"
+check_page_200 "Builds page" "$SITE_URL/work/"
+check_page_200 "Blog page" "$SITE_URL/blog/"
+check_page_200 "Admin page" "$SITE_URL/admin/"
+check_briefly_admin_assets
+
+curl -sS "$SITE_URL/builds.html" > "$TMP_DIR/builds_redirect.html"
+if grep -q "url=/work/" "$TMP_DIR/builds_redirect.html"; then
+  pass "/builds.html points to /work/"
 else
-  curl -sS "$SITE_URL/builds.html" > "$TMP_DIR/builds_redirect.html"
-fi
-if [[ "$protected_without_password" != "1" ]]; then
-  if grep -q "url=/work/" "$TMP_DIR/builds_redirect.html"; then
-    pass "/builds.html points to /work/"
-  else
-    fail "/builds.html does not point to /work/"
-  fi
+  fail "/builds.html does not point to /work/"
 fi
 
 curl -sS -D "$TMP_DIR/posts.headers" -o "$TMP_DIR/posts.json" \
@@ -268,13 +153,7 @@ fi
 
 slug="$(extract_first_slug "$TMP_DIR/posts.json")"
 if [[ -n "$slug" ]]; then
-  if [[ "$protected_without_password" == "1" ]]; then
-    pass "Post detail page check skipped without site password"
-  elif [[ -n "$SITE_ACCESS_PASSWORD" ]]; then
-    check_authed_page_200 "Post detail page" "$SITE_URL/blog/post/?slug=$slug" "$site_cookie_jar"
-  else
-    check_page_200 "Post detail page" "$SITE_URL/blog/post/?slug=$slug"
-  fi
+  check_page_200 "Post detail page" "$SITE_URL/blog/post/?slug=$slug"
 else
   echo "WARN: No post slug found, skipping detail page smoke check."
 fi

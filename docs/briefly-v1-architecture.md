@@ -9,7 +9,7 @@ This document captures the v1 Briefly stack on top of zacksimon.dev.
 - DynamoDB
 - Bedrock
 - Human review before publish
-- Private Vite admin hosted at `/admin/briefly/`
+- Vite admin hosted at `/admin/briefly/`
 
 ## Workflow
 
@@ -21,7 +21,7 @@ This document captures the v1 Briefly stack on top of zacksimon.dev.
 
 ## Auth and hosting
 
-- Site password gate protects `/admin/briefly/`.
+- `/admin/briefly/` is directly reachable as a static shell.
 - Cognito JWT protects Briefly API calls from the admin UI.
 - The Cognito app client allows `USER_PASSWORD_AUTH` for hosted admin sign-in and CLI token minting for v1 smoke/fallback use.
 - Hosted admin assets are built from `apps/admin-briefly` and uploaded to `s3://$S3_BUCKET_NAME/admin/briefly/`.

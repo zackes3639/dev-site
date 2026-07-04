@@ -5,7 +5,6 @@ API_BASE="${API_BASE:-}"
 ADMIN_BEARER_TOKEN="${ADMIN_BEARER_TOKEN:-}"
 PUBLIC_API_BASE="${PUBLIC_API_BASE:-https://33o1s2l689.execute-api.us-east-2.amazonaws.com}"
 SITE_URL="${SITE_URL:-https://zacksimon.dev}"
-SITE_ACCESS_PASSWORD="${SITE_ACCESS_PASSWORD:-}"
 AWS_REGION="${AWS_REGION:-us-east-2}"
 BRIEFLY_POSTS_TABLE="${BRIEFLY_POSTS_TABLE:-briefly_posts}"
 BRIEFLY_POST_SLUGS_TABLE="${BRIEFLY_POST_SLUGS_TABLE:-briefly_post_slugs}"
@@ -307,29 +306,13 @@ if ((failures == 0)); then
   fi
 fi
 
-if [[ "$failures" -eq 0 && -n "$SITE_ACCESS_PASSWORD" ]]; then
-  cookie_jar="$TMP_DIR/site.cookies"
-  login_code="$(
-    curl -sS -o /dev/null -w "%{http_code}" \
-      -c "$cookie_jar" \
-      -H "Content-Type: application/x-www-form-urlencoded" \
-      -X POST "${SITE_URL%/}/__site-login" \
-      --data-urlencode "password=$SITE_ACCESS_PASSWORD" \
-      --data-urlencode "returnTo=/"
-  )"
-
-  if [[ "$login_code" == "303" ]]; then
-    detail_code="$(curl -sS -b "$cookie_jar" -o /dev/null -w "%{http_code}" "${SITE_URL%/}/blog/post/?slug=$published_slug")"
-    if [[ "$detail_code" == "200" ]]; then
-      pass "Published post detail route returns 200 with site session"
-    else
-      fail "Published post detail route expected 200, got $detail_code"
-    fi
+if [[ "$failures" -eq 0 ]]; then
+  detail_code="$(curl -sS -o /dev/null -w "%{http_code}" "${SITE_URL%/}/blog/post/?slug=$published_slug")"
+  if [[ "$detail_code" == "200" ]]; then
+    pass "Published post detail route returns 200"
   else
-    fail "Site password login expected 303, got $login_code"
+    fail "Published post detail route expected 200, got $detail_code"
   fi
-else
-  echo "WARN: SITE_ACCESS_PASSWORD not set; skipping protected detail-page check."
 fi
 
 if ((failures > 0)); then

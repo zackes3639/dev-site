@@ -21,8 +21,8 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
   harness.
 - Added a Briefly publish-status enforcement decision/risk to `OPEN_BUGS.md`.
 - Added non-static AWS deploy automation to the engineering backlog in `IDEAS.md`.
-- Added a private Briefly shortcut card to the `/admin/` hub that links to
-  `/admin/briefly/` while preserving the site password gate and Cognito sign-in.
+- Added a Briefly shortcut card to the `/admin/` hub that links to
+  `/admin/briefly/` while keeping Briefly API use behind Cognito sign-in.
 - Implemented the "Classic Amber" logo system across the public site: new
   light-tile badge + clipped amber-sliced `Z` mark (`assets/brand/*.svg`, generated
   vector-path lockups with no webfont dependency), `favicon.ico`,
@@ -39,6 +39,11 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
 
 ### Changed
 
+- Removed the site-wide CloudFront password gate from the active deploy path:
+  GitHub Actions now detaches the default Lambda@Edge association before syncing
+  static/admin assets, deploy smoke expects public pages, and the docs/diagram
+  reflect that `/admin/briefly/` is a reachable static shell protected at the
+  API layer by Cognito.
 - Improved Briefly admin auth-session handling: expired stored Cognito ID tokens
   are cleared before use, bare API Gateway `401` responses are labeled as
   unauthorized, and admin actions now tell the operator to sign in again instead

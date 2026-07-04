@@ -1,6 +1,6 @@
 <svg width="680" height="310" viewBox="0 0 680 310" xmlns="http://www.w3.org/2000/svg" role="img">
   <title>zacksimon.dev — serving and deploy flow</title>
-  <desc>Pushes to GitHub origin/main trigger the GitHub Actions deploy workflow, which syncs static files to S3 and invalidates CloudFront. Visitors reach the site through CloudFront, which runs a Lambda@Edge password gate in front of the S3 bucket.</desc>
+  <desc>Pushes to GitHub origin/main trigger the GitHub Actions deploy workflow, which removes any default CloudFront site-access gate association, syncs static files to S3, and invalidates CloudFront. Visitors reach the public site through CloudFront and S3.</desc>
   <!-- Hand-maintained diagram; update rules in docs/architecture/README.md -->
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
@@ -42,7 +42,7 @@
   <g class="c-purple">
     <rect x="270" y="170" width="190" height="56" rx="8" stroke-width="0.5"/>
     <text class="th" x="365" y="188" text-anchor="middle" dominant-baseline="central">CloudFront</text>
-    <text class="ts" x="365" y="206" text-anchor="middle" dominant-baseline="central">Lambda@Edge password gate</text>
+    <text class="ts" x="365" y="206" text-anchor="middle" dominant-baseline="central">public edge cache</text>
   </g>
   <g class="c-teal">
     <rect x="520" y="170" width="120" height="56" rx="8" stroke-width="0.5"/>

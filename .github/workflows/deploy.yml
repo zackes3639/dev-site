@@ -43,30 +43,8 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Load site password from SSM
-        env:
-          SITE_ACCESS_PASSWORD_PARAMETER: /zacksimon/site/owner-password
-        run: |
-          SITE_ACCESS_PASSWORD="$(aws ssm get-parameter \
-            --name "${SITE_ACCESS_PASSWORD_PARAMETER}" \
-            --with-decryption \
-            --query 'Parameter.Value' \
-            --output text)"
-          echo "::add-mask::${SITE_ACCESS_PASSWORD}"
-          delimiter="$(uuidgen)"
-          {
-            echo "SITE_ACCESS_PASSWORD<<${delimiter}"
-            printf '%s\n' "${SITE_ACCESS_PASSWORD}"
-            echo "${delimiter}"
-          } >> "${GITHUB_ENV}"
-
-      - name: Deploy site password gate
-        run: |
-          if [[ -z "${SITE_ACCESS_PASSWORD:-}" ]]; then
-            echo "SITE_ACCESS_PASSWORD was not loaded from SSM."
-            exit 1
-          fi
-          ./scripts/deploy-site-access-gate.sh
+      - name: Remove site password gate
+        run: ./scripts/remove-site-access-gate.sh
 
       - name: Upload site files to S3
         run: |

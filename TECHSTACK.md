@@ -43,15 +43,15 @@ Current technical facts for future agents.
 - When Zack says `push and merge`, agents should treat that as approval to push/merge to `origin/main` and let the AWS deploy workflow make the change live.
 - Workflow uses GitHub OIDC via `aws-actions/configure-aws-credentials`.
 - The workflow installs npm dependencies, builds `@briefly/admin-briefly`, syncs root static site files while excluding repo docs/workspaces/metadata, re-uploads `site.webmanifest` with an explicit `application/manifest+json` content type (the runner's mime tables may not know `.webmanifest`), then syncs `apps/admin-briefly/dist` to `s3://$S3_BUCKET_NAME/admin/briefly/`.
-- The workflow reads the site owner password from SSM (`/zacksimon/site/owner-password`) after OIDC auth and uses the same value for both site-gate deployment and authenticated deploy smoke.
-- The GitHub deploy role needs SSM read/decrypt permissions for that parameter plus narrow permissions to update the existing Lambda@Edge site gate, publish versions, enable replication, and update the CloudFront association.
+- The workflow removes any default CloudFront Lambda@Edge site-access gate, syncs the public static site/admin assets, invalidates CloudFront, and then runs public-access deploy smoke checks.
+- The GitHub deploy role needs permission to update the CloudFront distribution so the workflow can keep the site-access gate detached.
 - Lambda/CDK deploys are not currently automated by `.github/workflows/deploy.yml`; if a `push and merge` task changes those live AWS resources, the task must also run the required deploy/smoke steps or add deployment automation before reporting the change as live.
 
 ## Briefly stack
 
-- Briefly v1 is operational as a private hosted admin workflow and deployed to AWS as `BrieflyV1Stack` as of 2026-06-25.
+- Briefly v1 is operational as a hosted admin workflow and deployed to AWS as `BrieflyV1Stack` as of 2026-06-25.
 - Briefly API URL: `https://yp2u8kczt9.execute-api.us-east-2.amazonaws.com/`.
-- Briefly private admin URL: `https://zacksimon.dev/admin/briefly/`.
+- Briefly admin URL: `https://zacksimon.dev/admin/briefly/`.
 - Briefly Cognito user pool: `us-east-2_0hhgJcr4h`.
 - Briefly Cognito app client: `436n9qucieqcg55k6ufv7nr9s6`.
 - Provisioned services:
@@ -142,4 +142,4 @@ For normal hosted-admin use, sign in with the admin email/password in the UI. If
 - Briefly publish writes a legacy-compatible public post item with `content`, `created_at`, and `published` fields.
 - Briefly publish returns the current public route shape: `/blog/post/?slug=...`.
 - Do not bypass, disable, or weaken the `origin/main` to AWS deployment behavior without explicit user approval.
-- The site password gate protects `/admin/briefly/` before the admin UI asks for a Cognito token.
+- `/admin/briefly/` is directly reachable as a static shell; Briefly API actions remain protected by Cognito JWT auth inside the admin UI.
