@@ -44,10 +44,10 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
 ### Changed
 
 - Removed the site-wide CloudFront password gate from the active deploy path:
-  GitHub Actions now detaches the default Lambda@Edge association before syncing
-  static/admin assets, deploy smoke expects public pages, and the docs/diagram
-  reflect that `/admin/briefly/` is a reachable static shell protected at the
-  API layer by Cognito.
+  GitHub Actions now deploys a rewrite-only Lambda@Edge public router in its
+  place before syncing static/admin assets, deploy smoke expects public pages,
+  and the docs/diagram reflect that `/admin/briefly/` is a reachable static
+  shell protected at the API layer by Cognito.
 - Improved Briefly admin auth-session handling: expired stored Cognito ID tokens
   are cleared before use, bare API Gateway `401` responses are labeled as
   unauthorized, and admin actions now tell the operator to sign in again instead

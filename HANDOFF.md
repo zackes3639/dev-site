@@ -126,7 +126,7 @@ aws cloudfront wait invalidation-completed --distribution-id E1VYG8DDDLSYLP --id
 - The hosted admin source and deployed static assets both use Cognito email/password sign-in as the primary path, with raw ID-token paste retained as fallback.
 - `smoke:briefly:e2e` publishes a test-prefixed post, verifies public integration, and cleans it up from `briefly_posts`, `briefly_post_slugs`, and `ZS_DEV_BLOG_POSTS`.
 - `smoke:briefly:e2e` cleanup is guarded by returned `post_id`, slug, and test title prefix; daily-input, draft, and workflow-run audit artifacts are retained.
-- The GitHub Actions deploy workflow removes any default CloudFront site-access gate association before syncing static/admin assets and running public-access deploy smoke.
+- The GitHub Actions deploy workflow deploys a rewrite-only Lambda@Edge public router in place of the former site-access gate before syncing static/admin assets and running public-access deploy smoke.
 - Legacy admin update/delete refuse rows whose shared slug lock is Briefly-owned, preventing legacy edits from splitting Briefly-managed public posts from their lock.
 
 ## Deployment status

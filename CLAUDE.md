@@ -107,7 +107,7 @@ The **deployed** create-post Lambda is `lambda/create-post.js` (Node); `lambda/c
 ### Admin auth
 
 - **Admin write auth:** password-only. The `password` body field (writes) or `X-Admin-Password` header (admin draft listing) is checked against the `ADMIN_PASSWORD` Lambda env var. No sessions/tokens. Admin page: `/admin/`.
-- **Public site access:** the site-wide CloudFront password gate is removed. `.github/workflows/deploy.yml` runs `scripts/remove-site-access-gate.sh` so the default CloudFront behavior stays unassociated from the legacy Lambda@Edge gate.
+- **Public site access:** the site-wide CloudFront password gate is removed. `.github/workflows/deploy.yml` runs `scripts/remove-site-access-gate.sh` to deploy a rewrite-only Lambda@Edge public router so routes like `/work/` still resolve while the password gate stays gone.
 
 ## Briefly backend and admin
 

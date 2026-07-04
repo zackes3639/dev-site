@@ -9,6 +9,11 @@ Known open issues and review findings. Update this file when issues are found, f
 
 ## Recently closed
 
+- 2026-07-04: Fixed the route rewrite regression discovered while removing the
+  CloudFront site password gate. A detach-only deploy made pretty directory URLs
+  such as `/work/`, `/blog/`, and `/admin/briefly/` return S3 `403`; the active
+  deploy now replaces the former gate with a rewrite-only Lambda@Edge public
+  router, and deploy smoke verifies those public routes directly.
 - 2026-07-04: Fixed iOS-style hyperlink/icon surfaces missing the site logo by
   adding the conventional root `/apple-touch-icon.png` asset, pointing all
   public page `apple-touch-icon` tags at it with `sizes="180x180"`, and updating

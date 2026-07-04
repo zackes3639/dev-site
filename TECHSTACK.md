@@ -43,8 +43,8 @@ Current technical facts for future agents.
 - When Zack says `push and merge`, agents should treat that as approval to push/merge to `origin/main` and let the AWS deploy workflow make the change live.
 - Workflow uses GitHub OIDC via `aws-actions/configure-aws-credentials`.
 - The workflow installs npm dependencies, builds `@briefly/admin-briefly`, syncs root static site files while excluding repo docs/workspaces/metadata, re-uploads `site.webmanifest` with an explicit `application/manifest+json` content type (the runner's mime tables may not know `.webmanifest`), then syncs `apps/admin-briefly/dist` to `s3://$S3_BUCKET_NAME/admin/briefly/`.
-- The workflow removes any default CloudFront Lambda@Edge site-access gate, syncs the public static site/admin assets, invalidates CloudFront, and then runs public-access deploy smoke checks.
-- The GitHub deploy role needs permission to update the CloudFront distribution so the workflow can keep the site-access gate detached.
+- The workflow deploys a rewrite-only Lambda@Edge public router in place of the former password gate, syncs the public static site/admin assets, invalidates CloudFront, and then runs public-access deploy smoke checks.
+- The GitHub deploy role needs permission to update the existing edge Lambda and CloudFront distribution so the workflow can keep the password gate removed while preserving pretty-route rewrites.
 - Lambda/CDK deploys are not currently automated by `.github/workflows/deploy.yml`; if a `push and merge` task changes those live AWS resources, the task must also run the required deploy/smoke steps or add deployment automation before reporting the change as live.
 
 ## Briefly stack
