@@ -35,10 +35,19 @@ const isObject = (value: unknown): value is Record<string, unknown> => {
 const parseApiError = (status: number, payload: unknown): ApiRequestError => {
   if (isObject(payload)) {
     const typed = payload as Partial<ApiErrorResponse>;
-    const message = typeof typed.message === "string" ? typed.message : `Request failed with status ${status}`;
-    const code = typeof typed.code === "string" ? typed.code : "api_error";
+    const fallbackCode = status === 401 ? "unauthorized" : "api_error";
+    const code = typeof typed.code === "string" ? typed.code : fallbackCode;
+    const rawMessage = typeof typed.message === "string" ? typed.message : `Request failed with status ${status}`;
+    const message =
+      status === 401 && rawMessage.trim().toLowerCase() === "unauthorized"
+        ? "Admin session expired or was rejected. Sign in again."
+        : rawMessage;
     const details = isObject(typed.details) ? typed.details : undefined;
     return new ApiRequestError(status, message, code, details);
+  }
+
+  if (status === 401) {
+    return new ApiRequestError(status, "Admin session expired or was rejected. Sign in again.", "unauthorized");
   }
 
   return new ApiRequestError(status, `Request failed with status ${status}`);

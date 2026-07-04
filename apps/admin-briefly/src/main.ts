@@ -29,6 +29,7 @@ interface ActiveConnection extends AdminSettings {
 
 const SETTINGS_KEY = "briefly_admin_settings_v1";
 const SESSION_TOKEN_KEY = "briefly_admin_session_token_v1";
+const SESSION_REFRESH_SKEW_SECONDS = 30;
 const DEFAULT_API_BASE = import.meta.env.VITE_BRIEFLY_API_BASE ?? "";
 const DEFAULT_COGNITO_REGION = import.meta.env.VITE_BRIEFLY_COGNITO_REGION ?? "us-east-2";
 const DEFAULT_COGNITO_CLIENT_ID =
@@ -121,6 +122,57 @@ const setStatus = (el: HTMLElement, message: string, tone: NoticeTone): void => 
   if (tone === "warning") {
     el.classList.add("warning");
   }
+};
+
+const decodeJwtPayload = (token: string): Record<string, unknown> | null => {
+  const [, payloadSegment] = token.split(".");
+  if (!payloadSegment) {
+    return null;
+  }
+
+  try {
+    const normalized = payloadSegment.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = normalized.padEnd(normalized.length + ((4 - (normalized.length % 4)) % 4), "=");
+    const parsed = JSON.parse(window.atob(padded)) as unknown;
+    return isObject(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+};
+
+const getSessionTokenExpiresAt = (token: string): number | null => {
+  const payload = decodeJwtPayload(token);
+  return typeof payload?.exp === "number" ? payload.exp : null;
+};
+
+const isSessionTokenExpired = (token: string): boolean => {
+  const expiresAt = getSessionTokenExpiresAt(token);
+  if (expiresAt === null) {
+    return false;
+  }
+
+  return expiresAt <= Math.floor(Date.now() / 1000) + SESSION_REFRESH_SKEW_SECONDS;
+};
+
+const clearStoredSessionToken = (): void => {
+  saveSessionToken("");
+  const tokenInput = document.getElementById("admin-token");
+  if (tokenInput instanceof HTMLInputElement) {
+    tokenInput.value = "";
+  }
+};
+
+const isUnauthorizedApiError = (error: unknown): boolean => {
+  return error instanceof ApiRequestError && error.status === 401;
+};
+
+const showActionError = (stateEl: HTMLElement, error: unknown, tone: NoticeTone = "error"): void => {
+  if (isUnauthorizedApiError(error)) {
+    clearStoredSessionToken();
+    setStatus(byId("connection-state"), "Admin session expired or was rejected. Sign in again.", "error");
+  }
+
+  setStatus(stateEl, formatApiError(error), tone);
 };
 
 const setDisabled = (controls: HTMLElement[], disabled: boolean): void => {
@@ -437,8 +489,18 @@ const renderDraftMeta = (draft: DraftItem | null): void => {
 
 const getClient = (): BrieflyApiClient => {
   const settings = getActiveSettings();
-  if (!settings.apiBase || !settings.token) {
+  if (!settings.apiBase) {
+    throw new Error("API base is required.");
+  }
+
+  if (!settings.token) {
     throw new Error("Sign in or save an ID token first.");
+  }
+
+  if (isSessionTokenExpired(settings.token)) {
+    clearStoredSessionToken();
+    setStatus(byId("connection-state"), "Admin session expired. Sign in again.", "warning");
+    throw new Error("Admin session expired. Sign in again.");
   }
 
   return new BrieflyApiClient(settings);
@@ -473,6 +535,10 @@ const init = (): void => {
   tokenInput.value = readSessionToken();
   emailInput.value = storedSettings?.authEmail ?? "";
   byId<HTMLInputElement>("newsletter-test-email").value = storedSettings?.authEmail ?? "";
+  const hadExpiredStoredToken = tokenInput.value !== "" && isSessionTokenExpired(tokenInput.value);
+  if (hadExpiredStoredToken) {
+    clearStoredSessionToken();
+  }
 
   byId<HTMLInputElement>("input-date").value = new Date().toISOString().slice(0, 10);
   byId<HTMLInputElement>("target-word-count").value = "500";
@@ -493,7 +559,13 @@ const init = (): void => {
     byId<HTMLInputElement>("generation-run-id").value = runIdFromQuery;
   }
 
-  setStatus(byId("connection-state"), "Sign in to start an admin session in this browser.", "neutral");
+  setStatus(
+    byId("connection-state"),
+    hadExpiredStoredToken
+      ? "Stored admin session expired. Sign in again."
+      : "Sign in to start an admin session in this browser.",
+    hadExpiredStoredToken ? "warning" : "neutral"
+  );
   setStatus(byId("create-input-state"), "", "neutral");
   setStatus(byId("generation-state"), "", "neutral");
   setStatus(byId("draft-state"), "Load a draft to edit and publish.", "neutral");
@@ -640,7 +712,7 @@ const init = (): void => {
         "success"
       );
     } catch (error) {
-      setStatus(stateEl, formatApiError(error), "error");
+      showActionError(stateEl, error);
     } finally {
       setDisabled([loadListBtn, loadSelectedBtn], false);
       setNewsletterActionState();
@@ -677,7 +749,7 @@ const init = (): void => {
       setQueryParam("campaignId", response.campaign.campaign_id);
       setStatus(stateEl, `Loaded newsletter campaign ${response.campaign.campaign_id}.`, "success");
     } catch (error) {
-      setStatus(stateEl, formatApiError(error), "error");
+      showActionError(stateEl, error);
     } finally {
       setDisabled([loadListBtn, loadSelectedBtn], false);
       setNewsletterActionState();
@@ -781,7 +853,7 @@ const init = (): void => {
       if (error instanceof ApiRequestError && error.status === 404 && fromAutoPoll) {
         setStatus(byId("generation-state"), `Run ${latestRunId} not found yet. Retrying...`, "warning");
       } else {
-        setStatus(byId("generation-state"), formatApiError(error), "error");
+        showActionError(byId("generation-state"), error);
         if (fromAutoPoll) {
           stopRunPolling();
         }
@@ -912,7 +984,7 @@ const init = (): void => {
       setStatus(stateEl, `Daily input created: ${response.input_id}`, "success");
       setStatus(byId("generation-state"), "Ready to start generation.", "neutral");
     } catch (error) {
-      setStatus(stateEl, formatApiError(error), "error");
+      showActionError(stateEl, error);
     } finally {
       setDisabled([createButton], false);
     }
@@ -958,7 +1030,7 @@ const init = (): void => {
       setStatus(stateEl, `Generation started (run: ${response.run_id}). Watching run status...`, "success");
       setStatus(byId("draft-state"), "Waiting for generated draft...", "neutral");
     } catch (error) {
-      setStatus(stateEl, formatApiError(error), "error");
+      showActionError(stateEl, error);
     } finally {
       setDisabled([startBtn, checkBtn], false);
     }
@@ -1007,7 +1079,7 @@ const init = (): void => {
 
       setStatus(draftState, `Draft loaded (version ${response.draft.version}).`, "success");
     } catch (error) {
-      setStatus(draftState, formatApiError(error), "error");
+      showActionError(draftState, error);
     } finally {
       setDisabled([loadBtn, reloadBtn], false);
     }
@@ -1072,7 +1144,7 @@ const init = (): void => {
       if (error instanceof ApiRequestError && error.status === 409) {
         setStatus(stateEl, `${formatApiError(error)} Reload draft to resolve version conflict.`, "warning");
       } else {
-        setStatus(stateEl, formatApiError(error), "error");
+        showActionError(stateEl, error);
       }
     } finally {
       setDisabled([saveBtn], false);
@@ -1135,7 +1207,7 @@ const init = (): void => {
       } else if (error instanceof ApiRequestError && error.status === 409) {
         setStatus(stateEl, `${formatApiError(error)} Reload draft and try again.`, "warning");
       } else {
-        setStatus(stateEl, formatApiError(error), "error");
+        showActionError(stateEl, error);
       }
     } finally {
       setDisabled([publishBtn], false);
@@ -1200,7 +1272,7 @@ const init = (): void => {
       renderNewsletterCampaign(response.campaign);
       setStatus(stateEl, `Newsletter campaign saved (${response.campaign.status}).`, "success");
     } catch (error) {
-      setStatus(stateEl, formatApiError(error), "error");
+      showActionError(stateEl, error);
     } finally {
       setNewsletterActionState();
     }
@@ -1236,7 +1308,7 @@ const init = (): void => {
       const message = response.message ?? `Test sent to ${recipientEmail}.`;
       setStatus(stateEl, message, "success");
     } catch (error) {
-      setStatus(stateEl, formatApiError(error), "error");
+      showActionError(stateEl, error);
     } finally {
       setNewsletterActionState();
     }
@@ -1278,7 +1350,7 @@ const init = (): void => {
       } else if (isTestSendRequiredError(error)) {
         setStatus(stateEl, "Send is locked until a test email has been sent for this campaign.", "warning");
       } else {
-        setStatus(stateEl, formatApiError(error), "error");
+        showActionError(stateEl, error);
       }
     } finally {
       setNewsletterActionState();

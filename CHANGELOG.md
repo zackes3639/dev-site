@@ -39,6 +39,10 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
 
 ### Changed
 
+- Improved Briefly admin auth-session handling: expired stored Cognito ID tokens
+  are cleared before use, bare API Gateway `401` responses are labeled as
+  unauthorized, and admin actions now tell the operator to sign in again instead
+  of showing `Unauthorized [401/api_error]`.
 - Increased the Classic Amber header lockup descriptor (`ARCHITECT · BUILDER ·
   FOUNDER`) by another 40% and widened the lockup asset so the larger mono line
   does not clip; the badge-only nav fallback now covers the 761–1000px band.
