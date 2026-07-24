@@ -38,7 +38,8 @@ label style.
 - Assets (all committed, no build step):
   - `/assets/brand/zs-badge-light.svg` — canonical icon-only mark, light tile with hairline border; used as the SVG favicon and the source for raster browser/app icons.
   - `/assets/brand/zs-badge.svg` — icon-only dark-tile alternate using the same clipped `Z` geometry.
-  - `/assets/brand/zs-lockup-light-bg.svg` — light-tile badge + `Zack Simon` / `ARCHITECT·BUILDER·FOUNDER` for light backgrounds (transparent bg). Used in the site header.
+  - `/assets/brand/zs-lockup-light-bg.svg` — light-tile badge + `Zack Simon` /
+    `ARCHITECT·BUILDER·FOUNDER` for light-background lockup contexts.
   - `/assets/brand/zs-lockup-dark-bg.svg` — same lockup on a warm-black card for dark backgrounds.
   - `/favicon.ico` (16+32), `/apple-touch-icon.png` (Apple/iOS compact link and
     app-icon surfaces), `/zs-icon-180.png` (source alias), `/zs-icon-512.png`
@@ -47,9 +48,11 @@ label style.
   amber `--zs-amber #F59E0B` (accent only — the site-wide `--gold` aliases it),
   warm black `--zs-black #0C0A09`, paper `--zs-paper #FAFAF9`, light icon tile
   `#F5F5F4`, and stone `--zs-stone`/`--zs-stone-dark` for muted secondary text.
-- Usage: full lockup in the header on light backgrounds; the light badge only in
-  tight spots (compact nav pill, narrow viewports, favicons). Amber stays
-  accent-only per the two-color rule in `DESIGN.md`.
+- Usage: the site header pairs the light badge with a live `Zack Simon` text
+  wordmark so the command bar can compress consistently. Use the full lockup in
+  larger light-background brand contexts and the light badge alone in tight
+  spots such as the compact tablet nav and favicons. Amber stays accent-only
+  per the two-color rule in `DESIGN.md`.
 - Link previews should stay compact on Apple/iOS-style surfaces: keep the
   `apple-touch-icon` metadata, but do not add page-level `og:image`/large hero
   preview metadata unless Zack explicitly wants rich card previews.

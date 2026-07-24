@@ -6,6 +6,10 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
 
 ### Added
 
+- Added an execution-ready plan in `PLANS.md` for the public navbar's
+  "Builder's Command Bar" redesign, including the locked information hierarchy,
+  responsive and accessibility requirements, visual approval gate, validation,
+  and deploy verification steps.
 - Added `/apple-touch-icon.png` as the conventional root Apple/iOS touch-icon
   path and pointed all public page touch-icon metadata plus `site.webmanifest`
   at it, so hyperlink/save-to-home/preview surfaces have a stable logo URL to
@@ -45,6 +49,12 @@ All notable repo-contract, documentation, deployment-process, and project-behavi
 
 ### Changed
 
+- Redesigned the public navbar as the "Builder's Command Bar": a compact Classic
+  Amber badge + live wordmark, Builds-first navigation, amber current-page
+  underline, and one purple `Join the Build Log` CTA. Full and compact desktop
+  states now preserve the same destinations, the public Admin link was removed,
+  and the mobile drawer now has visible Menu/Close controls with complete
+  keyboard focus behavior.
 - Removed the site-wide CloudFront password gate from the active deploy path:
   GitHub Actions now deploys a rewrite-only Lambda@Edge public router in its
   place before syncing static/admin assets, deploy smoke expects public pages,

@@ -87,30 +87,29 @@ board, mobile nav). Extend this system; do not invent a parallel one.
 
 ### Navbar layout (desktop)
 
-- Brand is the "Classic Amber" lockup (`assets/brand/zs-lockup-light-bg.svg` —
-  light-tile badge with the three-layer amber-sliced `Z`, plus a `Space Grotesk`
-  `Zack Simon` wordmark and mono descriptor; see `BRAND.md`), rendered as
-  `.logo-lockup` at 56px header height. A badge-only fallback (`.logo-badge`,
-  `assets/brand/zs-badge-light.svg`) replaces it in the scroll-compact pill, the
-  761–1000px band, and at ≤480px. The old `assets/images/logo.svg` chip and the
-  HTML `.logo-wordmark` span are retired.
-- Links (`.hot-btn`) are plain right-aligned text, not a boxed button group; the
-  active link (`.hot-btn-active`) is marked by an amber dot, never a filled box.
-- The right cluster (`.nav-contact`) holds a muted `Admin` link and the amber
-  `Subscribe` action pill (`.nav-cta`). Purple stays the primary-action color;
-  the nav CTA is the one sanctioned amber action (highlight intent: list growth).
-- In the scroll-compact pill the wordmark and `.nav-contact` collapse away,
-  leaving just the logo mark + links. The 761–900px band hides the wordmark so
-  links + CTA never crowd before the mobile drawer takes over.
+- Use the "Builder's Command Bar": Classic Amber badge
+  (`assets/brand/zs-badge-light.svg`) plus a simple `Zack Simon` text wordmark,
+  then `Builds`, `The Build Log`, `About`, and `Contact`, followed by one
+  `Join the Build Log` CTA.
+- The full bar is approximately 68px tall. On scroll the same information
+  hierarchy compresses to an approximately 56px floating shell; links and CTA
+  must not disappear or change order.
+- Links (`.hot-btn`) remain plain text. The active link uses an amber underline
+  plus `aria-current="page"`; amber is not used as the primary CTA color.
+- The CTA (`.nav-cta`) uses the purple action tokens. `/admin/` is an operator
+  route, not part of the public primary navigation.
+- Between 761px and the full desktop layout, the text wordmark may hide to
+  preserve the complete link and CTA set without wrapping or clipping.
 
 ### Navigation (mobile)
 
-- Below 760px the desktop nav is replaced by a compact header + a menu
-  button (`.nav-toggle`) and an accessible drawer (`.nav-drawer`). The drawer is
-  built by `assets/js/script.js` from the `.hotbar` links plus the Subscribe CTA
-  (`.nav-drawer-cta`) and the secondary Admin link, so it stays in sync per page.
-- The drawer uses `aria-expanded`/`aria-controls`, focus-moves into the panel on
-  open, traps Tab, closes on Escape / backdrop / link click, and restores focus.
+- At 760px and below, use the badge + `Zack Simon` wordmark and a visibly
+  labeled `Menu` button (`.nav-toggle`). The drawer (`.nav-drawer`) is built by
+  `assets/js/script.js` from the same four links and CTA so it stays in sync.
+- The drawer provides an explicit visible close button. It uses
+  `aria-expanded`/`aria-controls`, moves focus into the panel, traps Tab,
+  closes on the close button / Escape / backdrop / link click, and restores
+  focus.
 - Behavior is gated on `body.has-drawer` (added by JS); without JS the existing
   `.hotbar` remains as the fallback. Mobile nav must never horizontally scroll or
   clip primary links.

@@ -9,6 +9,13 @@ Known open issues and review findings. Update this file when issues are found, f
 
 ## Recently closed
 
+- 2026-07-24: Fixed the public mobile navigation drawer's missing visible close
+  affordance as part of the Builder's Command Bar redesign. The drawer now opens
+  on an explicit Close button, hides the covered Menu toggle from the active
+  accessibility flow, traps focus through the CTA, closes on Escape/backdrop/
+  link selection, and restores focus to Menu. The same redesign removes navbar
+  clipping/hierarchy changes by retaining all public links and the CTA in the
+  compact desktop state.
 - 2026-07-04: Fixed the oversized Apple/iOS link preview card after adding the
   root touch icon. Public pages now omit the large `og:image` hint so compact
   hyperlink pills can use `/apple-touch-icon.png` as the small logo slot instead

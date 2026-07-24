@@ -10,7 +10,7 @@ console.log("Zack's builder site loaded");
 
   const compactEnterThreshold = 220;
   const compactExitThreshold = 24;
-  const transitionDurationMs = 1080;
+  const transitionDurationMs = 360;
   let isCompact = window.scrollY > compactEnterThreshold;
   let transitionTimer;
 
@@ -30,24 +30,6 @@ console.log("Zack's builder site loaded");
     navbar.classList.toggle("navbar-compact", isCompact);
     pageBody.classList.toggle("navbar-compact-active", isCompact);
     triggerTransitionState();
-
-    [hotbar].forEach((element) => {
-      if (!element) return;
-
-      if (isCompact) {
-        element.removeAttribute("aria-hidden");
-      } else {
-        element.removeAttribute("aria-hidden");
-      }
-    });
-
-    if (navContact) {
-      if (isCompact) {
-        navContact.setAttribute("aria-hidden", "true");
-      } else {
-        navContact.removeAttribute("aria-hidden");
-      }
-    }
   }
 
   function syncNavbarState() {
@@ -70,6 +52,10 @@ console.log("Zack's builder site loaded");
     hotbar.removeAttribute("aria-hidden");
   }
 
+  // Compact mode changes only the navbar shell. Its links and CTA stay
+  // available to pointer, keyboard, and assistive-technology users.
+  if (navContact) navContact.removeAttribute("aria-hidden");
+
   setCompactNavbar(isCompact);
   syncNavbarState();
   window.addEventListener("scroll", syncNavbarState, { passive: true });
@@ -77,9 +63,9 @@ console.log("Zack's builder site loaded");
 
 /* Mobile nav drawer.
  * Builds a compact menu button + accessible drawer from the existing
- * .hotbar links (plus the secondary Admin link) so the navbar never has to
- * horizontally scroll on small screens. Progressive enhancement: if this
- * never runs, the original .hotbar stays as the fallback nav. */
+ * .hotbar links and public CTA so the navbar never has to horizontally scroll
+ * on small screens. Progressive enhancement: if this never runs, the original
+ * .hotbar stays as the fallback nav. */
 (function () {
   const navbar = document.querySelector(".navbar");
   const hotbar = document.querySelector(".hotbar");
@@ -94,16 +80,45 @@ console.log("Zack's builder site loaded");
   toggle.setAttribute("aria-label", "Open menu");
   toggle.setAttribute("aria-expanded", "false");
   toggle.setAttribute("aria-controls", "nav-drawer");
-  toggle.innerHTML =
-    '<span class="nav-toggle-bars" aria-hidden="true"><span></span><span></span><span></span></span>';
+
+  const toggleLabel = document.createElement("span");
+  toggleLabel.className = "nav-toggle-label";
+  toggleLabel.textContent = "Menu";
+
+  const toggleBars = document.createElement("span");
+  toggleBars.className = "nav-toggle-bars";
+  toggleBars.setAttribute("aria-hidden", "true");
+  for (let i = 0; i < 3; i += 1) {
+    toggleBars.appendChild(document.createElement("span"));
+  }
+
+  toggle.appendChild(toggleLabel);
+  toggle.appendChild(toggleBars);
 
   const drawer = document.createElement("div");
   drawer.className = "nav-drawer";
   drawer.id = "nav-drawer";
   drawer.setAttribute("role", "dialog");
   drawer.setAttribute("aria-modal", "true");
-  drawer.setAttribute("aria-label", "Site menu");
+  drawer.setAttribute("aria-labelledby", "nav-drawer-title");
   drawer.hidden = true;
+
+  const drawerHeader = document.createElement("div");
+  drawerHeader.className = "nav-drawer-header";
+
+  const drawerTitle = document.createElement("p");
+  drawerTitle.className = "nav-drawer-title";
+  drawerTitle.id = "nav-drawer-title";
+  drawerTitle.textContent = "Menu";
+
+  const drawerClose = document.createElement("button");
+  drawerClose.type = "button";
+  drawerClose.className = "nav-drawer-close";
+  drawerClose.setAttribute("aria-label", "Close menu");
+  drawerClose.textContent = "Close";
+
+  drawerHeader.appendChild(drawerTitle);
+  drawerHeader.appendChild(drawerClose);
 
   const list = document.createElement("nav");
   list.className = "nav-drawer-list";
@@ -114,7 +129,10 @@ console.log("Zack's builder site loaded");
     link.className = "nav-drawer-link";
     link.href = source.getAttribute("href");
     link.textContent = source.textContent.trim();
-    if (source.classList.contains("hot-btn-active")) {
+    if (
+      source.getAttribute("aria-current") === "page" ||
+      source.classList.contains("hot-btn-active")
+    ) {
       link.classList.add("nav-drawer-link-active");
       link.setAttribute("aria-current", "page");
     }
@@ -131,13 +149,7 @@ console.log("Zack's builder site loaded");
     list.appendChild(cta);
   }
 
-  const adminSource = document.querySelector(".nav-admin");
-  const admin = document.createElement("a");
-  admin.className = "nav-drawer-link nav-drawer-link-secondary";
-  admin.href = adminSource ? adminSource.getAttribute("href") : "/admin/";
-  admin.textContent = "Admin";
-  list.appendChild(admin);
-
+  drawer.appendChild(drawerHeader);
   drawer.appendChild(list);
 
   const backdrop = document.createElement("div");
@@ -150,6 +162,7 @@ console.log("Zack's builder site loaded");
   body.classList.add("has-drawer");
 
   let lastFocus = null;
+  let closeTimer;
 
   function focusables() {
     return drawer.querySelectorAll('a[href], button:not([disabled])');
@@ -160,31 +173,41 @@ console.log("Zack's builder site loaded");
   }
 
   function openDrawer() {
+    window.clearTimeout(closeTimer);
     lastFocus = document.activeElement;
     drawer.hidden = false;
     backdrop.hidden = false;
     void drawer.offsetWidth; // force reflow so the open transition runs
     body.classList.add("nav-drawer-open");
     toggle.setAttribute("aria-expanded", "true");
-    toggle.setAttribute("aria-label", "Close menu");
-    const f = focusables();
-    if (f.length) f[0].focus();
+    toggle.setAttribute("aria-hidden", "true");
+    toggle.setAttribute("tabindex", "-1");
+    drawerClose.focus();
     document.addEventListener("keydown", onKeydown);
   }
 
-  function closeDrawer() {
+  function closeDrawer(restoreFocus) {
     if (!isOpen()) return;
     body.classList.remove("nav-drawer-open");
     toggle.setAttribute("aria-expanded", "false");
+    toggle.removeAttribute("aria-hidden");
+    toggle.removeAttribute("tabindex");
     toggle.setAttribute("aria-label", "Open menu");
     document.removeEventListener("keydown", onKeydown);
-    window.setTimeout(function () {
+    window.clearTimeout(closeTimer);
+    closeTimer = window.setTimeout(function () {
       if (!isOpen()) {
         drawer.hidden = true;
         backdrop.hidden = true;
       }
     }, 240);
-    if (lastFocus && typeof lastFocus.focus === "function") lastFocus.focus();
+    if (
+      restoreFocus !== false &&
+      lastFocus &&
+      typeof lastFocus.focus === "function"
+    ) {
+      lastFocus.focus();
+    }
   }
 
   function onKeydown(e) {
@@ -212,6 +235,7 @@ console.log("Zack's builder site loaded");
     else openDrawer();
   });
 
+  drawerClose.addEventListener("click", closeDrawer);
   backdrop.addEventListener("click", closeDrawer);
 
   list.addEventListener("click", function (e) {
@@ -219,6 +243,6 @@ console.log("Zack's builder site loaded");
   });
 
   window.addEventListener("resize", function () {
-    if (window.innerWidth > MOBILE_MAX) closeDrawer();
+    if (window.innerWidth > MOBILE_MAX) closeDrawer(false);
   });
 })();
